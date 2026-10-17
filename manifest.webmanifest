@@ -1,0 +1,14 @@
+{
+  "name": "納まり詳細図ジェネレーター",
+  "short_name": "納まり詳細図",
+  "description": "床・壁・天井の取り合い詳細を提案・作図し、PDF/DXFで出力",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a1625",
+  "theme_color": "#14202e",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

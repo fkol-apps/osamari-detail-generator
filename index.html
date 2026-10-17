@@ -1,0 +1,1830 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>納まり詳細図ジェネレーター</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22bg%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231a3a5e%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230a1625%22/%3E%3C/linearGradient%3E%3CradialGradient%20id=%22glow%22%20cx=%22.45%22%20cy=%22.5%22%20r=%22.62%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%233d7cc0%22%20stop-opacity=%22.35%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%233d7cc0%22%20stop-opacity=%220%22/%3E%3C/radialGradient%3E%3ClinearGradient%20id=%22gold%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23ffcf6e%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23f39a2a%22/%3E%3C/linearGradient%3E%3Cpattern%20id=%22rc%22%20width=%2234%22%20height=%2234%22%20patternUnits=%22userSpaceOnUse%22%20patternTransform=%22rotate(45)%22%3E%3Crect%20width=%2234%22%20height=%2234%22%20fill=%22%23eaf0f7%22/%3E%3Cline%20x1=%220%22%20y1=%224%22%20x2=%2234%22%20y2=%224%22%20stroke=%22%2324456b%22%20stroke-width=%222.4%22/%3E%3Cline%20x1=%220%22%20y1=%229.5%22%20x2=%2234%22%20y2=%229.5%22%20stroke=%22%2324456b%22%20stroke-width=%222.4%22/%3E%3Cline%20x1=%220%22%20y1=%2215%22%20x2=%2234%22%20y2=%2215%22%20stroke=%22%2324456b%22%20stroke-width=%222.4%22/%3E%3C/pattern%3E%3Cpattern%20id=%22stone%22%20width=%2216%22%20height=%2216%22%20patternUnits=%22userSpaceOnUse%22%20patternTransform=%22rotate(45)%22%3E%3Crect%20width=%2216%22%20height=%2216%22%20fill=%22url(%23gold)%22/%3E%3Cline%20x1=%220%22%20y1=%223%22%20x2=%2216%22%20y2=%223%22%20stroke=%22%238a4a05%22%20stroke-width=%221.8%22/%3E%3Cline%20x1=%220%22%20y1=%2211%22%20x2=%2216%22%20y2=%2211%22%20stroke=%22%238a4a05%22%20stroke-width=%221.8%22%20stroke-dasharray=%225%203%22/%3E%3C/pattern%3E%3CclipPath%20id=%22tile%22%3E%3Crect%20width=%22512%22%20height=%22512%22%20rx=%22114%22/%3E%3C/clipPath%3E%3C/defs%3E%3Cg%20clip-path=%22url(%23tile)%22%3E%3Crect%20width=%22512%22%20height=%22512%22%20fill=%22url(%23bg)%22/%3E%3Crect%20width=%22512%22%20height=%22512%22%20fill=%22url(%23glow)%22/%3E%3Cg%20stroke=%22%23ffffff%22%20stroke-opacity=%22.055%22%20stroke-width=%222%22%3E%3Cpath%20d=%22M64%200V512M128%200V512M192%200V512M256%200V512M320%200V512M384%200V512M448%200V512%22/%3E%3Cpath%20d=%22M0%2064H512M0%20128H512M0%20192H512M0%20256H512M0%20320H512M0%20384H512M0%20448H512%22/%3E%3C/g%3E%3Crect%20x=%2266%22%20y=%2254%22%20width=%22380%22%20height=%2248%22%20fill=%22url(%23rc)%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22%20stroke-linejoin=%22round%22/%3E%3Cg%20stroke=%22%239cc2ea%22%20stroke-width=%224%22%20stroke-linecap=%22round%22%3E%3Cline%20x1=%22120%22%20y1=%22102%22%20x2=%22120%22%20y2=%22156%22/%3E%3Cline%20x1=%22330%22%20y1=%22102%22%20x2=%22330%22%20y2=%22156%22/%3E%3Cline%20x1=%22414%22%20y1=%22102%22%20x2=%22414%22%20y2=%22156%22/%3E%3C/g%3E%3Cline%20x1=%2266%22%20y1=%22158%22%20x2=%22184%22%20y2=%22158%22%20stroke=%22%239cc2ea%22%20stroke-width=%223%22/%3E%3Cline%20x1=%22262%22%20y1=%22158%22%20x2=%22446%22%20y2=%22158%22%20stroke=%22%239cc2ea%22%20stroke-width=%223%22/%3E%3Cg%20fill=%22%239cc2ea%22%3E%3Crect%20x=%2292%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22146%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22290%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22350%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22410%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3C/g%3E%3Crect%20x=%2266%22%20y=%22168%22%20width=%22118%22%20height=%2214%22%20fill=%22%230d2135%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Crect%20x=%22262%22%20y=%22168%22%20width=%22184%22%20height=%2214%22%20fill=%22%230d2135%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Cline%20x1=%2266%22%20y1=%22175%22%20x2=%22184%22%20y2=%22175%22%20stroke=%22%23ffffff%22%20stroke-width=%222%22/%3E%3Cline%20x1=%22262%22%20y1=%22175%22%20x2=%22446%22%20y2=%22175%22%20stroke=%22%23ffffff%22%20stroke-width=%222%22/%3E%3Crect%20x=%2266%22%20y=%22352%22%20width=%22380%22%20height=%2284%22%20fill=%22url(%23rc)%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22%20stroke-linejoin=%22round%22/%3E%3Crect%20x=%2266%22%20y=%22324%22%20width=%22118%22%20height=%2228%22%20fill=%22url(%23stone)%22%20stroke=%22%23ffffff%22%20stroke-width=%225%22/%3E%3Crect%20x=%22262%22%20y=%22324%22%20width=%22184%22%20height=%2228%22%20fill=%22url(%23stone)%22%20stroke=%22%23ffffff%22%20stroke-width=%225%22/%3E%3Crect%20x=%22184%22%20y=%22102%22%20width=%2278%22%20height=%22250%22%20fill=%22%230d2135%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22/%3E%3Cline%20x1=%22198%22%20y1=%22102%22%20x2=%22198%22%20y2=%22352%22%20stroke=%22%23ffffff%22%20stroke-width=%223.5%22/%3E%3Cline%20x1=%22248%22%20y1=%22102%22%20x2=%22248%22%20y2=%22352%22%20stroke=%22%23ffffff%22%20stroke-width=%223.5%22/%3E%3Cpolyline%20points=%22198,112%20248,150%20198,188%20248,226%20198,264%20248,302%20198,340%22%20fill=%22none%22%20stroke=%22%237fb2e6%22%20stroke-width=%223%22%20stroke-linejoin=%22round%22/%3E%3Crect%20x=%22168%22%20y=%22288%22%20width=%2216%22%20height=%2236%22%20fill=%22url(%23gold)%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Crect%20x=%22262%22%20y=%22288%22%20width=%2216%22%20height=%2236%22%20fill=%22url(%23gold)%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Cg%20stroke=%22%2362e3b4%22%20stroke-linecap=%22round%22%3E%3Cline%20x1=%2296%22%20y1=%22182%22%20x2=%2296%22%20y2=%22324%22%20stroke-width=%224%22/%3E%3Cline%20x1=%2282%22%20y1=%22182%22%20x2=%22110%22%20y2=%22182%22%20stroke-width=%223%22/%3E%3Cline%20x1=%2282%22%20y1=%22324%22%20x2=%22110%22%20y2=%22324%22%20stroke-width=%223%22/%3E%3C/g%3E%3Ccircle%20cx=%2296%22%20cy=%22182%22%20r=%227.5%22%20fill=%22%2362e3b4%22/%3E%3Ccircle%20cx=%2296%22%20cy=%22324%22%20r=%227.5%22%20fill=%22%2362e3b4%22/%3E%3Ccircle%20cx=%22272%22%20cy=%22304%22%20r=%229%22%20fill=%22%23ffffff%22/%3E%3Cpolyline%20points=%22272,304%20316,228%20338,228%22%20fill=%22none%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22%20stroke-linejoin=%22round%22%20stroke-linecap=%22round%22/%3E%3Crect%20x=%22350%22%20y=%22217%22%20width=%2282%22%20height=%2222%22%20rx=%2211%22%20fill=%22url(%23gold)%22/%3E%3Crect%20x=%22350%22%20y=%22196%22%20width=%2260%22%20height=%2212%22%20rx=%226%22%20fill=%22%23ffffff%22%20fill-opacity=%22.5%22/%3E%3Crect%20x=%22350%22%20y=%22248%22%20width=%2246%22%20height=%2212%22%20rx=%226%22%20fill=%22%23ffffff%22%20fill-opacity=%22.5%22/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14202e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="納まり詳細図">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+:root{--bg:#eef0f3;--pn:#fff;--bd:#d3d8df;--tx:#1d2733;--ac:#0b6bcb;--mut:#6b7684;--warn:#b4531a;--ok:#1b7f4b}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font:13px/1.55 "Yu Gothic UI","Meiryo",sans-serif;color:var(--tx);background:var(--bg);display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#14202e;color:#fff;flex-wrap:wrap}
+header h1{font-size:15px;margin:0;flex:1;white-space:nowrap}
+button,select,input{font:inherit;color:inherit}
+button{border:1px solid var(--bd);background:#fff;border-radius:6px;padding:4px 10px;cursor:pointer}
+button:hover{background:#eaf2fc}
+button.pri{background:var(--ac);color:#fff;border-color:var(--ac)}
+button.pri:hover{background:#0958a8}
+button.dng{color:#b3261e}
+button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+header button{background:#25364a;color:#fff;border-color:#3a4f68}
+header button:hover{background:#34506f}
+header button.pri{background:var(--ac);border-color:var(--ac)}
+main{flex:1;display:grid;grid-template-columns:370px 1fr 240px;min-height:0}
+aside{background:var(--pn);overflow:auto;min-height:0}
+#left{border-right:1px solid var(--bd)}
+#right{border-left:1px solid var(--bd);padding:10px}
+.tabs{display:flex;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--pn);z-index:2}
+.tabs button{flex:1;border:0;border-radius:0;padding:8px 2px;border-bottom:3px solid transparent;background:transparent}
+.tabs button.on{border-bottom-color:var(--ac);color:var(--ac);background:#f2f7fd}
+.pane{padding:10px 12px;display:none}
+.pane.on{display:block}
+.row{display:flex;gap:6px;align-items:center;margin:5px 0}
+.row label{width:96px;color:var(--mut);font-size:12px;flex:none}
+.row input,.row select{flex:1;min-width:0;padding:3px 6px;border:1px solid var(--bd);border-radius:5px;background:#fff}
+h3{font-size:13px;margin:12px 0 4px;color:#33475b}
+.card{border:1px solid var(--bd);border-radius:8px;padding:8px 10px;margin:8px 0;background:#fbfcfe}
+.card.best{border-color:var(--ac);box-shadow:0 0 0 2px #d9eaff}
+.card h4{margin:0 0 3px;font-size:13.5px;display:flex;gap:6px;align-items:center}
+.pill{margin-left:auto;font-size:11px;background:#e7f0fb;border-radius:10px;padding:1px 8px;color:var(--ac)}
+.bar{height:5px;background:#e3e8ee;border-radius:3px;margin:4px 0 6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok)}
+.card ul{margin:2px 0 4px;padding-left:16px}
+.card li.w{color:var(--warn)}
+.card .ref{font-size:11px;color:var(--mut)}
+.mut{color:var(--mut);font-size:12px}
+.tag{display:inline-block;font-size:11px;background:#eef1f5;border-radius:4px;padding:0 6px;margin-right:4px;color:#445}
+#center{display:flex;flex-direction:column;min-width:0;min-height:0}
+#tb{display:flex;gap:4px;padding:6px 8px;background:var(--pn);border-bottom:1px solid var(--bd);flex-wrap:wrap;align-items:center}
+#tb .sp{flex:1}
+#cv{flex:1;min-height:0;position:relative;background:#c9ced6;overflow:hidden}
+#svg{width:100%;height:100%;display:block;touch-action:none}
+#stat{position:absolute;left:8px;bottom:6px;background:#fffd;border-radius:5px;padding:1px 8px;font-size:12px;color:#334;pointer-events:none}
+.pi{display:grid;grid-template-columns:80px 1fr;gap:4px 6px;align-items:center;margin:4px 0}
+.pi label{color:var(--mut);font-size:12px}
+.pi input,.pi select{width:100%;padding:3px 5px;border:1px solid var(--bd);border-radius:5px;min-width:0}
+.det{border:1px solid var(--bd);border-radius:8px;padding:6px 8px;margin:6px 0}
+.det .hd{display:flex;gap:6px;align-items:center;font-weight:600}
+.det .hd span{flex:1}
+.det .pr{display:grid;grid-template-columns:1fr 1fr;gap:3px 8px;margin:5px 0}
+.det .pr label{font-size:11px;color:var(--mut);display:block}
+.det .pr input,.det .pr select{width:100%;padding:2px 4px;border:1px solid var(--bd);border-radius:4px}
+.warnbox{background:#fff4e5;border:1px solid #f0c48a;border-radius:6px;padding:5px 8px;margin:6px 0;color:#7a4300;font-size:12px}
+footer{font-size:11px;color:var(--mut);padding:3px 10px;background:var(--pn);border-top:1px solid var(--bd)}
+html,body{overscroll-behavior:none}
+#svg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+@media(max-width:1000px){main{grid-template-columns:300px 1fr}
+  #right{display:none;position:fixed;right:8px;bottom:8px;width:270px;max-height:55vh;overflow:auto;z-index:20;border:1px solid var(--bd);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+  body.hassel #right{display:block}}
+@media(max-width:760px){main{grid-template-columns:1fr;grid-template-rows:40vh 1fr}#left{border-right:0;border-bottom:1px solid var(--bd)}#cv{min-height:300px}}
+</style>
+</head>
+<body>
+<header>
+  <h1><img src="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22bg%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%231a3a5e%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230a1625%22/%3E%3C/linearGradient%3E%3CradialGradient%20id=%22glow%22%20cx=%22.45%22%20cy=%22.5%22%20r=%22.62%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%233d7cc0%22%20stop-opacity=%22.35%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%233d7cc0%22%20stop-opacity=%220%22/%3E%3C/radialGradient%3E%3ClinearGradient%20id=%22gold%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23ffcf6e%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23f39a2a%22/%3E%3C/linearGradient%3E%3Cpattern%20id=%22rc%22%20width=%2234%22%20height=%2234%22%20patternUnits=%22userSpaceOnUse%22%20patternTransform=%22rotate(45)%22%3E%3Crect%20width=%2234%22%20height=%2234%22%20fill=%22%23eaf0f7%22/%3E%3Cline%20x1=%220%22%20y1=%224%22%20x2=%2234%22%20y2=%224%22%20stroke=%22%2324456b%22%20stroke-width=%222.4%22/%3E%3Cline%20x1=%220%22%20y1=%229.5%22%20x2=%2234%22%20y2=%229.5%22%20stroke=%22%2324456b%22%20stroke-width=%222.4%22/%3E%3Cline%20x1=%220%22%20y1=%2215%22%20x2=%2234%22%20y2=%2215%22%20stroke=%22%2324456b%22%20stroke-width=%222.4%22/%3E%3C/pattern%3E%3Cpattern%20id=%22stone%22%20width=%2216%22%20height=%2216%22%20patternUnits=%22userSpaceOnUse%22%20patternTransform=%22rotate(45)%22%3E%3Crect%20width=%2216%22%20height=%2216%22%20fill=%22url(%23gold)%22/%3E%3Cline%20x1=%220%22%20y1=%223%22%20x2=%2216%22%20y2=%223%22%20stroke=%22%238a4a05%22%20stroke-width=%221.8%22/%3E%3Cline%20x1=%220%22%20y1=%2211%22%20x2=%2216%22%20y2=%2211%22%20stroke=%22%238a4a05%22%20stroke-width=%221.8%22%20stroke-dasharray=%225%203%22/%3E%3C/pattern%3E%3CclipPath%20id=%22tile%22%3E%3Crect%20width=%22512%22%20height=%22512%22%20rx=%22114%22/%3E%3C/clipPath%3E%3C/defs%3E%3Cg%20clip-path=%22url(%23tile)%22%3E%3Crect%20width=%22512%22%20height=%22512%22%20fill=%22url(%23bg)%22/%3E%3Crect%20width=%22512%22%20height=%22512%22%20fill=%22url(%23glow)%22/%3E%3Cg%20stroke=%22%23ffffff%22%20stroke-opacity=%22.055%22%20stroke-width=%222%22%3E%3Cpath%20d=%22M64%200V512M128%200V512M192%200V512M256%200V512M320%200V512M384%200V512M448%200V512%22/%3E%3Cpath%20d=%22M0%2064H512M0%20128H512M0%20192H512M0%20256H512M0%20320H512M0%20384H512M0%20448H512%22/%3E%3C/g%3E%3Crect%20x=%2266%22%20y=%2254%22%20width=%22380%22%20height=%2248%22%20fill=%22url(%23rc)%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22%20stroke-linejoin=%22round%22/%3E%3Cg%20stroke=%22%239cc2ea%22%20stroke-width=%224%22%20stroke-linecap=%22round%22%3E%3Cline%20x1=%22120%22%20y1=%22102%22%20x2=%22120%22%20y2=%22156%22/%3E%3Cline%20x1=%22330%22%20y1=%22102%22%20x2=%22330%22%20y2=%22156%22/%3E%3Cline%20x1=%22414%22%20y1=%22102%22%20x2=%22414%22%20y2=%22156%22/%3E%3C/g%3E%3Cline%20x1=%2266%22%20y1=%22158%22%20x2=%22184%22%20y2=%22158%22%20stroke=%22%239cc2ea%22%20stroke-width=%223%22/%3E%3Cline%20x1=%22262%22%20y1=%22158%22%20x2=%22446%22%20y2=%22158%22%20stroke=%22%239cc2ea%22%20stroke-width=%223%22/%3E%3Cg%20fill=%22%239cc2ea%22%3E%3Crect%20x=%2292%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22146%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22290%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22350%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3Crect%20x=%22410%22%20y=%22160%22%20width=%2212%22%20height=%228%22/%3E%3C/g%3E%3Crect%20x=%2266%22%20y=%22168%22%20width=%22118%22%20height=%2214%22%20fill=%22%230d2135%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Crect%20x=%22262%22%20y=%22168%22%20width=%22184%22%20height=%2214%22%20fill=%22%230d2135%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Cline%20x1=%2266%22%20y1=%22175%22%20x2=%22184%22%20y2=%22175%22%20stroke=%22%23ffffff%22%20stroke-width=%222%22/%3E%3Cline%20x1=%22262%22%20y1=%22175%22%20x2=%22446%22%20y2=%22175%22%20stroke=%22%23ffffff%22%20stroke-width=%222%22/%3E%3Crect%20x=%2266%22%20y=%22352%22%20width=%22380%22%20height=%2284%22%20fill=%22url(%23rc)%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22%20stroke-linejoin=%22round%22/%3E%3Crect%20x=%2266%22%20y=%22324%22%20width=%22118%22%20height=%2228%22%20fill=%22url(%23stone)%22%20stroke=%22%23ffffff%22%20stroke-width=%225%22/%3E%3Crect%20x=%22262%22%20y=%22324%22%20width=%22184%22%20height=%2228%22%20fill=%22url(%23stone)%22%20stroke=%22%23ffffff%22%20stroke-width=%225%22/%3E%3Crect%20x=%22184%22%20y=%22102%22%20width=%2278%22%20height=%22250%22%20fill=%22%230d2135%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22/%3E%3Cline%20x1=%22198%22%20y1=%22102%22%20x2=%22198%22%20y2=%22352%22%20stroke=%22%23ffffff%22%20stroke-width=%223.5%22/%3E%3Cline%20x1=%22248%22%20y1=%22102%22%20x2=%22248%22%20y2=%22352%22%20stroke=%22%23ffffff%22%20stroke-width=%223.5%22/%3E%3Cpolyline%20points=%22198,112%20248,150%20198,188%20248,226%20198,264%20248,302%20198,340%22%20fill=%22none%22%20stroke=%22%237fb2e6%22%20stroke-width=%223%22%20stroke-linejoin=%22round%22/%3E%3Crect%20x=%22168%22%20y=%22288%22%20width=%2216%22%20height=%2236%22%20fill=%22url(%23gold)%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Crect%20x=%22262%22%20y=%22288%22%20width=%2216%22%20height=%2236%22%20fill=%22url(%23gold)%22%20stroke=%22%23ffffff%22%20stroke-width=%224%22/%3E%3Cg%20stroke=%22%2362e3b4%22%20stroke-linecap=%22round%22%3E%3Cline%20x1=%2296%22%20y1=%22182%22%20x2=%2296%22%20y2=%22324%22%20stroke-width=%224%22/%3E%3Cline%20x1=%2282%22%20y1=%22182%22%20x2=%22110%22%20y2=%22182%22%20stroke-width=%223%22/%3E%3Cline%20x1=%2282%22%20y1=%22324%22%20x2=%22110%22%20y2=%22324%22%20stroke-width=%223%22/%3E%3C/g%3E%3Ccircle%20cx=%2296%22%20cy=%22182%22%20r=%227.5%22%20fill=%22%2362e3b4%22/%3E%3Ccircle%20cx=%2296%22%20cy=%22324%22%20r=%227.5%22%20fill=%22%2362e3b4%22/%3E%3Ccircle%20cx=%22272%22%20cy=%22304%22%20r=%229%22%20fill=%22%23ffffff%22/%3E%3Cpolyline%20points=%22272,304%20316,228%20338,228%22%20fill=%22none%22%20stroke=%22%23ffffff%22%20stroke-width=%226%22%20stroke-linejoin=%22round%22%20stroke-linecap=%22round%22/%3E%3Crect%20x=%22350%22%20y=%22217%22%20width=%2282%22%20height=%2222%22%20rx=%2211%22%20fill=%22url(%23gold)%22/%3E%3Crect%20x=%22350%22%20y=%22196%22%20width=%2260%22%20height=%2212%22%20rx=%226%22%20fill=%22%23ffffff%22%20fill-opacity=%22.5%22/%3E%3Crect%20x=%22350%22%20y=%22248%22%20width=%2246%22%20height=%2212%22%20rx=%226%22%20fill=%22%23ffffff%22%20fill-opacity=%22.5%22/%3E%3C/g%3E%3C/svg%3E" alt="" width="26" height="26" style="vertical-align:-7px;margin-right:8px;border-radius:6px">納まり詳細図ジェネレーター <span style="font-weight:400;font-size:12px;opacity:.7">床・壁・天井の取り合い提案 → 編集 → PDF / DXF</span></h1>
+  <button id="bUndo" title="Ctrl+Z">↶ 元に戻す</button>
+  <button id="bRedo" title="Ctrl+Y">↷ やり直し</button>
+  <button id="bSave">💾 保存(JSON)</button>
+  <button id="bLoad">📂 読込</button>
+  <button class="pri" id="bPdf">PDF出力</button>
+  <button class="pri" id="bDxf">DXF出力</button>
+  <input type="file" id="fLoad" accept=".json" hidden>
+  <input type="file" id="fTpl" accept=".json" hidden>
+  <datalist id="btList"><option value="6"><option value="8"><option value="9.5"><option value="12"><option value="12.5"><option value="15"><option value="18"><option value="21"><option value="25"></datalist>
+</header>
+<main>
+<aside id="left">
+  <div class="tabs">
+    <button data-tab="p" class="on">① 作図</button>
+    <button data-tab="d">② 配置済み</button>
+    <button data-tab="s">③ シート</button>
+    <button data-tab="t">④ マイ納まり</button>
+  </div>
+  <div class="pane on" id="pane-p"></div>
+  <div class="pane" id="pane-d"></div>
+  <div class="pane" id="pane-s"></div>
+  <div class="pane" id="pane-t"></div>
+</aside>
+<section id="center">
+  <div id="tb"></div>
+  <div id="cv"><svg id="svg" xmlns="http://www.w3.org/2000/svg"><g id="world"></g></svg><div id="stat"></div></div>
+</section>
+<aside id="right"><b>プロパティ</b><div id="props" class="mut" style="margin-top:6px">図形を選択すると編集できます。<br><br>・空き地をドラッグで範囲選択<br>　左→右:完全に囲んだ図形<br>　右→左:掛かった図形<br>・Shift+クリック/範囲で追加選択<br>・ドラッグで移動<br>・Alt+ドラッグで詳細ごと移動<br>・四隅/端点の■をドラッグで変形<br>・Del 削除 / Ctrl+D 複写<br>・矢印キーで微動(Shift=大)<br>・ホイールで拡大縮小<br>・パン:右/中ボタンドラッグ、Space+ドラッグ<br>・「✕ 消去」中は範囲ドラッグで一括消去</div></aside>
+</main>
+<footer>※提案は一般的な納まり例を条件ルールで組み合わせたものです。実施設計では 公共建築工事標準仕様書・建築工事標準詳細図・各メーカー施工要領・大臣認定(耐火/遮音)仕様を必ず確認してください。</footer>
+
+<script>
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SHEETS={A4:[297,210],A3:[420,297],A2:[594,420]};
+const SCALES=[2,3,5,10,20];
+
+/* ───────── 材料 ───────── */
+/* 材料構造表示記号:JIS A 0150(建築製図通則)/建築工事標準詳細図の表記に準拠。寸法は紙面mm */
+const MAT={
+  rc:{n:'鉄筋コンクリート',fill:'#fff',ly:'DT-RC',h:'g',lines:3,gap:.6,pitch:4.5},
+  mortar:{n:'モルタル',fill:'#fff',ly:'DT-MORTAR',h:'dot',sp:2.2},
+  ins:{n:'保温・吸音材',fill:'#fff',ly:'DT-INSUL',h:'zig'},
+  wood:{n:'木材 構造材',fill:'#fff',ly:'DT-WOOD',h:'x'},
+  woodf:{n:'木材 化粧材',fill:'#fff',ly:'DT-WOOD',h:'diag',pitch:2},
+  ply:{n:'合板',fill:'#fff',ly:'DT-WOOD',h:'slash'},
+  steel:{n:'鋼材',fill:'#fff',ly:'DT-STEEL',h:'g',lines:2,gap:.5,pitch:2.8,thin:1.6},
+  stone:{n:'石材',fill:'#fff',ly:'DT-STONE',h:'stn',pitch:1.8},
+  tile:{n:'タイル',fill:'#fff',ly:'DT-TILE',h:'diag',pitch:1.5},
+  pb:{n:'せっこうボード',fill:'#fff',ly:'DT-PB'},
+  finish:{n:'仕上材',fill:'#fff',ly:'DT-FINISH'},
+  carpet:{n:'カーペット',fill:'#fff',ly:'DT-FINISH'},
+  water:{n:'防水層',fill:'#222',ly:'DT-WATER',solid:1},
+  seal:{n:'シーリング',fill:'#222',ly:'DT-SEAL',solid:1},
+  air:{n:'輪郭のみ',fill:'none',ly:'DT-OUT'}
+};
+/* 薄い鋼材(紙面で thin mm 未満)は2本線が描けないため塗りつぶし */
+const isThinSteel=(e,S)=>{const m=MAT[e.m];return !!(m&&m.thin&&Math.min(e.w,e.h)<m.thin*S);};
+const LAYERCOL={'DT-OUT':7,'DT-THIN':8,'DT-HATCH':8,'DT-RC':7,'DT-MORTAR':7,'DT-INSUL':2,'DT-WOOD':30,'DT-PB':7,'DT-STEEL':5,'DT-FINISH':7,'DT-WATER':4,'DT-SEAL':7,'DT-DIM':3,'DT-TEXT':7,'DT-CENTER':1,'DT-HIDDEN':8,'DT-FRAME':7,'DT-STONE':7,'DT-TILE':7};
+
+/* ───────── 状態 ───────── */
+const today=()=>{const d=new Date();return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');};
+let st={sheet:'A3',scale:5,ents:[],details:[],nextId:1,seq:0,meta:{proj:'',title:'納まり詳細図',date:today(),by:''}};
+let cond={cat:'floor_wall',use:'office',fire:0,sound:0,ceilH:2700};
+let view={tx:0,ty:0,z:.4};
+let msel=new Set(), spaceDown=false;
+const COARSE=(window.matchMedia&&matchMedia('(pointer:coarse)').matches)||navigator.maxTouchPoints>0;
+const touches=new Map();
+let sel=null, tool='sel', tmp=null, drag=null, hist=[], redoS=[], matSel='pb', snapOn=true, lastProps='';
+let tpl=[]; try{tpl=JSON.parse(localStorage.getItem('detailApp.tpl')||'[]');}catch(e){}
+
+/* ───────── 幾何ユーティリティ ───────── */
+const tw=(s,h)=>[...String(s)].reduce((a,c)=>a+(c.charCodeAt(0)<256?.55:1),0)*h;
+function clipT(px,py,dx,dy,x,y,w,h){
+  let t0=-1e9,t1=1e9;
+  const f=(p,d,lo,hi)=>{ if(Math.abs(d)<1e-9) return p>=lo&&p<=hi; let a=(lo-p)/d,b=(hi-p)/d; if(a>b){const t=a;a=b;b=t;} t0=Math.max(t0,a); t1=Math.min(t1,b); return t0<=t1; };
+  if(!f(px,dx,x,x+w)||!f(py,dy,y,y+h)) return null;
+  return t0<t1-1e-6?[t0,t1]:null;
+}
+function hatchSegs(e,S){
+  const m=MAT[e.m]; if(!m||!m.h||isThinSteel(e,S)) return [];
+  const {x,y,w,h}=e, out=[], mn=Math.min(w,h);
+  if(m.h==='g'){                       /* 45°斜線の n本1組 */
+    const R=Math.SQRT2, P=m.pitch*S*R, offs=[];
+    for(let i=0;i<m.lines;i++) offs.push(i*m.gap*S*R);
+    for(let c0=Math.floor((x-(y+h))/P)*P;c0<=x+w-y;c0+=P) offs.forEach(o=>{const c=c0+o,r=clipT(c,0,1,1,x,y,w,h); if(r) out.push([[c+r[0],r[0]],[c+r[1],r[1]]]);});
+  }else if(m.h==='stn'||m.h==='diag'){ /* 建築工事標準詳細図の凡例:化粧材・タイル=45°斜線、石材=斜線と破線の交互 */
+    if(mn<.8*S) return out;
+    const P=m.pitch*S*Math.SQRT2,dl=1.2*S,gl=.7*S;
+    for(let c=Math.floor((x-(y+h))/P)*P;c<=x+w-y;c+=P){
+      const r=clipT(c,0,1,1,x,y,w,h); if(!r) continue;
+      const a=[c+r[0],r[0]],e2=[c+r[1],r[1]];
+      if(m.h==='stn'&&Math.round(c/P)%2!==0){        /* 1本おきに破線 */
+        const L=(r[1]-r[0])*Math.SQRT2,u=[(e2[0]-a[0])/L,(e2[1]-a[1])/L];
+        for(let d=0;d<L;d+=dl+gl){const d2=Math.min(L,d+dl);out.push([[a[0]+u[0]*d,a[1]+u[1]*d],[a[0]+u[0]*d2,a[1]+u[1]*d2]]);}
+      }else out.push([a,e2]);
+    }
+  }else if(m.h==='joint'){            /* タイル:厚さ方向の目地線 */
+    if(mn<1.0*S) return out;
+    const p=m.pitch*S;
+    if(w>=h){for(let gx=Math.ceil((x+p*.5)/p)*p;gx<x+w-p*.3;gx+=p) out.push([[gx,y],[gx,y+h]]);}
+    else{for(let gy=Math.ceil((y+p*.5)/p)*p;gy<y+h-p*.3;gy+=p) out.push([[x,gy],[x+w,gy]]);}
+  }else if(m.h==='dot'){
+    const sp=m.sp*S; if(mn<sp*.9) return out;
+    for(let gx=Math.ceil((x+sp*.3)/sp)*sp;gx<x+w-sp*.3;gx+=sp) for(let gy=Math.ceil((y+sp*.3)/sp)*sp;gy<y+h-sp*.3;gy+=sp) out.push([[gx,gy],[gx+.25*S,gy]]);
+  }else if(m.h==='zig'){               /* 保温・吸音材:両面に接する波形 */
+    if(mn<1.2*S) return out;
+    const st=Math.max(mn*.6,1.2*S), hz=w>=h, L=hz?w:h, n=Math.max(1,Math.round(L/st)), d=L/n;
+    let p=null;
+    for(let i=0;i<=n;i++){const u=i*d,v=i%2?mn:0,q=hz?[x+u,y+v]:[x+v,y+u]; if(p) out.push([p,q]); p=q;}
+  }else if(m.h==='x'||m.h==='slash'){  /* 構造材×印 / 補助構造材1本斜線 */
+    if(mn<1.2*S) return out;
+    const cell=(x0,y0,cw,ch)=>{out.push([[x0,y0],[x0+cw,y0+ch]]); if(m.h==='x') out.push([[x0,y0+ch],[x0+cw,y0]]);};
+    if(w>=h){const n=Math.max(1,Math.round(w/(h*2))),cw=w/n; for(let i=0;i<n;i++) cell(x+i*cw,y,cw,h);}
+    else{const n=Math.max(1,Math.round(h/(w*2))),ch=h/n; for(let i=0;i<n;i++) cell(x,y+i*ch,w,ch);}
+  }else if(m.h==='grain'){             /* 化粧材:長手方向の木目線 */
+    if(mn<1.2*S) return out;
+    [.33,.67].forEach(f=>out.push(w>=h?[[x,y+h*f],[x+w,y+h*f]]:[[x+w*f,y],[x+w*f,y+h]]));
+  }
+  return out;
+}
+
+/* エンティティ → 描画プリミティブ(SVG/DXF共通) */
+function explode(e,S){
+  const P=[], W={out:.35*S,thin:.13*S,hair:.09*S};
+  switch(e.t){
+    case 'rect':{
+      const m=MAT[e.m]||MAT.air,{x,y,w,h}=e;
+      const ts=isThinSteel(e,S);
+      P.push({k:'poly',pts:[[x,y],[x+w,y],[x+w,y+h],[x,y+h]],closed:1,ly:m.ly,w:W.out,fill:ts?'#222':m.fill,solid:m.solid||ts});
+      hatchSegs(e,S).forEach(s=>P.push({k:'line',a:s[0],b:s[1],ly:'DT-HATCH',w:W.hair}));
+      break;}
+    case 'line':{
+      const k=e.k||'out';
+      P.push({k:'line',a:[e.x1,e.y1],b:[e.x2,e.y2],ly:k==='center'?'DT-CENTER':k==='dash'?'DT-HIDDEN':k==='thin'?'DT-THIN':'DT-OUT',w:k==='out'?W.out:W.thin,lt:k==='center'?'CENTER':k==='dash'?'DASHED':'',dash:k==='center'?[10*S,2*S,2*S,2*S]:k==='dash'?[3*S,1.5*S]:null});
+      break;}
+    case 'circ':{
+      const m=MAT[e.m]||MAT.air;
+      P.push({k:'circ',c:[e.x,e.y],r:e.r,ly:'DT-OUT',w:W.out,fill:m.fill});
+      break;}
+    case 'text':
+      P.push({k:'text',p:[e.x,e.y],s:e.s,h:e.h*S,a:e.a||0,al:e.al||'l',ly:'DT-TEXT'});
+      break;
+    case 'dim':{
+      const dx=e.x2-e.x1,dy=e.y2-e.y1,L=Math.hypot(dx,dy); if(L<1e-6) break;
+      const ux=dx/L,uy=dy/L,nx=-uy,ny=ux,o=e.off,sg=o>=0?1:-1;
+      const a=[e.x1+nx*o,e.y1+ny*o],b=[e.x2+nx*o,e.y2+ny*o],g=1*S,ov=2*S;
+      [[e.x1,e.y1,a],[e.x2,e.y2,b]].forEach(([px,py,q])=>P.push({k:'line',a:[px+nx*sg*g,py+ny*sg*g],b:[q[0]+nx*sg*ov,q[1]+ny*sg*ov],ly:'DT-DIM',w:W.thin}));
+      P.push({k:'line',a:a,b:b,ly:'DT-DIM',w:W.thin});
+      const d=[(ux+nx)*.7071,(uy+ny)*.7071];
+      [a,b].forEach(q=>P.push({k:'circ',c:[q[0],q[1]],r:.5*S,ly:'DT-DIM',w:W.hair,fill:'#000'}));  /* 玉止め φ1.0 */
+      let ang=Math.atan2(dy,dx)*180/Math.PI; if(ang>90) ang-=180; else if(ang<=-90) ang+=180;
+      const r=ang*Math.PI/180,ln=[-Math.sin(r),Math.cos(r)],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+      P.push({k:'text',p:[mx+ln[0]*.9*S,my+ln[1]*.9*S],s:e.txt||String(Math.round(L)),h:(e.h||2.5)*S,a:ang,al:'c',ly:'DT-DIM'});
+      break;}
+    case 'note':{
+      /* 引出線:対象点から指定角度(既定60°)で斜めに出し、文字の端部・高さ中央で止める
+         (下線なし)。(tx,ty)=線の終点=文字端部の中央。斜線が届かない場合は自動で角度を立てる */
+      const h=(e.h||2.5)*S,wt=tw(e.s,h),gp=.8*S;
+      const ag=Math.max(15,Math.min(90,+e.ang||+st.meta.leadAng||60))*Math.PI/180;
+      const r=e.tx>=e.x?1:-1,dy=Math.abs(e.ty-e.y);
+      let kx=e.x+r*dy/Math.tan(ag);
+      if(r>0) kx=Math.min(kx,Math.max(e.x,e.tx)); else kx=Math.max(kx,Math.min(e.x,e.tx));
+      P.push({k:'circ',c:[e.x,e.y],r:.55*S,ly:'DT-OUT',w:W.thin,fill:'#000'});
+      P.push({k:'line',a:[e.x,e.y],b:[kx,e.ty],ly:'DT-THIN',w:W.thin});
+      if(Math.abs(e.tx-kx)>.01) P.push({k:'line',a:[kx,e.ty],b:[e.tx,e.ty],ly:'DT-THIN',w:W.thin});
+      const by=e.ty-.4*h;
+      P.push({k:'text',p:[r>0?e.tx+gp:e.tx-gp-wt,by],s:e.s,h:h,a:0,al:'l',ly:'DT-TEXT'});
+      break;}
+  }
+  return P;
+}
+function primBox(P,b){
+  b=b||{x0:1e18,y0:1e18,x1:-1e18,y1:-1e18};
+  const add=(x,y)=>{if(x<b.x0)b.x0=x;if(x>b.x1)b.x1=x;if(y<b.y0)b.y0=y;if(y>b.y1)b.y1=y;};
+  P.forEach(p=>{
+    if(p.k==='line'){add(...p.a);add(...p.b);}
+    else if(p.k==='poly')p.pts.forEach(q=>add(...q));
+    else if(p.k==='circ'){add(p.c[0]-p.r,p.c[1]-p.r);add(p.c[0]+p.r,p.c[1]+p.r);}
+    else if(p.k==='text'){const w=tw(p.s,p.h),r=p.a*Math.PI/180,ox=p.al==='c'?-w/2:0;
+      [[ox,0],[ox+w,0],[ox,p.h],[ox+w,p.h]].forEach(([u,v])=>add(p.p[0]+u*Math.cos(r)-v*Math.sin(r),p.p[1]+u*Math.sin(r)+v*Math.cos(r)));}
+  });
+  return b;
+}
+const entsBox=(ents,S)=>{let b;ents.forEach(e=>{b=primBox(explode(e,S),b);});return b||{x0:0,y0:0,x1:1,y1:1};};
+function shiftEnt(e,dx,dy){
+  if('x' in e)e.x+=dx; if('y' in e)e.y+=dy;
+  if('x1' in e){e.x1+=dx;e.y1+=dy;e.x2+=dx;e.y2+=dy;}
+  if('tx' in e){e.tx+=dx;e.ty+=dy;}
+}
+
+/* ───────── ビルダー ───────── */
+class B{
+  constructor(S){this.S=S;this.e=[];this.n=[];}
+  r(x,y,w,h,m){this.e.push({t:'rect',x,y,w,h,m});}
+  l(x1,y1,x2,y2,k){this.e.push({t:'line',x1,y1,x2,y2,k:k||'out'});}
+  c(x,y,r,m){this.e.push({t:'circ',x,y,r,m:m||'air'});}
+  tx(x,y,s,h,al){this.e.push({t:'text',x,y,s,h:h||2.5,a:0,al:al||'l'});}
+  dim(x1,y1,x2,y2,offP,txt){this.e.push({t:'dim',x1,y1,x2,y2,off:offP*this.S,txt:txt||'',h:2.5});}
+  note(x,y,s,o){this.n.push({x,y,s,...(o||{})});}  /* o.minTy:文字段の下限(例:巾木より上) */
+  brkH(x0,x1,y){const S=this.S,m=(x0+x1)/2,pts=[[x0,y],[m-2*S,y],[m-.7*S,y+2.2*S],[m+.7*S,y-2.2*S],[m+2*S,y],[x1,y]];
+    for(let i=0;i<5;i++)this.l(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'thin');}
+  brkV(x,y0,y1){const S=this.S,m=(y0+y1)/2,pts=[[x,y0],[x,m-2*S],[x+2.2*S,m-.7*S],[x-2.2*S,m+.7*S],[x,m+2*S],[x,y1]];
+    for(let i=0;i<5;i++)this.l(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'thin');}
+  finish(title,no,noScale){
+    const S=this.S,ents=this.e.slice();
+    const bd=entsBox(ents.filter(e=>e.t==='rect'||e.t==='line'||e.t==='circ'),S);
+    const bx=entsBox(ents,S);
+    const nx=Math.max(bd.x1,bx.x1)+8*S;
+    /* 文字段の配置:斜線を長めにとるため対象点より12mm(紙面)上に置く。
+       上から順に詰め、近すぎる時は下げる。その後、下限(minTy)を満たすよう下から押し上げる */
+    const RISE=12*S,GAP=5.4*S,NS=this.n.slice().sort((a,b)=>b.y-a.y),TY=[];
+    let py=1e18;
+    NS.forEach((n,i)=>{
+      let ty=Math.min(n.y+RISE,py);
+      if(Math.abs(ty-n.y)<6*S) ty=Math.min(n.y-8*S,py);
+      if(n.minTy!=null) ty=Math.max(ty,n.minTy);
+      TY[i]=ty;py=ty-GAP;
+    });
+    for(let i=NS.length-2;i>=0;i--) if(TY[i]<TY[i+1]+GAP) TY[i]=TY[i+1]+GAP;
+    NS.forEach((n,i)=>ents.push({t:'note',x:n.x,y:n.y,tx:nx,ty:TY[i],s:n.s,h:2.5}));
+    const all=entsBox(ents,S);
+    const cy=all.y0-8*S, x0=all.x0;
+    if(!noScale){
+      ents.push({t:'circ',x:x0+4.2*S,y:cy,r:4.2*S,m:'air'});
+      ents.push({t:'text',x:x0+4.2*S,y:cy-1.4*S,s:String(no),h:4,a:0,al:'c'});
+    }
+    ents.push({t:'text',x:x0+(noScale?0:10*S),y:cy+.6*S,s:title,h:3.5,a:0,al:'l'});
+    if(!noScale) ents.push({t:'text',x:x0+10*S,y:cy-3.6*S,s:'S=1/'+S,h:2.5,a:0,al:'l'});
+    const ul=Math.max(tw(title,3.5*S)+12*S,60*S);
+    ents.push({t:'line',x1:x0,y1:cy-5.8*S,x2:x0+ul,y2:cy-5.8*S,k:'out'});
+    const box=entsBox(ents,S);
+    box.x0-=2*S;box.y0-=2*S;box.x1+=2*S;box.y1+=2*S;
+    return {ents,box};
+  }
+}
+/* LGS下地の幅はランナー幅で表す(スタッド65形→67(標準)、100形→102) */
+const RW=P=>P.stud+2;
+/* 壁の貼り材(片面分、下地側→表面側)。P.wl があれば材料・厚さ違いの重ね貼り、無ければ bt×pbn */
+const WL=P=>(P.wl&&P.wl.length)?P.wl:Array.from({length:P.pbn||1},()=>({name:P.pbName||'せっこうボード',t:P.bt,m:P.pbM||'pb'}));
+const WT=P=>WL(P).reduce((a,l)=>a+l.t,0);
+const wallFace=P=>RW(P)/2+WT(P);
+function wallStrip(b,xc,s0,s1,p0,p1,P){
+  const s=RW(P),xl=xc-s/2,xr=xc+s/2;
+  if(P.ins) b.r(xl+2,s0,s-4,s1-s0,'ins');
+  b.r(xl,s0,2,s1-s0,'steel'); b.r(xr-2,s0,2,s1-s0,'steel');
+  let o=0;WL(P).forEach(l=>{b.r(xl-o-l.t,p0,l.t,p1-p0,l.m); b.r(xr+o,p0,l.t,p1-p0,l.m); o+=l.t;});
+}
+const pbTxt=P=>{
+  const L=WL(P),same=L.every(l=>l.name===L[0].name&&l.t===L[0].t);
+  return same?`${L[0].name} t${L[0].t}×${L.length}`:L.map((l,i)=>`${i===0?'下貼':i===L.length-1?'上貼':'中貼'} ${l.name} t${l.t}`).join(' + ');
+};
+
+/* ───────── 生成器 ───────── */
+const GEN={};
+
+/* 床×壁 */
+const BB={soft:{m:'finish',t:2.5,name:'ソフト巾木'},wood:{m:'woodf',t:12,name:'木製巾木'}};
+function genFW(b,P,cfg){
+  const isRC=cfg.wall==='rc',wf=isRC?P.rc/2:wallFace(P),xr=wf,xl=-wf,ext=cfg.first==='floor'?400:360,vis=110,top=360,gap=cfg.gap||0;
+  let y=0;const L=[];
+  cfg.layers.forEach(l=>{L.push({...l,y0:y-l.h});y-=l.h;});
+  const sumL=-y; if(cfg.leg) y-=P.leg;
+  const ys=y;
+  b.r(-ext,ys-vis,ext*2,vis,'rc'); b.brkH(-ext,ext,ys-vis);
+  const first=isRC?'wall':cfg.first;
+  const ry=first==='floor'?0:ys, pb0=ry+10;
+  const sides=first==='floor'?[[-ext,ext]]:[[-ext,xl-gap],[xr+gap,ext]];
+  sides.forEach(([x0,x1])=>L.forEach(l=>b.r(x0,l.y0,x1-x0,l.h,l.m)));
+  if(cfg.leg){
+    const leg=x=>{b.r(x-35,ys,70,3,'steel');b.r(x-6,ys+3,12,P.leg-6,'steel');b.r(x-35,ys+P.leg-3,70,3,'steel');};
+    const xs=first==='floor'?[-300,0,300]:[-(wf+gap+130),wf+gap+130];
+    xs.forEach(leg);
+  }
+  if(gap>0){b.r(xr,-sumL,gap,sumL,'ins');b.r(xl-gap,-sumL,gap,sumL,'ins');}
+  if(isRC){ b.r(xl,ys,2*wf,top-ys,'rc'); }
+  else{ wallStrip(b,0,ry,top,pb0,top,P); b.r(-RW(P)/2,ry,RW(P),2,'steel'); }
+  b.brkH(xl,xr,top);
+  const bb=cfg.bb||BB[cfg.base];
+  if(bb){ b.r(xr,0,bb.t,P.hb,bb.m); b.r(xl-bb.t,0,bb.t,P.hb,bb.m); }
+  if(!isRC) b.dim(-RW(P)/2,top,RW(P)/2,top,6);
+  b.dim(xl,top,xr,top,isRC?8:13);
+  b.dim(-ext,ys,-ext,0,8);
+  if(bb) b.dim(xr+bb.t+4,0,xr+bb.t+4,P.hb,-6);
+  if(isRC) b.note(xr-30,top-60,`RC壁 t=${P.rc}`+(cfg.wfin?'+'+cfg.wfin:''));
+  else{
+    b.note(RW(P)/2+WT(P)/2,top-60,pbTxt(P)+'+'+(cfg.wfin||'仕上'));
+    b.note(RW(P)/2-1,top-130,`LGSスタッド ${P.stud}形 @300`);
+    if(P.ins) b.note(0,top-200,'吸音材(グラスウール)');
+    b.note(0,ry+1,`LGSランナー ${P.stud}形 W${RW(P)}(アンカー固定)`);
+  }
+  if(bb) b.note(xr+bb.t/2,P.hb*.6,`${bb.name} H=${P.hb}`+(bb.showT?` t${bb.t}`:''),{minTy:P.hb+8*b.S});
+  L.forEach(l=>b.note(ext-90,l.y0+l.h/2,l.label));
+  if(cfg.leg) b.note(first==='floor'?300:wf+gap+130,ys+P.leg/2,'調整式支持脚(防振ゴム付)');
+  if(gap>0) b.note(xr+gap/2,-sumL/2,`壁際隙間${gap}(吸音材充填)`);
+  b.note(ext-60,ys-vis/2,`RCスラブ t=${P.slab}`);
+}
+GEN.slab_soft=(b,P)=>genFW(b,P,{first:'wall',base:'soft',layers:[{m:'finish',h:3,label:'長尺シート t3.0(接着)'},{m:'mortar',h:P.mortar,label:`下地調整モルタル t${P.mortar}`}]});
+GEN.slab_wood=(b,P)=>genFW(b,P,{first:'wall',base:'wood',layers:[{m:'woodf',h:12,label:'フローリング t12(直貼)'},{m:'ins',h:5,label:'防音マット t5'},{m:'mortar',h:P.mortar,label:`下地調整モルタル t${P.mortar}`}]});
+GEN.dbl_wall_first=(b,P)=>genFW(b,P,{first:'wall',base:'wood',leg:1,gap:10,layers:[{m:'woodf',h:12,label:'フローリング t12'},{m:'ply',h:20,label:'パーティクルボード t20'}]});
+GEN.dbl_floor_first=(b,P)=>genFW(b,P,{first:'floor',base:'wood',leg:1,gap:0,layers:[{m:'woodf',h:12,label:'フローリング t12'},{m:'ply',h:20,label:'パーティクルボード t20'}]});
+GEN.oa_wall_first=(b,P)=>genFW(b,P,{first:'wall',base:'soft',leg:1,gap:10,layers:[{m:'carpet',h:6.5,label:'タイルカーペット t6.5'},{m:'finish',h:25,label:'OAフロアパネル t25'}]});
+
+/* 床断面 */
+function genFloor(b,P,cfg){
+  const ext=300,vis=110;let y=0;const L=[];
+  cfg.layers.forEach(l=>{L.push({...l,y0:y-l.h});y-=l.h;});
+  if(cfg.leg) y-=P.leg;
+  const ys=y;
+  b.r(-ext,ys-vis,ext*2,vis,'rc'); b.brkH(-ext,ext,ys-vis);
+  L.forEach(l=>b.r(-ext,l.y0,ext*2,l.h,l.m));
+  if(cfg.leg)[-150,150].forEach(x=>{b.r(x-35,ys,70,3,'steel');b.r(x-6,ys+3,12,P.leg-6,'steel');b.r(x-35,ys+P.leg-3,70,3,'steel');});
+  b.dim(-ext,ys,-ext,0,8);
+  L.forEach(l=>b.note(ext-60,l.y0+l.h/2,l.label));
+  if(cfg.leg){b.note(150,ys+P.leg/2,'調整式支持脚 @300〜450');b.dim(ext,ys,ext,ys+P.leg,-8,'床下空間 '+P.leg);}
+  b.note(ext-60,ys-vis/2,`RCスラブ t=${P.slab}`);
+}
+GEN.slab_direct=(b,P)=>genFloor(b,P,{layers:[{m:'finish',h:3,label:'長尺シート/塩ビタイル t3'},{m:'mortar',h:P.mortar,label:`下地調整モルタル t${P.mortar}`}]});
+GEN.dbl_floor=(b,P)=>genFloor(b,P,{leg:1,layers:[{m:'woodf',h:12,label:'フローリング t12'},{m:'ply',h:20,label:'パーティクルボード t20'}]});
+GEN.oa_floor=(b,P)=>genFloor(b,P,{leg:1,layers:[{m:'carpet',h:6.5,label:'タイルカーペット t6.5'},{m:'finish',h:25,label:'OAフロアパネル t25(500角)'}]});
+
+/* 壁断面(平面) */
+function genWallPlan(b,P,v){
+  const len=900,st=RW(P),LS=WL(P),WTT=WT(P),n=LS.length,tOut=LS[n-1].t;
+  const studAt=(x,y0)=>{ b.r(x,y0,2,st,'steel'); b.r(x,y0,45,2,'steel'); b.r(x,y0+st-2,45,2,'steel'); b.r(x+43,y0,2,10,'steel'); b.r(x+43,y0+st-10,2,10,'steel'); };
+  let y=0,T;
+  if(v==='rc_furring'){
+    b.r(0,0,len,P.rc,'rc'); y=P.rc;
+    b.r(0,y,len,P.gap,'air'); y+=P.gap;
+    if(P.ins) b.r(0,y,len,st,'ins');
+    for(let x=150;x<len;x+=300) studAt(x,y);
+    y+=st;
+    LS.forEach(l=>{b.r(0,y,len,l.t,l.m);y+=l.t;});
+    T=y;
+    b.note(len-80,P.rc/2,`RC壁 t=${P.rc}`);
+    b.note(len-80,P.rc+P.gap/2,`空気層 ${P.gap}(スペーサー固定)`);
+    b.note(len-60,P.rc+P.gap+st/2,`LGSスタッド ${P.stud}形 @300`);
+    b.note(len-80,y-WTT/2,pbTxt(P)+'+仕上');
+    b.dim(0,0,0,P.rc,10); b.dim(0,P.rc+P.gap,0,P.rc+P.gap+st,10); b.dim(0,0,0,T,22);
+    b.brkV(0,-30,T+30); b.brkV(len,-30,T+30);
+    b.dim(150,T,450,T,8,'@300');
+    return;
+  }
+  [...LS].reverse().forEach(l=>{b.r(0,y,len,l.t,l.m);y+=l.t;});
+  const y0=y;
+  if(P.ins) b.r(0,y,len,st,'ins');
+  for(let x=150;x<len;x+=300) studAt(x,y0);
+  y+=st;
+  LS.forEach(l=>{b.r(0,y,len,l.t,l.m);y+=l.t;});
+  T=y;
+  if(v==='lgs_sound'&&n>=2){b.r(0,tOut,len,1.5,'seal');b.r(0,T-tOut-1.5,len,1.5,'seal');}
+  b.brkV(0,-30,T+30); b.brkV(len,-30,T+30);
+  b.dim(0,WTT,0,WTT+st,8);b.dim(0,0,0,T,15);
+  b.dim(150,T,450,T,8,'@300');
+  b.note(len-80,WTT/2,pbTxt(P)+'+仕上');
+  b.note(len-60,y0+st/2,`LGSスタッド ${P.stud}形 @300`);
+  if(P.ins) b.note(len-200,y0+st*.3,'吸音材(グラスウール)');
+  if(v==='lgs_sound'&&n>=2) b.note(len-120,tOut+.7,'遮音シート t1.5(ボード間)');
+  if(v==='lgs_fire'||n>=2) b.note(len-300,T-WTT/2,'重ね貼り(目地を重ねない)');
+}
+['lgs_single','lgs_fire','lgs_sound','rc_furring'].forEach(k=>GEN[k]=(b,P)=>genWallPlan(b,P,k));
+
+/* 天井 */
+function ceilStruct(b,P,xa,xb,dir,hang){
+  const ct=P.ct,cn=P.cn,yt=ct*cn,pl=P.plen;
+  for(let k=0;k<cn;k++) b.r(xa,k*ct,xb-xa,ct,'pb');
+  for(let i=0;;i++){ const x=dir>0?xa+150+360*i:xb-150-360*i; if(x<xa+12||x>xb-12) break; b.r(x-12.5,yt,25,19,'steel'); }
+  b.r(xa,yt+19,xb-xa,12,'steel');
+  hang.forEach(hx=>{ if(hx>xa&&hx<xb) b.r(hx-2,yt+31,4,pl-(yt+31),'steel'); });
+}
+GEN.pb_ceiling=(b,P)=>{
+  const ext=520,pl=P.plen,yt=P.ct*P.cn;
+  b.r(-ext,pl,ext*2,100,'rc'); b.brkH(-ext,ext,pl+100);
+  ceilStruct(b,P,-ext,ext,1,[-450,450]);
+  b.dim(-ext,0,-ext,pl,8,'天井懐 '+pl);
+  b.dim(-450,yt+60,450,yt+60,6,'@900');
+  b.note(ext-60,yt/2,`${pbTxt(P)}+仕上(目地処理)`);
+  b.note(ext-150,yt+9,'野縁 19形 @360');
+  b.note(ext-80,yt+25,'野縁受 C-38×12×1.2 @900');
+  b.note(450,(yt+31+pl)/2,'吊りボルト W3/8 @900');
+  b.note(ext-60,pl+50,'スラブ(インサート固定)');
+};
+GEN.tbar_ceiling=(b,P)=>{
+  const ext=660,pl=P.plen;
+  b.r(-ext,pl,ext*2,100,'rc'); b.brkH(-ext,ext,pl+100);
+  [-600,0,600].forEach(x=>{b.r(x-12,0,24,2,'steel');b.r(x-1,2,2,32,'steel');});
+  [[-600,0],[0,600]].forEach(([a,c])=>b.r(a+12,2,c-a-24,12,'finish'));
+  b.r(-2,34,4,pl-34,'steel');
+  b.dim(-ext,0,-ext,pl,8,'天井懐 '+pl);
+  b.dim(-600,0,0,0,-8,'600');
+  b.note(ext-80,8,'岩綿吸音板 t12(システム天井)');
+  b.note(600,20,'Tバー(ライン材)');
+  b.note(0,(34+pl)/2,'吊りボルト W3/8 @900');
+  b.note(ext-60,pl+50,'スラブ(インサート固定)');
+};
+
+/* 壁×天井 */
+GEN.wc_to_slab=(b,P)=>genWC(b,P,'to_slab');
+GEN.wc_cornice=(b,P)=>genWC(b,P,'cornice');
+GEN.wc_shadow=(b,P)=>genWC(b,P,'shadow');
+function genWC(b,P,v){
+  const wf=wallFace(P),xl=-wf,xr=wf,ct=P.ct,cn=P.cn,yt=ct*cn,pl=P.plen,ext=470,below=-300,st=RW(P);
+  b.r(-ext,pl,ext*2,100,'rc'); b.brkH(-ext,ext,pl+100);
+  const gapC=v==='shadow'?13.5:0;
+  ceilStruct(b,P,xr+gapC,ext,1,[wf+300]);
+  ceilStruct(b,P,-ext,xl-gapC,-1,[-(wf+300)]);
+  if(v==='to_slab'){
+    wallStrip(b,0,below,pl-20,below,pl,P);
+    b.r(-st/2,pl-2,st,2,'steel');b.r(-st/2,pl-40,2,40,'steel');b.r(st/2-2,pl-40,2,40,'steel');
+    b.r(xr,-4,4,4,'seal');b.r(xl-4,-4,4,4,'seal');
+    b.note(0,pl-30,'上部ランナー(スタッド上端は逃げ確保)');
+    b.note(xr-3,pl-5,pbTxt(P)+'(スラブ下まで)');
+    b.note(xr+2,-2,'シーリング(天井突付け)');
+  }else{
+    const top=yt+120;
+    wallStrip(b,0,below,top,below,top,P);
+    b.r(-st/2,top-2,st,2,'steel');
+    b.l(0,top,xr+200,pl,'out');b.l(0,top,xl-200,pl,'out');
+    b.note(xr+120,(top+pl)/2,'壁上部振れ止め(斜材)');
+    if(v==='cornice'){
+      b.r(xr,-24,24,24,'woodf');b.r(xl-24,-24,24,24,'woodf');
+      b.note(xr+12,-12,'廻り縁(木製 24×24)');
+    }else{
+      [[xr,1],[xl,-1]].forEach(([x,s])=>{
+        const h0=s>0?x:x-15, v0=s>0?x+12:x-13.5;
+        b.r(h0,-1.5,15,1.5,'steel'); b.r(v0,0,1.5,yt,'steel');
+      });
+      b.note(xr+6,-1,'見切縁(アルミL型) 目透かし12');
+    }
+  }
+  b.brkH(xl,xr,below);
+  b.dim(-ext,0,-ext,pl,8,'天井懐 '+pl);
+  b.dim(-RW(P)/2,below,RW(P)/2,below,-6);b.dim(xl,below,xr,below,-13);
+  b.note(xr-WT(P)/2,below+60,'壁:'+pbTxt(P));
+  b.note(RW(P)/2-1,below+140,`LGSスタッド ${P.stud}形 @300`);
+  b.note(ext-60,yt/2,`天井 ${pbTxt({bt:ct,pbn:cn})}`);
+  b.note(ext-90,yt+25,'野縁受 C-38×12×1.2');
+  b.note(wf+300,(yt+31+pl)/2,'吊りボルト W3/8 @900');
+}
+
+/* 壁×壁(平面) */
+function genWW(b,P,v){
+  const st=RW(P),LS=WL(P),pbt=WT(P),hT=st/2+pbt,L=520;
+  const each=f=>{let o=0;LS.forEach(l=>{f(o,l.t,l.m);o+=l.t;});};
+  const studH=(x,y0)=>{b.r(x,y0,2,st,'steel');b.r(x,y0,45,2,'steel');b.r(x,y0+st-2,45,2,'steel');};
+  const studV=(x0,y)=>{b.r(x0,y,st,2,'steel');b.r(x0,y,2,45,'steel');b.r(x0+st-2,y,2,45,'steel');};
+  const hs=st/2;
+  if(v==='L'){
+    if(P.ins){b.r(-hs,-hs,L+hs,st,'ins');b.r(-hs,-L,st,L-hs,'ins');}
+    for(let x=150;x<L-60;x+=300) studH(x,-hs);
+    for(let y=-hT-60;y>-L+30;y-=300) studV(-hs,y);
+    each((o,t,m)=>{
+      b.r(-hs-o-t,-L,t,L+hT,m);               /* 縦壁 外側 */
+      b.r(hs+o,-L,t,L-hT,m);                  /* 縦壁 内側 */
+      b.r(-hs,hs+o,L+hs,t,m);                 /* 横壁 外側 */
+      b.r(hs,-hs-o-t,L-hs,t,m);               /* 横壁 内側 */
+    });
+    b.brkV(L,-hT-30,hT+30); b.brkH(-hT-30,hT+30,-L);
+    b.dim(L,-hT,L,hT,-8);
+    b.dim(150,-hT,450,-hT,-8,'@300');
+    b.note(-hT,hT,'出隅:コーナービード(アルミ/ビニル)');
+    b.note(hT,-hT,'入隅:ジョイントテープ+パテ処理');
+    b.note(L-80,hs+pbt/2,pbTxt(P)+'+仕上');
+    b.note(450+20,-hs+1,`LGSスタッド ${P.stud}形 @300`);
+    b.note(-hs-20,-L+100,'縦壁スタッドを横壁にビス固定');
+  }else{
+    if(P.ins){b.r(-L,-hs,2*L,st,'ins');b.r(-hs,-L,st,L-hT,'ins');}
+    for(let x=-L+150;x<L-60;x+=300) if(Math.abs(x)>hs+70) studH(x,-hs);
+    for(let y=-hT-60;y>-L+30;y-=300) studV(-hs,y);
+    studH(-hs-47,-hs); studH(hs+2,-hs);
+    each((o,t,m)=>{
+      b.r(-L,hs+o,2*L,t,m);
+      b.r(-L,-hs-o-t,2*L,t,m);
+      b.r(-hs-o-t,-L,t,L-hT,m);
+      b.r(hs+o,-L,t,L-hT,m);
+    });
+    b.brkV(L,-hT-30,hT+30); b.brkV(-L,-hT-30,hT+30); b.brkH(-hT-30,hT+30,-L);
+    b.dim(L,-hT,L,hT,-8);
+    b.dim(-L+150,hT,-L+450,hT,8,'@300');
+    b.note(L-80,hs+pbt/2,pbTxt(P)+'+仕上');
+    b.note(hT,-hT,'T取合い:取付壁ボード面に突付け・目地処理');
+    b.note(hs+25,-hs+1,'取付位置にスタッド補強(背中合わせ)');
+    b.note(hs,-L+100,'取付壁(縦)スタッド '+P.stud+'形');
+  }
+}
+GEN.ww_L=(b,P)=>genWW(b,P,'L');
+GEN.ww_T=(b,P)=>genWW(b,P,'T');
+
+/* 床見切り */
+function genFT(b,P){
+  const ext=360,tl=P.tileT,m1=P.mortar,cp=P.carpet,sp=P.step;
+  const ys=-(tl+m1),vis=100;
+  b.r(-ext,ys-vis,ext*2,vis,'rc'); b.brkH(-ext,ext,ys-vis);
+  b.r(-ext,ys,ext-5,m1,'mortar'); b.r(-ext,ys+m1,ext-5,tl,'tile');
+  const m2=-sp-cp-ys;
+  b.r(5,ys,ext-5,m2,'mortar'); b.r(5,ys+m2,ext-5,cp,'carpet');
+  b.r(-5,ys+8,10,-ys-8,'steel');
+  b.r(-6,-2,12,2,'steel');
+  b.dim(-ext,ys,-ext,0,8);
+  b.note(-ext+80,ys+m1+tl/2,`タイル t${tl}(左)`);
+  b.note(-ext+80,ys+m1/2,`張付けモルタル t${m1}`);
+  b.note(ext-60,ys+m2+cp/2,`タイルカーペット t${cp}`);
+  b.note(ext-60,ys+m2/2,'下地モルタル(レベル調整)');
+  b.note(0,-1,sp>0?`見切材(ステンレス/真鍮) 段差${sp}`:'見切材(ステンレス/真鍮) 段差なし');
+  b.note(ext-60,ys-vis/2,`RCスラブ t=${P.slab}`);
+  if(sp>0) b.dim(ext-100,-sp,ext-100,0,-8,'段差 '+sp);
+}
+GEN.ft_flat=(b,P)=>genFT(b,{...P,step:0});
+GEN.ft_step=(b,P)=>genFT(b,P);
+
+/* 水まわり立上り */
+function genWet(b,P,v){
+  const wf=wallFace(P),xr=wf,xl=-wf,ext=380,vis=100,top=380,wt=3;
+  const tl=10,m=40,ys=-(tl+m+wt);
+  b.r(-ext,ys-vis,ext*2,vis,'rc'); b.brkH(-ext,ext,ys-vis);
+  b.r(-ext,ys,ext*2,wt,'water');
+  const up=P.upH;
+  if(v==='curb'){
+    b.r(xl,ys,2*wf,P.curbH-ys,'rc');
+    wallStrip(b,0,P.curbH,top,P.curbH,top,P);
+    b.r(-RW(P)/2,P.curbH,RW(P),2,'steel');
+    b.brkH(xl,xr,top);
+  }else{
+    b.r(-P.rc/2,ys,P.rc,top-ys,'rc'); b.brkH(-P.rc/2,P.rc/2,top);
+  }
+  const fx=v==='curb'?wf:P.rc/2;
+  [[1,fx],[-1,-fx]].forEach(([s,x])=>{
+    const w0=s>0?x:x-wt;
+    b.r(w0,ys,wt,up-ys,'water');
+    const a=s>0?x+wt:-ext, ln=s>0?ext-(x+wt):x-wt+ext;
+    b.r(a,ys+wt,ln,m,'mortar'); b.r(a,ys+wt+m,ln,tl,'tile');
+    b.r(s>0?x+wt:x-wt-6,0,6,6,'seal');
+  });
+  b.dim(-ext,ys,-ext,0,8);
+  b.dim(fx+wt+30,0,fx+wt+30,up,-6,'防水立上り '+up);
+  if(v==='curb') b.dim(xl,ys,xl,P.curbH,8,'RC立上り '+P.curbH);
+  b.note(ext-70,ys+wt+m+tl/2,'タイル t10(防滑)');
+  b.note(ext-70,ys+wt+m/2,'押えモルタル t40(水勾配)');
+  b.note(ext-70,ys+wt/2,'防水層(塗膜/シート)');
+  b.note(fx+wt+1,up-10,'防水端部(押え金物+シーリング)');
+  if(v==='curb'){
+    b.note(RW(P)/2+WT(P)/2,top-60,pbTxt(P)+'(耐水仕様・防水面)');
+    b.note(0,P.curbH+1,`LGSランナー ${P.stud}形 W${RW(P)}(止水立上りに固定)`);
+  }else b.note(P.rc/2-30,top-80,`RC壁 t=${P.rc}`);
+  b.note(ext-60,ys-vis/2,`RCスラブ t=${P.slab}`);
+}
+GEN.wet_curb=(b,P)=>genWet(b,P,'curb');
+GEN.wet_rc=(b,P)=>genWet(b,P,'rc');
+
+/* 天井点検口 */
+GEN.legend=(b,P)=>{
+  const S=b.S,rh=8*S,sw=20*S,sh=5.5*S,mats=P.mats||[];
+  const lbl=k=>{const n=MAT[k].n;return [n.replace(/\(.*\)/,''),(n.match(/\((.*)\)/)||[])[1]||''];};
+  const W=sw+8*S+Math.max(40*S,...mats.map(k=>{const [nm,ds]=lbl(k);return tw(nm,3*S)+3*S+(ds?tw('('+ds+')',2.2*S):0);}))+5*S;
+  b.l(0,0,W,0,'out');b.l(0,-rh*mats.length-6*S,W,-rh*mats.length-6*S,'out');
+  b.l(0,0,0,-rh*mats.length-6*S,'out');b.l(W,0,W,-rh*mats.length-6*S,'out');
+  b.tx(3*S,-4.3*S,'記号',2.5);b.tx(sw+8*S,-4.3*S,'材料',2.5);b.l(0,-6*S,W,-6*S,'thin');
+  mats.forEach((k,i)=>{
+    const y=-6*S-(i+1)*rh,m=MAT[k],nm=m.n.replace(/\(.*\)/,''),ds=(m.n.match(/\((.*)\)/)||[])[1]||'';
+    b.r(3*S,y+(rh-sh)/2,sw,sh,k);
+    b.tx(sw+8*S,y+rh/2-1.2*S,nm,3);
+    if(ds) b.tx(sw+8*S+tw(nm,3*S)+3*S,y+rh/2-1.1*S,'('+ds+')',2.2);
+    if(i<mats.length-1) b.l(0,y,W,y,'thin');
+  });
+};
+GEN.hatch=(b,P)=>{
+  const ext=560,pl=P.plen,ct=P.ct,cn=P.cn,yt=ct*cn,op=P.opening,ho=op/2;
+  b.r(-ext,pl,ext*2,100,'rc'); b.brkH(-ext,ext,pl+100);
+  for(let k=0;k<cn;k++){b.r(-ext,k*ct,ext-ho,ct,'pb');b.r(ho,k*ct,ext-ho,ct,'pb');}
+  [[-ext,-ho-5],[ho+5,ext]].forEach(([a,c])=>{
+    b.r(a,yt+19,c-a,12,'steel');
+    for(let x=a+80;x<c-30;x+=360) b.r(x-12.5,yt,25,19,'steel');
+  });
+  [-ho-30,ho+30].forEach(x=>b.r(x-12.5,yt,25,19,'steel'));
+  b.r(-ho-30,yt+19,2*ho+60,12,'steel');
+  [-ho,ho-3].forEach(x=>b.r(x,-3,3,yt+3,'steel'));
+  b.r(-ho,-3,15,3,'steel'); b.r(ho-15,-3,15,3,'steel');
+  b.r(-ho+3,0,op-6,ct,'pb');
+  [-450,450].forEach(x=>b.r(x-2,yt+31,4,pl-(yt+31),'steel'));
+  b.dim(-ho,-14,ho,-14,-0.01,'開口 '+op);
+  b.dim(-ext,0,-ext,pl,8,'天井懐 '+pl);
+  b.note(ho-1,-1,'点検口枠(アルミ)');
+  b.note(0,ct/2,`点検口蓋 ${pbTxt({bt:ct,pbn:1})}(ヒンジ)`);
+  b.note(ho+30,yt+9,'開口補強野縁(両側増設)');
+  b.note(ext-80,yt/2,`天井 ${pbTxt({bt:ct,pbn:cn})}`);
+};
+
+/* ───────── 提案カタログ ───────── */
+const CATS=[
+  {id:'floor_wall',name:'床×壁 取り合い(縦断)'},
+  {id:'wall_ceiling',name:'壁×天井 取り合い(縦断)'},
+  {id:'wall_wall',name:'壁×壁 取り合い(平面)'},
+  {id:'floor',name:'床 断面詳細'},
+  {id:'wall',name:'壁 断面詳細(平面)'},
+  {id:'ceiling',name:'天井 断面詳細'},
+  {id:'floor_trans',name:'床 異種仕上げ見切り'},
+  {id:'wet',name:'水まわり 防水立上り'},
+  {id:'hatch',name:'天井点検口'}
+];
+const DEF={stud:65,pbn:1,bt:12.5,mortar:30,hb:60,leg:130,slab:200,ins:1,rc:180,gap:25,plen:450,ct:9.5,cn:2,tileT:10,carpet:6,step:10,curbH:150,upH:250,opening:600};
+const PSPEC={
+  ft:{l:'床仕上材の厚さ'},fbt:{l:'床下地(モルタル)厚'},bbt:{l:'巾木の厚さ'},
+  auto:{l:'表示する材料',o:[[1,'使用中の材料のみ'],[0,'全材料']]},
+  stud:{l:'スタッド(形)',o:[45,50,65,75,90,100]},pbn:{l:'ボード枚数/面',o:[1,2,3]},bt:{l:'ボード厚',o:[9.5,12.5,15,21]},
+  mortar:{l:'下地モルタル厚'},hb:{l:'幅木高さ'},leg:{l:'床下空間(脚高)'},slab:{l:'スラブ厚'},
+  ins:{l:'吸音材',o:[[1,'あり'],[0,'なし']]},rc:{l:'RC壁厚'},gap:{l:'空気層'},plen:{l:'天井懐'},
+  ct:{l:'天井ボード厚',o:[9.5,12.5]},cn:{l:'天井ボード枚数',o:[1,2]},tileT:{l:'タイル厚'},carpet:{l:'カーペット厚'},
+  step:{l:'段差(右側を下げる)'},curbH:{l:'RC立上り高'},upH:{l:'防水立上り高'},opening:{l:'開口寸法',o:[450,600]}
+};
+const rate=(base,arr)=>{let s=base;const why=[],warn=[];arr.forEach(a=>{if(!a)return;s+=a[0];(a[0]>=0?why:warn).push(a[1]);});return {s:Math.max(5,Math.min(98,s)),why,warn};};
+const REF='公共建築工事標準仕様書(建築工事編)・建築工事標準詳細図(公共建築協会)・各メーカー施工要領';
+const V={};
+const def=(id,cat,title,o)=>{V[id]={id,cat,title,ref:REF,defs:{},...o};};
+const WK=['stud','pbn','bt','ins'];
+
+def('slab_soft','floor_wall','直床 + ソフト幅木(壁先行)',{keys:[...WK,'mortar','hb','slab'],desc:'スラブ上にLGS壁を先行して建て、長尺シート仕上げの床を後施工。ソフト幅木で見切る標準的な納まり。',
+ ev:c=>rate(55,[c.use==='office'&&[14,'事務所で最も一般的な直床仕様'],c.use==='shop'&&[10,'店舗の長尺シート・塩ビタイル床に適合'],c.use==='house'&&[-6,'住宅は歩行感・衝撃音面で不利'],c.sound>=1&&[-10,'直床は床衝撃音の低減が限定的'],c.sound>=2&&[-15,'高い遮音要求には不足'],c.fire>=1&&[8,'壁がスラブから連続し防火区画を成立させやすい'],[0,'壁先行のため床の割付自由度が高い']])});
+def('slab_wood','floor_wall','直床 + フローリング直貼り・木幅木',{keys:[...WK,'mortar','hb','slab'],desc:'モルタル下地に遮音マットとフローリングを直貼り。木製幅木で仕上げる住宅向けの納まり。',
+ ev:c=>rate(50,[c.use==='house'&&[22,'住宅の洋室で一般的な仕様'],c.use==='office'&&[-12,'事務所では床下配線に対応しにくい'],c.use==='wet'&&[-15,'水まわりは木質床・木幅木が不向き'],c.sound>=1&&[-5,'遮音マットで軽量衝撃音のみ対応'],c.sound>=2&&[-15,'重量衝撃音には二重床が望ましい']])});
+def('dbl_wall_first','floor_wall','二重床 × 壁先行(遮音・防火区画向き)',{keys:[...WK,'leg','hb','slab'],defs:{leg:130},desc:'LGS壁をスラブ上から立ち上げ、二重床を壁際で縁切りして後施工。遮音・防火区画の連続性を確保。',
+ ev:c=>rate(52,[c.sound>=1&&[16,'壁を床で貫通させず空気伝搬音の回り込みを抑制'],c.sound>=2&&[14,'高遮音要求は壁先行+二重床が基本'],c.fire>=1&&[16,'壁をスラブ上から立ち上げ区画の連続性を確保'],c.use==='house'&&[10,'住宅の戸境・個室間で有効'],c.use==='office'&&[2,'配線スペースも確保可能'],[-6,'工期・コスト増(壁と床の工程が直列)'],c.use==='wet'&&[-10,'水まわりは床下空間の防水・排水計画が別途必要']])});
+def('dbl_floor_first','floor_wall','二重床 × 床先行(簡易間仕切り向き)',{keys:[...WK,'leg','hb','slab'],defs:{leg:130},desc:'二重床を全面に先行施工し、その上にLGS壁を設置。間仕切り変更が容易で工期短縮に有利。',
+ ev:c=>rate(40,[c.use==='office'&&[10,'レイアウト変更が多い事務所に適合'],c.use==='shop'&&[8,'店舗改装・間仕切り変更に対応しやすい'],c.sound>=1&&[-18,'床が壁下で連続し遮音・振動伝搬に不利'],c.fire>=1&&[-35,'防火区画壁には不可(床が区画を貫通)'],[0,'壁荷重は床パネルが負担(壁下に補強支持脚が必要)']])});
+def('oa_wall_first','floor_wall','OAフロア × 壁先行',{keys:[...WK,'leg','hb','slab'],defs:{leg:100},desc:'フリーアクセスフロア(OAフロア)で床下配線を確保。壁先行で区画を連続させ、ソフト幅木で仕上げる。',
+ ev:c=>rate(38,[c.use==='office'&&[32,'OA機器・床下配線の自由度が高い事務所向け'],c.use==='house'&&[-30,'住宅には不要・コスト過大'],c.use==='shop'&&[-6,'店舗では配線計画次第'],c.fire>=1&&[6,'壁先行で区画の連続性を確保'],c.sound>=2&&[-8,'パネル系は重量衝撃音に弱い']])});
+
+def('wc_to_slab','wall_ceiling','壁をスラブ下まで立上げ + 天井突付け',{keys:[...WK,'plen','ct','cn'],desc:'間仕切壁を上階スラブ下まで連続させ、天井ボードを壁面に突付けてシーリング。遮音・防火区画の基本納まり。',
+ ev:c=>rate(48,[c.sound>=1&&[26,'天井裏で壁が連続し音の回り込みを防止'],c.fire>=1&&[28,'壁が区画を形成し天井裏を貫通しない'],c.use==='office'&&[5,'会議室・区画間仕切の標準納まり'],c.use==='house'&&[2,'住戸間・水まわり周りで採用'],[-4,'天井裏作業(設備・ボード)の取り合い調整が必要']])});
+def('wc_cornice','wall_ceiling','壁天井止め + 木製廻り縁',{keys:[...WK,'plen','ct','cn'],desc:'壁を天井裏少し上まで立ち上げて振れ止めし、廻り縁で天井との見切りをとる。住宅の一般的な納まり。',
+ ev:c=>rate(46,[c.use==='house'&&[22,'住宅の居室で一般的(廻り縁が目地を隠す)'],c.sound>=1&&[-20,'壁が天井で止まり音が天井裏を伝わる'],c.fire>=1&&[-28,'防火区画壁には不可'],c.use==='shop'&&[0,'造作意匠次第'],[0,'壁・天井の施工誤差を廻り縁で吸収']])});
+def('wc_shadow','wall_ceiling','壁天井止め + 目透かし見切縁',{keys:[...WK,'plen','ct','cn'],desc:'天井ボードを壁から12mm離しアルミ見切縁で納める目透かし。直線的で端正な意匠に。',
+ ev:c=>rate(46,[c.use==='shop'&&[18,'店舗・商業の意匠性重視の納まり'],c.use==='office'&&[12,'執務室・エントランスで多用'],c.sound>=1&&[-18,'天井裏の隙間で遮音が低下'],c.fire>=1&&[-28,'防火区画壁には不可'],[-4,'施工精度(壁・天井の通り)が求められる']])});
+
+def('ww_T','wall_wall','T字取り合い(間仕切りの取付)',{keys:WK,desc:'既存壁に直交する間仕切りを突付ける。取付位置にスタッド補強を入れ目地処理する。',
+ ev:c=>rate(60,[c.fire>=1&&[5,'区画壁側のボードを連続させる'],c.sound>=1&&[3,'取付壁側ボードを連続させ隙間を処理'],[0,'一般的な間仕切り交差の納まり']])});
+def('ww_L','wall_wall','L字取り合い(出隅・入隅)',{keys:WK,desc:'壁の出隅・入隅の取り合い。出隅にコーナービードで保護、入隅は目地処理。',
+ ev:c=>rate(58,[c.use==='shop'&&[4,'出隅の保護が必要な動線沿いに有効'],[0,'出隅・入隅の標準納まり']])});
+
+def('slab_direct','floor','直床(モルタル下地+長尺シート)',{keys:['mortar','slab'],desc:'最も単純な床構成。',ev:c=>rate(55,[c.use==='office'&&[10,'事務所・店舗で標準'],c.use==='shop'&&[10,'店舗で標準'],c.sound>=1&&[-10,'遮音に限界'],c.use==='wet'&&[-5,'水まわりは防水層付き仕様を別途']])});
+def('dbl_floor','floor','乾式二重床(木質)',{keys:['leg','slab'],defs:{leg:130},desc:'支持脚+パーティクルボード+フローリング。遮音・配管スペースを確保。',ev:c=>rate(50,[c.use==='house'&&[16,'集合住宅の標準的な遮音床'],c.sound>=1&&[16,'床衝撃音の低減に有効'],c.sound>=2&&[8,'高遮音は二重床が基本'],c.use==='shop'&&[-2,'荷重条件の確認が必要']])});
+def('oa_floor','floor','OAフロア(フリーアクセス)',{keys:['leg','slab'],defs:{leg:100},desc:'床下配線用のパネル式床。',ev:c=>rate(38,[c.use==='office'&&[34,'事務所の配線自由度'],c.use==='house'&&[-30,'住宅には不要'],c.sound>=2&&[-8,'重量衝撃音は不利']])});
+
+def('lgs_single','wall','LGS間仕切(ボード一重貼)',{keys:['stud','pbn','bt','ins'],desc:'スタッド@300+ボード一重貼りの標準間仕切。',
+ ev:c=>rate(52,[c.use==='office'&&[10,'一般間仕切として標準'],c.use==='house'&&[8,'居室間仕切として標準'],c.fire>=1&&[-35,'耐火要求には二重貼り以上が必要'],c.sound>=1&&[-14,'遮音要求には不足'],c.sound>=2&&[-16,'高遮音は二重貼り+吸音材が必要']]),defs:{pbn:1}});
+def('lgs_fire','wall','LGS間仕切(二重貼・耐火/防火)',{keys:['stud','pbn','bt','ins'],defs:{pbn:2},desc:'両面ボード二重貼りの防火区画仕様に近い構成(認定仕様要確認)。',
+ ev:c=>rate(40,[c.fire>=1&&[42,'二重貼りで防火区画の認定仕様に近づく'],c.fire>=2&&[8,'強化ボード21mm厚など認定仕様に合わせる'],c.fire===0&&[-6,'防火要求なし:やや過剰仕様'],c.sound>=1&&[8,'質量増で遮音にも有利']])});
+def('lgs_sound','wall','LGS間仕切(遮音・二重貼+吸音)',{keys:['stud','pbn','bt','ins'],defs:{pbn:2,ins:1},desc:'二重貼り+遮音シート+吸音材で遮音性能を確保。',
+ ev:c=>rate(38,[c.sound>=1&&[26,'質量+吸音材で遮音性能を向上'],c.sound>=2&&[16,'高遮音(Rr 45〜50相当)の基本構成'],c.fire>=1&&[10,'二重貼りで防火仕様にも転用しやすい'],c.sound===0&&[-8,'遮音要求なし:過剰仕様']])});
+def('rc_furring','wall','RC壁 + LGSふかし(内装壁)',{keys:['rc','gap','stud','pbn','bt','ins'],defs:{stud:65,gap:25},desc:'RC壁に空気層を設けLGS下地+ボードで仕上げる内装壁。',
+ ev:c=>rate(40,[c.use==='house'&&[8,'外壁・戸境壁の内装で一般的'],c.use==='office'&&[6,'外壁の断熱・結露対策を兼ねやすい'],[0,'結露対策は断熱材仕様を別途検討']])});
+
+def('pb_ceiling','ceiling','PB天井(19形野縁)',{keys:['plen','ct','cn'],desc:'吊りボルト+野縁受+野縁にボード貼り。',
+ ev:c=>rate(58,[c.use==='house'&&[14,'住宅で一般的(クロス・塗装仕上げ)'],c.use==='shop'&&[8,'店舗の塗装・クロス天井'],c.use==='wet'&&[8,'耐水ボードで水まわりに対応'],c.use==='office'&&[2,'ラインを見せたくない場合に採用'],c.ceilH>3500&&[-4,'高天井は振れ止め補強を追加']])});
+def('tbar_ceiling','ceiling','システム天井(Tバー・岩綿吸音板)',{keys:['plen'],defs:{plen:450},desc:'Tバー+岩綿吸音板(モジュール600)。点検・設備更新が容易。',
+ ev:c=>rate(40,[c.use==='office'&&[26,'事務所で標準・設備点検性が高い'],c.use==='house'&&[-26,'住宅には不向き'],c.use==='shop'&&[4,'バックヤード・事務室で採用'],c.use==='wet'&&[-20,'吸音板は湿気に弱い']])});
+
+def('ft_flat','floor_trans','異種床材の見切り(段差なし)',{keys:['tileT','mortar','carpet','slab'],desc:'タイルとカーペットの境にステンレス見切材。仕上げ面を揃える。',
+ ev:c=>rate(60,[c.use==='office'&&[8,'廊下タイル×執務室カーペットで頻出'],c.use==='shop'&&[6,'売場と通路の切替に使用'],[0,'バリアフリーのため段差なしが基本']])});
+def('ft_step','floor_trans','異種床材の見切り(段差あり)',{keys:['tileT','mortar','carpet','step','slab'],desc:'厚みの異なる仕上げ材をレベル調整し、段差を見切材で処理。',
+ ev:c=>rate(40,[c.use==='house'&&[0,'やむを得ない場合のみ'],[-6,'段差は10mm以下でも躓き対策・バリアフリー確認が必要'],c.use==='shop'&&[-4,'動線上は避ける']])});
+
+def('wet_curb','wet','RC立上り + LGS壁 + 塗膜防水',{keys:[...WK,'curbH','upH','slab'],defs:{bt:12.5},desc:'水まわりのLGS壁をRC立上りの上に建てて止水。防水を壁面に立ち上げる。',
+ ev:c=>rate(42,[c.use==='wet'&&[34,'浴室・洗面・厨房周りの標準的な止水納まり'],c.use==='house'&&[8,'住宅の水まわり'],c.use==='office'&&[-4,'事務所は給湯室・トイレ周りに限定'],[0,'防水立上り高さは用途・仕様書で確認']])});
+def('wet_rc','wet','RC壁取り合い + 防水立上り',{keys:['rc','upH','slab'],desc:'RC壁に取り合う防水の立上り。外壁・耐力壁沿いの水まわり。',
+ ev:c=>rate(38,[c.use==='wet'&&[26,'外壁・耐力壁沿いの水まわり'],c.use==='house'&&[4,'住宅の外壁側水まわり'],[0,'立上り端部の押えとシーリング処理が重要']])});
+
+def('legend','legend','材料凡例',{keys:['auto'],desc:'',ev:()=>rate(0,[])});
+def('hatch','hatch','天井点検口(PB天井)',{keys:['opening','plen','ct','cn'],desc:'開口補強野縁+アルミ枠の点検口。設備機器の点検用。',
+ ev:c=>rate(70,[[0,'開口周りは野縁・野縁受を補強する'],c.use==='office'&&[4,'設備点検のため']])});
+
+/* ───────── 言葉で作図(ルールベースの日本語解釈) ───────── */
+const FLOORS={
+  carpet:{k:/カーペット/,n:'タイルカーペット',m:'carpet',t:6.5,base:{m:'mortar',t:30,name:'下地調整モルタル'},lab:(n,t)=>`${n} t${t}`},
+  sheet:{k:/長尺|シート|塩ビ|ビニル|Pタイル|フロアタイル|リノリウム/,n:'長尺シート',m:'finish',t:2.5,base:{m:'mortar',t:30,name:'下地調整モルタル'},lab:(n,t)=>`${n} t${t}(接着)`},
+  stone:{k:/御影石?|花崗岩|大理石|ライムストーン|テラゾー?|石/,n:'石',m:'stone',t:30,base:{m:'mortar',t:40,name:'敷モルタル(バサモルタル)'},lab:(n,t)=>`${n}貼り t${t}`},
+  wood:{k:/フローリング|木床|無垢|複合フロア/,n:'フローリング',m:'woodf',t:12,base:{m:'mortar',t:30,name:'下地調整モルタル'},lab:(n,t)=>`${n} t${t}`},
+  tile:{k:/タイル/,n:'タイル',m:'tile',t:10,base:{m:'mortar',t:30,name:'張付けモルタル'},lab:(n,t)=>`${n}貼り t${t}`}
+};
+const BASES={
+  none:{k:/なし|無し|不要/,name:'なし'},
+  stone:{k:/石/,name:'石巾木',m:'stone',t:20,h:100,showT:1},
+  tile:{k:/タイル/,name:'タイル巾木',m:'tile',t:10,h:100,showT:1},
+  sus:{k:/ステンレス|SUS|金属|アルミ/i,name:'金属巾木(SUS)',m:'steel',t:1.5,h:60},
+  soft:{k:/ソフト|ビニル|塩ビ/,name:'ソフト巾木',m:'finish',t:2.5,h:60},
+  wood:{k:/木/,name:'木製巾木',m:'woodf',t:12,h:60,showT:1}
+};
+const FNAME={'石':'','長尺':'長尺シート','シート':'長尺シート','塩ビ':'塩ビシート','ビニル':'ビニル床シート','御影':'御影石','テラゾ':'テラゾー','カーペット':'タイルカーペット','タイル':'','木床':'フローリング','無垢':'無垢フローリング'};
+const FLOOR_BASE={stone:'stone',tile:'tile',wood:'wood',sheet:'soft',carpet:'soft'};
+function customCfg(P){
+  const F=FLOORS[P.fl]||FLOORS.sheet,layers=[];
+  if(P.sys==='oa') layers.push({m:'carpet',h:P.ft,label:`タイルカーペット t${P.ft}`},{m:'finish',h:25,label:'OAフロアパネル t25'});
+  else{
+    layers.push({m:F.m,h:P.ft,label:F.lab(P.fname||F.n,P.ft)});
+    if(P.sys==='dbl') layers.push({m:'ply',h:20,label:'パーティクルボード t20'});
+    else layers.push({m:F.base.m,h:P.fbt,label:`${F.base.name} t${P.fbt}`});
+  }
+  const B0=BASES[P.bb];
+  return {first:P.first?'floor':'wall',wall:P.wrc?'rc':'lgs',bb:B0&&P.bb!=='none'?{...B0,t:P.bbt}:null,
+    leg:P.sys!=='rc',gap:P.sys!=='rc'?10:0,layers,wfin:P.wfin||''};
+}
+GEN.fw_custom=(b,P)=>genFW(b,P,customCfg(P));
+GEN.fl_custom=(b,P)=>genFloor(b,P,customCfg(P));
+const WALLRE=/壁|ボード|PB|スタッド|LGS|ランナー|クロス|塗装|EP|ケイカル|けい酸|珪酸|合板|ベニヤ|強化|硬質|シージング|下貼|上貼|重ね/i;
+const WMAT=[[/強化/,'強化せっこうボード','pb'],[/硬質/,'硬質せっこうボード','pb'],[/シージング|耐水/,'シージングせっこうボード','pb'],[/化粧/,'化粧せっこうボード','pb'],
+  [/ケイカル|けい酸|珪酸/,'けい酸カルシウム板','pb'],[/構造用合板/,'構造用合板','ply'],[/合板|ベニヤ/,'合板','ply'],[/PB|ボード|石膏|せっこう/i,'せっこうボード','pb']];
+/* 壁の貼り材を読む:「PB12.5+強化15」「下貼りPB12.5 上貼りケイカル8」「12.5と9.5の2枚重ね」等 → 下地側→表面側の配列 */
+function parseWallLayers(w){
+  const x=w.replace(/(?:スタッド|LGS|ランナー)?\s*\d{2,3}\s*形/gi,' ').replace(/\d\s*枚/g,' ').replace(/H\s*=?\s*\d+/gi,' ');
+  const out=[];let last=null,role='';
+  x.split(/[+＋\s]+/).filter(Boolean).forEach(c=>{
+    const m=c.match(/(\d+(?:\.\d+)?)/);
+    if(!m){if(/上/.test(c))role='up';else if(/下/.test(c))role='dn';return;}
+    const t=parseFloat(m[1]);if(t<3||t>40)return;
+    let mat=null;for(const [r,n,mm] of WMAT) if(r.test(c)){mat={name:n,m:mm};break;}
+    mat=mat||last||{name:'せっこうボード',m:'pb'};
+    const r2=/上/.test(c)?'up':/下/.test(c)?'dn':role;role='';
+    out.push({...mat,t,role:r2});last=mat;
+  });
+  const dn=out.filter(l=>l.role==='dn'),up=out.filter(l=>l.role==='up'),mid=out.filter(l=>!l.role);
+  return [...dn,...mid,...up].map(({name,m,t})=>({name,m,t}));
+}
+const normJP=t=>String(t||'')
+  .replace(/[０-９Ａ-Ｚａ-ｚ．＝]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
+  .replace(/幅木|はばき|ハバキ/g,'巾木').replace(/張り|張/g,'貼').replace(/取合い|取合|とりあい/g,'取り合い')
+  .replace(/一枚|1重/g,'1枚').replace(/二枚|二重貼|2重|ダブル/g,'2枚').replace(/三枚|3重/g,'3枚').replace(/ｍｍ/g,'mm')
+  /* 音声入力の話し言葉:「12点5」→12.5、「ティー」→t、「エイチ」→H、「ミリ」→mm、「ピービー」→PB 等 */
+  .replace(/(\d+)\s*点\s*(\d+)/g,'$1.$2').replace(/ティー\s*/g,'t').replace(/エイチ\s*/g,'H').replace(/ミリ(?:メートル)?/g,'mm')
+  .replace(/ピービー|プラスターボード/g,'PB').replace(/石こう|石膏/g,'せっこう').replace(/けいカル|珪カル/g,'ケイカル');
+function parsePrompt(raw){
+  const t=normJP(raw);
+  /* 読点・空白・助詞(に/は/で/と/の)で区切り、数値だけの断片は直前の語にくっつける */
+  const segs=[];
+  const wallish=x=>WALLRE.test(x)&&!/床|巾木|天井|取り合い/.test(x);
+  t.split(/[、,，。\n;；・\/]+|\s+|[にはでとの]/).map(x=>x.trim()).filter(Boolean).forEach(x=>{
+    const prev=segs[segs.length-1];
+    if(prev!==undefined&&/^(?:[Ht]?\s*=?\s*\d+(?:\.\d+)?\s*(?:mm|枚|形|角)?\s*(?:貼り?|重ね貼?り?)?|貼り?|重ね貼?り?|上貼?り?|下貼?り?|上|下|両面)$/i.test(x))segs[segs.length-1]+=' '+x;
+    else if(prev!==undefined&&wallish(prev)&&wallish(x))segs[segs.length-1]+=' '+x;
+    else segs.push(x);
+  });
+  const num=(re,x)=>{const m=x.match(re);return m?parseFloat(m[1]):null;};
+  const R={fl:null,fname:'',ft:null,fbt:null,sys:'rc',bb:null,hb:null,bbt:null,first:0,
+    w:{rc:0,bt:null,pbn:null,stud:null,ins:null,fin:'',strong:0},plen:null,leg:null,slab:null,ct:null,cn:null,opening:null},unk=[];
+  let pendingBase=false;
+  const baseOf=x=>{for(const k in BASES) if(BASES[k].k.test(x)) return k; return null;};
+  const floorOf=x=>{x=x.replace(/石膏/g,'');for(const k in FLOORS){const m=x.match(FLOORS[k].k);if(m)return [k,m[0]];}return null;};
+  segs.forEach(sg=>{
+    const isCatWord=/取り合い|詳細|納まり|おさまり|断面/.test(sg);
+    if(/^(?:廻り縁|目透かし?|見切り?縁?|段差あり?|点検口|防水|浴室|遮音|耐火|防火区画|T字?|L字?|出隅|入隅|コーナー)$/i.test(sg))return;
+    if(/巾木/.test(sg)){
+      const x=sg.replace(/巾木/g,''),k=baseOf(x);
+      if(k)R.bb=k;else pendingBase=true;
+      R.hb=num(/(?:H|高さ)\s*=?\s*(\d+)/i,sg)??R.hb; R.bbt=num(/t\s*=?\s*(\d+(?:\.\d+)?)/i,sg)??R.bbt;
+      return;
+    }
+    if(pendingBase&&!/床|壁|天井/.test(sg)){
+      pendingBase=false;const k=baseOf(sg);
+      if(k){R.bb=k;R.hb=num(/(?:H|高さ)\s*=?\s*(\d+)/i,sg)??R.hb;R.bbt=num(/t\s*=?\s*(\d+(?:\.\d+)?)/i,sg)??R.bbt;return;}
+    }
+    pendingBase=false;
+    if(/天井/.test(sg)&&!isCatWord){
+      R.plen=num(/懐\s*(\d+)/,sg)??R.plen; R.opening=num(/(450|600)\s*角?/,sg)??R.opening; R.ct=num(/t\s*=?\s*(9\.5|12\.5)/i,sg)??R.ct; R.cn=num(/(\d)\s*枚/,sg)??R.cn;
+      return;
+    }
+    if(WALLRE.test(sg)&&!(isCatWord&&!/ボード|t\d/i.test(sg))){
+      if(/RC|コンクリート/i.test(sg)) R.w.rc=1;
+      const ly=parseWallLayers(sg);
+      if(ly.length>=2) R.w.wl=ly;
+      else if(ly.length===1){R.w.bt=ly[0].t;if(ly[0].name!=='せっこうボード'){R.w.lname=ly[0].name;R.w.lm=ly[0].m;}}
+      R.w.pbn=num(/(\d)\s*枚/,sg)??R.w.pbn;
+      if(/重ね/.test(sg)&&!R.w.pbn&&!R.w.wl)R.w.pbn=2;
+      R.w.stud=num(/(\d{2,3})\s*形/,sg)??num(/(?:スタッド|LGS|ランナー)\s*(\d{2,3})/i,sg)??R.w.stud;
+      if(/吸音材?なし|GWなし/i.test(sg))R.w.ins=0;else if(/吸音|グラスウール|GW|ロックウール/i.test(sg))R.w.ins=1;
+      if(/クロス/.test(sg))R.w.fin='クロス貼';else if(/塗装|EP/i.test(sg))R.w.fin='EP塗装';
+      if(/強化/.test(sg))R.w.strong=1;
+      return;
+    }
+    const f=floorOf(sg);
+    if(f||/床|OA|フリーアクセス|直貼|RC下地|スラブ|モルタル/i.test(sg)){
+      if(f){R.fl=f[0];R.fname=FNAME[f[1]]??f[1];}
+      if(/二重床|置床|乾式/.test(sg))R.sys='dbl';
+      if(/OA|フリーアクセス/i.test(sg))R.sys='oa';
+      if(/床先行/.test(sg))R.first=1;
+      R.ft=num(/(?:t|厚)\s*=?\s*(\d+(?:\.\d+)?)/i,sg)??num(/(\d+(?:\.\d+)?)\s*mm/i,sg)??R.ft;
+      R.fbt=num(/モルタル\s*t?\s*=?\s*(\d+)/i,sg)??R.fbt;
+      R.leg=num(/(?:床下|脚|空間)\s*(\d+)/,sg)??R.leg;
+      R.slab=num(/スラブ\s*t?\s*=?\s*(\d+)/i,sg)??R.slab;
+      return;
+    }
+    if(isCatWord||/^(と|の|は|で|に)$/.test(sg))return;
+    const op=num(/(450|600)\s*角?/,sg);if(op&&/点検口/.test(t)){R.opening=op;return;}
+    unk.push(sg);
+  });
+  /* 部位の判定 */
+  let cat;
+  if(/点検口/.test(t))cat='hatch';
+  else if(/防水|浴室|立上り|立ち上がり/.test(t))cat='wet';
+  else if(/見切/.test(t)&&!/天井/.test(t))cat='floor_trans';
+  else if(/壁と壁|壁×壁|壁壁|出隅|入隅|T字|L字|コーナー/i.test(t))cat='wall_wall';
+  else if(/天井/.test(t)&&/壁/.test(t))cat='wall_ceiling';
+  else if(/巾木/.test(t)||(/床/.test(t)&&/壁|ボード/.test(t))||(R.fl&&/壁|ボード/.test(t)))cat='floor_wall';
+  else if(/天井/.test(t))cat='ceiling';
+  else if(/壁|ボード|スタッド|LGS/i.test(t))cat='wall';
+  else if(R.fl||/床/.test(t))cat='floor';
+  if(!cat)return {ok:false,unk,msg:'部位(床・壁・天井・巾木など)が読み取れませんでした。'};
+  /* 共通の壁パラメータ */
+  const sound=/遮音/.test(t),fire=/耐火|防火|区画/.test(t);
+  const P={...DEF,stud:R.w.stud||65,bt:R.w.bt||(fire?21:12.5),pbn:R.w.pbn||((sound||fire)?2:1),ins:R.w.ins??1,
+    pbName:R.w.lname||(R.w.strong?'強化せっこうボード':'せっこうボード'),pbM:R.w.lm||'pb',slab:R.slab||200};
+  if(R.w.wl){P.wl=R.w.wl;P.pbn=R.w.wl.length;P.bt=R.w.wl[0].t;}
+  if(R.plen)P.plen=R.plen;if(R.ct)P.ct=R.ct;if(R.cn)P.cn=R.cn;if(R.opening)P.opening=R.opening;
+  const items=[],wallTxt=R.w.rc?'RC壁':`LGS ${P.stud}形(W${P.stud+2}) + ${pbTxt(P)} 両面(片面${WT(P)}mm)${P.ins?' / 吸音材あり':''}`;
+  let variant,title,keys=null;
+  if(cat==='floor_wall'||cat==='floor'){
+    const fl=R.fl||(R.sys==='oa'?'carpet':'sheet'),F=FLOORS[fl];
+    Object.assign(P,{fl,fname:R.fname,sys:R.sys,first:R.first,wrc:R.w.rc,wfin:R.w.fin,
+      ft:R.ft||F.t,fbt:R.fbt||F.base.t,leg:R.leg||(R.sys==='oa'?100:130)});
+    const bb=R.bb||FLOOR_BASE[fl]||'soft',B0=BASES[bb];
+    Object.assign(P,{bb,hb:R.hb||B0.h||60,bbt:R.bbt||B0.t||0});
+    const fn=R.sys==='oa'?'OAフロア':(P.fname||F.n);
+    const sysTxt={rc:'RC下地(直)',dbl:'乾式二重床',oa:'OAフロア'}[R.sys];
+    items.push(['部位',cat==='floor'?'床 断面':'床×壁 取り合い']);
+    items.push(['床',`${sysTxt} / ${R.sys==='oa'?'タイルカーペット t'+P.ft:F.lab(fn,P.ft)}`+(R.sys==='rc'?` + ${F.base.name} t${P.fbt}`:R.sys==='dbl'?' + パーティクルボード t20':'')+(R.sys!=='rc'?` / 床下 ${P.leg}`:'')]);
+    if(cat==='floor_wall'){
+      items.push(['巾木',bb==='none'?'なし':`${B0.name} H${P.hb} t${P.bbt}`]);
+      items.push(['壁',wallTxt+(R.w.fin?' / '+R.w.fin:'')]);
+      if(R.sys!=='rc'&&!R.w.rc)items.push(['施工順',R.first?'床先行':'壁先行']);
+      variant='fw_custom';title=`床×壁 取り合い(${fn}・${bb==='none'?'巾木なし':B0.name})`;
+      keys=R.w.rc?['rc','ft','fbt','hb','bbt','slab']:['stud','pbn','bt','ins','ft','fbt','hb','bbt','slab'];
+    }else{variant='fl_custom';title=`床 断面(${fn})`;keys=['ft','fbt','slab'];}
+    if(R.sys!=='rc'){keys=keys.filter(k=>k!=='fbt');keys.push('leg');}
+    if(R.w.rc)P.rc=DEF.rc;
+    if(P.wl&&keys)keys=keys.filter(k=>k!=='pbn'&&k!=='bt');
+  }else if(cat==='wall'){
+    variant=R.w.rc?'rc_furring':P.pbn>=2?(sound?'lgs_sound':'lgs_fire'):'lgs_single';
+    if(variant==='rc_furring')P.gap=25;
+    if(P.wl&&variant!=='rc_furring')title='LGS間仕切(重ね貼り:'+WL(P).map(l=>l.name.replace('せっこうボード','PB')+l.t).join('+')+')';
+    items.push(['部位','壁 断面(平面)'],['壁',wallTxt]);
+  }else if(cat==='wall_wall'){
+    variant=/T字|T取|Tの|丁字/i.test(t)?'ww_T':'ww_L';
+    items.push(['部位',variant==='ww_T'?'壁×壁 T字取り合い(平面)':'壁×壁 L字(出隅・入隅)(平面)'],['壁',wallTxt]);
+  }else if(cat==='wall_ceiling'){
+    variant=/廻り縁/.test(t)?'wc_cornice':/目透|見切/.test(t)?'wc_shadow':'wc_to_slab';
+    items.push(['部位','壁×天井 取り合い'],['壁',wallTxt],['天井',`懐 ${P.plen} / せっこうボード t${P.ct}×${P.cn}`]);
+  }else if(cat==='ceiling'){
+    variant=/システム|岩綿|Tバー/i.test(t)?'tbar_ceiling':'pb_ceiling';
+    items.push(['部位','天井 断面'],['天井',`懐 ${P.plen}`]);
+  }else if(cat==='floor_trans'){variant=/段差/.test(t)?'ft_step':'ft_flat';items.push(['部位','床 見切り']);}
+  else if(cat==='wet'){variant=/RC壁|コンクリート壁/.test(t)?'wet_rc':'wet_curb';items.push(['部位','水まわり 防水立上り'],['壁',wallTxt]);}
+  else if(cat==='hatch'){variant='hatch';items.push(['部位','天井点検口'],['開口',P.opening+'角']);}
+  if(!title)title=V[variant].title;
+  if(P.wl&&!keys)keys=V[variant].keys.filter(k=>k!=='pbn'&&k!=='bt');
+  return {ok:true,cat,variant,params:P,title,keys,items,unk};
+}
+def('fw_custom','prompt','床×壁 取り合い(言葉で作図)',{keys:['stud','pbn','bt','ins','ft','fbt','hb','bbt','slab'],desc:'',ev:()=>rate(0,[])});
+def('fl_custom','prompt','床 断面(言葉で作図)',{keys:['ft','fbt','slab'],desc:'',ev:()=>rate(0,[])});
+
+/* ───────── 条件→寸法 ───────── */
+function condParams(c,v){
+  const P={...DEF};
+  const h=+c.ceilH||2700;
+  /* 標準は65形(W67)。天井高が高い場合のみ大きい形に上げる */
+  P.stud=h<=4000?65:h<=4500?90:100;
+  if(c.fire>=1)P.pbn=2;
+  if(c.fire>=2)P.bt=21;
+  if(c.sound>=2)P.pbn=2;
+  P.plen=h>3500?600:450;
+  Object.assign(P,v.defs||{});
+  if(c.fire>=1&&v.defs&&v.defs.pbn===undefined&&c.sound===0) P.pbn=Math.max(P.pbn,2);
+  if(v.id==='lgs_single') P.pbn=1;
+  if(v.id==='lgs_fire'||v.id==='lgs_sound') P.pbn=Math.max(2,P.pbn);
+  return P;
+}
+
+/* ───────── シート構成 ───────── */
+/* 生成ロジックの版。作図ルールを変えたら上げる(古い版の詳細を検出して再生成を促す) */
+const GENVER=5;
+const staleDetails=()=>st.details.filter(r=>r.variant&&r.variant!=='legend'&&r.ver!==GENVER);
+function regenStale(){
+  const list=staleDetails();if(!list.length)return;
+  list.forEach(r=>{
+    const old=r.box;
+    st.ents=st.ents.filter(e=>e.g!==r.id);
+    const x=buildDetail(r);x.ents.forEach(e=>{e.id=st.nextId++;e.g=r.id;st.ents.push(e);});r.box=x.box;
+    if(old) moveGroup(r,old.x0-r.box.x0,old.y1-r.box.y1);
+  });
+  const lg=st.details.find(d=>d.variant==='legend');if(lg)regen(lg);
+  reflow();commit();
+}
+function checkStale(){
+  const n=staleDetails().length;
+  if(n&&confirm(`旧仕様で作成された詳細が ${n} 件あります。
+最新仕様(LGSランナー幅・材料記号など)で再生成しますか?
+※それらの詳細への手動修正は初期状態に戻ります。`)) regenStale();
+}
+function buildDetail(rec){
+  const S=st.scale,v=V[rec.variant],b=new B(S);
+  rec.ver=GENVER;
+  if(rec.variant==='legend') rec.params.mats=+rec.params.auto?usedMats(rec.id):Object.keys(MAT).filter(k=>k!=='air');
+  GEN[rec.variant](b,{...DEF,...rec.params});
+  return b.finish(rec.title||v.title,rec.no,rec.variant==='legend');
+}
+/* 材料凡例 */
+function usedMats(selfId){
+  const u=new Set(st.ents.filter(e=>e.t==='rect'&&e.g!==selfId).map(e=>e.m));
+  const ks=Object.keys(MAT).filter(k=>k!=='air'&&u.has(k));
+  return ks.length?ks:Object.keys(MAT).filter(k=>k!=='air');
+}
+function addLegend(){
+  const old=st.details.find(d=>d.variant==='legend');
+  if(old){regen(old);return old;}
+  const r=addDetail('legend',{auto:1});st.seq--;r.no=0;return r;
+}
+function addDetail(variant,params,extra){
+  const rec={id:st.nextId++,variant,title:V[variant].title,params:{...params},no:++st.seq,box:null,...(extra||{})};
+  const r=buildDetail(rec);
+  r.ents.forEach(e=>{e.id=st.nextId++;e.g=rec.id;st.ents.push(e);});
+  rec.box=r.box;st.details.push(rec);
+  reflow();commit();render();
+  return rec;
+}
+function regen(rec){
+  const old=rec.box,S=st.scale;
+  st.ents=st.ents.filter(e=>e.g!==rec.id);
+  const r=buildDetail(rec);
+  r.ents.forEach(e=>{e.id=st.nextId++;e.g=rec.id;st.ents.push(e);});
+  rec.box=r.box;
+  if(old) moveGroup(rec,old.x0-rec.box.x0,old.y1-rec.box.y1);
+  reflow();commit();render();
+}
+function moveGroup(rec,dx,dy){
+  st.ents.forEach(e=>{if(e.g===rec.id)shiftEnt(e,dx,dy);});
+  rec.box={x0:rec.box.x0+dx,x1:rec.box.x1+dx,y0:rec.box.y0+dy,y1:rec.box.y1+dy};
+}
+function area(){
+  const [W,H]=SHEETS[st.sheet],S=st.scale;
+  return {x0:(25+6)*S,x1:(W-10-6)*S,y1:(H-10-6)*S,y0:(10+24+4)*S};
+}
+function reflow(){
+  const S=st.scale,a=area(),gap=6*S;
+  let x=a.x0,y=a.y1,rowH=0;
+  st.details.sort((p,q)=>(p.variant==='legend')-(q.variant==='legend'));
+  st.details.forEach(rec=>{
+    const w=rec.box.x1-rec.box.x0,h=rec.box.y1-rec.box.y0;
+    if(x+w>a.x1&&x>a.x0){x=a.x0;y-=rowH+gap;rowH=0;}
+    moveGroup(rec,x-rec.box.x0,(y-h)-rec.box.y0);
+    x+=w+gap;rowH=Math.max(rowH,h);
+  });
+}
+function overflowList(){
+  const a=area(),out=[];
+  st.details.forEach(r=>{if(r.box.x1>a.x1+1||r.box.y0<a.y0-1||r.box.x0<a.x0-1||r.box.y1>a.y1+1)out.push('No.'+r.no+' '+r.title);});
+  return out;
+}
+function sysEnts(){
+  const [W,H]=SHEETS[st.sheet],S=st.scale,e=[],m=st.meta;
+  const L=(x1,y1,x2,y2,k)=>e.push({t:'line',x1:x1*S,y1:y1*S,x2:x2*S,y2:y2*S,k,sys:1});
+  const T=(x,y,s,h,al)=>e.push({t:'text',x:x*S,y:y*S,s,h,a:0,al:al||'l',sys:1});
+  [[0,0,W,0],[W,0,W,H],[W,H,0,H],[0,H,0,0]].forEach(l=>L(...l,'thin'));
+  [[25,10,W-10,10],[W-10,10,W-10,H-10],[W-10,H-10,25,H-10],[25,H-10,25,10]].forEach(l=>L(...l,'out'));
+  const x0=W-10-180,y0=10,y1=32;
+  L(x0,y1,W-10,y1,'out');L(x0,21,W-10,21,'thin');L(x0+90,y0,x0+90,y1,'thin');L(x0+140,y0,x0+140,y1,'thin');
+  T(x0+1.5,y1-3,'工事名',2);T(x0+3,y1-8.5,m.proj||'',3.5);
+  T(x0+1.5,21-3,'作成',2);T(x0+3,12.5,(m.by||'')+'  '+(m.date||''),2.8);
+  T(x0+91.5,y1-3,'図面名',2);T(x0+93,y1-8.5,m.title||'',3.2);
+  T(x0+91.5,21-3,'縮尺',2);T(x0+93,12.5,'S=1/'+S,3);
+  T(x0+141.5,y1-3,'用紙',2);T(x0+143,y1-8.5,st.sheet,3.5);
+  T(x0+141.5,21-3,'図番',2);T(x0+143,12.5,'D-01',3);
+  return e;
+}
+
+/* ───────── 描画 ───────── */
+const svg=$('#svg'),world=$('#world');
+const FONT="'Yu Gothic','Yu Gothic UI','Meiryo',sans-serif";
+const fx=n=>Math.round(n*100)/100;
+const LCOL={'DT-HATCH':'#777','DT-DIM':'#0a7a4f','DT-THIN':'#333'};
+function primSvg(p,o){
+  const col=o.col||LCOL[p.ly]||'#111';
+  switch(p.k){
+    case 'line':{
+      const d=p.dash?` stroke-dasharray="${p.dash.map(fx).join(' ')}"`:'';
+      let s=`<line x1="${fx(p.a[0])}" y1="${fx(p.a[1])}" x2="${fx(p.b[0])}" y2="${fx(p.b[1])}" stroke="${col}" stroke-width="${fx(p.w)}"${d} stroke-linecap="round"/>`;
+      if(o.hit&&p.ly!=='DT-HATCH') s+=`<line x1="${fx(p.a[0])}" y1="${fx(p.a[1])}" x2="${fx(p.b[0])}" y2="${fx(p.b[1])}" stroke="transparent" stroke-width="${fx((COARSE?24:10)/o.z)}" pointer-events="stroke"/>`;
+      return s;}
+    case 'poly':
+      return `<polygon points="${p.pts.map(q=>fx(q[0])+','+fx(q[1])).join(' ')}" fill="${o.ghost?'none':p.fill}" stroke="${col}" stroke-width="${fx(p.w)}" stroke-linejoin="miter" pointer-events="all"/>`;
+    case 'circ':
+      return `<circle cx="${fx(p.c[0])}" cy="${fx(p.c[1])}" r="${fx(p.r)}" fill="${o.ghost?'none':p.fill}" stroke="${col}" stroke-width="${fx(p.w)}" pointer-events="all"/>`;
+    case 'text':
+      return `<text transform="translate(${fx(p.p[0])} ${fx(p.p[1])}) rotate(${fx(p.a)}) scale(1 -1)" font-size="${fx(p.h)}" font-family="${FONT}" fill="${col}" text-anchor="${p.al==='c'?'middle':'start'}">${esc(p.s)}</text>`;
+  }
+  return '';
+}
+function entSvg(e,o){
+  const P=explode(e,st.scale);
+  const g=P.map(p=>primSvg(p,o)).join('');
+  return e.id&&!e.sys?`<g data-id="${e.id}">${g}</g>`:`<g>${g}</g>`;
+}
+function grips(e){
+  switch(e.t){
+    case 'rect':{
+      const c=[[e.x,e.y],[e.x+e.w,e.y],[e.x+e.w,e.y+e.h],[e.x,e.y+e.h]];
+      return c.map((p,i)=>{const o=c[(i+2)%4];return {x:p[0],y:p[1],f:(x,y)=>{e.x=Math.min(x,o[0]);e.y=Math.min(y,o[1]);e.w=Math.abs(x-o[0]);e.h=Math.abs(y-o[1]);}};});}
+    case 'line':return [{x:e.x1,y:e.y1,f:(x,y)=>{e.x1=x;e.y1=y;}},{x:e.x2,y:e.y2,f:(x,y)=>{e.x2=x;e.y2=y;}}];
+    case 'circ':return [{x:e.x,y:e.y,f:(x,y)=>{e.x=x;e.y=y;}},{x:e.x+e.r,y:e.y,f:(x,y)=>{e.r=Math.max(1,Math.hypot(x-e.x,y-e.y));}}];
+    case 'text':return [{x:e.x,y:e.y,f:(x,y)=>{e.x=x;e.y=y;}}];
+    case 'dim':{
+      const dx=e.x2-e.x1,dy=e.y2-e.y1,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,mx=(e.x1+e.x2)/2,my=(e.y1+e.y2)/2;
+      return [{x:e.x1,y:e.y1,f:(x,y)=>{e.x1=x;e.y1=y;}},{x:e.x2,y:e.y2,f:(x,y)=>{e.x2=x;e.y2=y;}},
+        {x:mx+nx*e.off,y:my+ny*e.off,f:(x,y)=>{e.off=(x-mx)*nx+(y-my)*ny;}}];}
+    case 'note':return [{x:e.x,y:e.y,f:(x,y)=>{e.x=x;e.y=y;}},{x:e.tx,y:e.ty,f:(x,y)=>{e.tx=x;e.ty=y;}}];
+  }
+  return [];
+}
+function render(){
+  const S=st.scale,[W,H]=SHEETS[st.sheet];
+  const z=view.z;
+  let h=`<g transform="translate(${view.tx} ${view.ty}) scale(${z} ${-z})">`;
+  h+=`<rect x="0" y="0" width="${W*S}" height="${H*S}" fill="#fff" stroke="#8a919b" stroke-width="${1.2/z}"/>`;
+  sysEnts().forEach(e=>{h+=entSvg(e,{z});});
+  st.ents.forEach(e=>{h+=entSvg(e,{z,hit:1,col:(e.id===sel||msel.has(e.id))?'#d4380d':null});});
+  if(tmp){const pe=previewEnt();if(pe)h+=entSvg(pe,{z,ghost:1,col:'#0b6bcb'});}
+  const se=sel&&st.ents.find(x=>x.id===sel);
+  if(se&&tool==='sel'){
+    const r=(COARSE?14:7)/z;
+    grips(se).forEach(g=>{h+=`<rect x="${g.x-r/2}" y="${g.y-r/2}" width="${r}" height="${r}" fill="#fff" stroke="#0b6bcb" stroke-width="${1.4/z}"/>`;});
+  }
+  if(drag&&drag.type==='box'&&drag.big){
+    const b=normBox(drag.s,drag.c),cr=isCross(drag);
+    h+=`<rect x="${b.x0}" y="${b.y0}" width="${b.x1-b.x0}" height="${b.y1-b.y0}" fill="${cr?'rgba(30,160,90,.10)':'rgba(11,107,203,.10)'}" stroke="${cr?'#1e9a5a':'#0b6bcb'}" stroke-width="${1.2/z}"${cr?` stroke-dasharray="${6/z} ${4/z}"`:''}/>`;
+  }
+  h+='</g>';
+  world.innerHTML=h;
+  $('#stat').textContent=`${st.sheet} / S=1/${S} / 詳細${st.details.length}件 / 図形${st.ents.length}`+(cur?`  X:${Math.round(cur[0]/S*10)/10} Y:${Math.round(cur[1]/S*10)/10}(紙面mm)`:'');
+}
+let cur=null;
+function fitBox(x0,y0,x1,y1,m){
+  const r=svg.getBoundingClientRect(),w=x1-x0,h=y1-y0;
+  if(r.width<10||r.height<10)return;
+  view.z=Math.min(r.width/w,r.height/h)*(m||.94);
+  view.tx=(r.width-w*view.z)/2-x0*view.z;
+  view.ty=(r.height+h*view.z)/2+y0*view.z;
+  render();
+}
+const fitSheet=()=>{const [W,H]=SHEETS[st.sheet],S=st.scale;fitBox(0,0,W*S,H*S);};
+function zoomAt(px,py,k){
+  const wx=(px-view.tx)/view.z,wy=(view.ty-py)/view.z;
+  view.z=Math.max(.01,Math.min(40,view.z*k));
+  view.tx=px-wx*view.z;view.ty=py+wy*view.z;render();
+}
+
+/* ───────── 履歴・保存 ───────── */
+const snapState=()=>JSON.stringify({sheet:st.sheet,scale:st.scale,ents:st.ents,details:st.details,nextId:st.nextId,seq:st.seq,meta:st.meta});
+function loadState(s){const o=JSON.parse(s);Object.assign(st,o);sel=null;msel.clear();tmp=null;}
+function saveLocal(){try{localStorage.setItem('detailApp.state',snapState());}catch(e){}}
+function commit(){hist.push(snapState());if(hist.length>120)hist.shift();redoS.length=0;saveLocal();refreshUI();render();}
+function undo(){if(hist.length<2)return;redoS.push(hist.pop());loadState(hist[hist.length-1]);saveLocal();refreshUI();render();}
+function redo(){if(!redoS.length)return;const s=redoS.pop();hist.push(s);loadState(s);saveLocal();refreshUI();render();}
+function addEnt(e){e.id=st.nextId++;e.g=0;st.ents.push(e);sel=e.id;commit();}
+
+/* ───────── 操作 ───────── */
+function toWorld(ev){const r=svg.getBoundingClientRect(),px=ev.clientX-r.left,py=ev.clientY-r.top;return [(px-view.tx)/view.z,(view.ty-py)/view.z,px,py];}
+function snapPt(x,y){
+  if(!snapOn)return [x,y];
+  const thr=9/view.z;let best=null,bd=thr;
+  const chk=(px,py)=>{const d=Math.hypot(px-x,py-y);if(d<bd){bd=d;best=[px,py];}};
+  st.ents.forEach(e=>{
+    if(e.t==='rect'){chk(e.x,e.y);chk(e.x+e.w,e.y);chk(e.x,e.y+e.h);chk(e.x+e.w,e.y+e.h);}
+    else if(e.t==='line'){chk(e.x1,e.y1);chk(e.x2,e.y2);}
+    else if(e.t==='circ')chk(e.x,e.y);
+  });
+  if(best)return best;
+  return [Math.round(x/5)*5,Math.round(y/5)*5];
+}
+function previewEnt(){
+  if(!tmp||!tmp.pts.length)return null;
+  const p=tmp.pts,c=tmp.cur||p[p.length-1],S=st.scale;
+  switch(tool){
+    case 'line':return {t:'line',x1:p[0][0],y1:p[0][1],x2:c[0],y2:c[1],k:'out'};
+    case 'rect':return {t:'rect',x:Math.min(p[0][0],c[0]),y:Math.min(p[0][1],c[1]),w:Math.abs(c[0]-p[0][0]),h:Math.abs(c[1]-p[0][1]),m:matSel};
+    case 'circ':return {t:'circ',x:p[0][0],y:p[0][1],r:Math.max(1,Math.hypot(c[0]-p[0][0],c[1]-p[0][1])),m:'air'};
+    case 'dim':{
+      if(p.length===1)return {t:'line',x1:p[0][0],y1:p[0][1],x2:c[0],y2:c[1],k:'thin'};
+      const dx=p[1][0]-p[0][0],dy=p[1][1]-p[0][1],L=Math.hypot(dx,dy)||1;
+      return {t:'dim',x1:p[0][0],y1:p[0][1],x2:p[1][0],y2:p[1][1],off:((c[0]-p[0][0])*(-dy)+(c[1]-p[0][1])*dx)/L,txt:'',h:2.5};}
+    case 'note':return {t:'note',x:p[0][0],y:p[0][1],tx:c[0],ty:c[1],s:'引出線',h:2.5};
+  }
+  return null;
+}
+/* 範囲選択:左→右=窓選択(完全に内側)、右→左=交差選択(一部でも掛かる) */
+const normBox=(a,c)=>({x0:Math.min(a[0],c[0]),y0:Math.min(a[1],c[1]),x1:Math.max(a[0],c[0]),y1:Math.max(a[1],c[1])});
+const isCross=d=>d.c[0]<d.s[0];
+function boxHit(e,b,cross){
+  const P=explode(e,st.scale),eb=primBox(P);
+  if(eb.x0>=b.x0&&eb.x1<=b.x1&&eb.y0>=b.y0&&eb.y1<=b.y1) return true;
+  if(!cross||eb.x1<b.x0||eb.x0>b.x1||eb.y1<b.y0||eb.y0>b.y1) return false;
+  const w=b.x1-b.x0,h=b.y1-b.y0;
+  const inB=q=>q[0]>=b.x0&&q[0]<=b.x1&&q[1]>=b.y0&&q[1]<=b.y1;
+  const seg=(a,c)=>{if(inB(a)||inB(c))return true;const r=clipT(a[0],a[1],c[0]-a[0],c[1]-a[1],b.x0,b.y0,w,h);return !!r&&r[1]>=0&&r[0]<=1;};
+  return P.some(p=>{
+    if(p.k==='line') return seg(p.a,p.b);
+    if(p.k==='poly'){
+      const n=p.pts.length;
+      for(let i=0;i<(p.closed?n:n-1);i++) if(seg(p.pts[i],p.pts[(i+1)%n])) return true;
+      if(p.closed&&p.fill!=='none'){const pb=primBox([p]);return b.x0>=pb.x0&&b.x1<=pb.x1&&b.y0>=pb.y0&&b.y1<=pb.y1;}
+      return false;
+    }
+    const pb=primBox([p]);return !(pb.x1<b.x0||pb.x0>b.x1||pb.y1<b.y0||pb.y0>b.y1);
+  });
+}
+const selIds=()=>sel?[sel]:[...msel];
+function setSelection(ids){msel=new Set(ids);sel=null;if(msel.size===1){sel=[...msel][0];msel.clear();}}
+function removeEnts(ids){
+  const set=new Set(ids);if(!set.size)return;
+  st.ents=st.ents.filter(e=>!set.has(e.id));
+  st.details=st.details.filter(r=>r.variant==='legend'||st.ents.some(e=>e.g===r.id));
+  st.details.forEach(r=>{r.box=expandBox(r);});
+  sel=null;msel.clear();commit();
+}
+function setTool(t){tool=t;tmp=null;$$('#tb [data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));svg.style.cursor=t==='sel'?'default':'crosshair';render();}
+function entsOfDrag(id,alt){
+  const e=st.ents.find(x=>x.id===id);if(!e)return [];
+  return alt&&e.g?st.ents.filter(x=>x.g===e.g):[e];
+}
+svg.addEventListener('contextmenu',ev=>ev.preventDefault());
+svg.addEventListener('pointerdown',ev=>{
+  const [wx,wy,px,py]=toWorld(ev);
+  try{svg.setPointerCapture(ev.pointerId);}catch(e){}
+  if(ev.pointerType==='touch'){
+    touches.set(ev.pointerId,[px,py]);
+    if(touches.size===2){
+      /* 2本指:ピンチ拡大縮小+パン。1本目で始まった操作は取り消す */
+      if(drag&&drag.type==='move')drag.list.forEach(([e,js])=>{const o=JSON.parse(js);Object.keys(e).forEach(k=>{if(!(k in o))delete e[k];});Object.assign(e,o);});
+      if(tmp&&tmp.added&&Date.now()-tmp.added<600){tmp.pts.pop();if(!tmp.pts.length)tmp=null;}
+      const [a,b]=[...touches.values()];
+      drag={type:'pinch',d0:Math.hypot(a[0]-b[0],a[1]-b[1])||1,c0:[(a[0]+b[0])/2,(a[1]+b[1])/2],z0:view.z,tx0:view.tx,ty0:view.ty};
+      render();return;
+    }
+    if(touches.size>2)return;
+  }
+  if(ev.button===1||ev.button===2||spaceDown){drag={type:'pan',px,py,tx:view.tx,ty:view.ty};return;}
+  if(tool==='sel'){
+    const se=sel&&st.ents.find(x=>x.id===sel);
+    if(se){
+      for(const g of grips(se)){
+        if(Math.hypot((g.x-wx)*view.z,(g.y-wy)*view.z)<(COARSE?18:8)){drag={type:'grip',g,moved:false};return;}
+      }
+    }
+    const t=ev.target.closest&&ev.target.closest('[data-id]');
+    if(t){
+      const id=+t.dataset.id;
+      if(ev.shiftKey||ev.ctrlKey){
+        const ids=new Set(selIds());ids.has(id)?ids.delete(id):ids.add(id);
+        setSelection([...ids]);refreshUI();render();return;
+      }
+      let list;
+      if(msel.has(id)) list=st.ents.filter(e=>msel.has(e.id));
+      else{sel=id;msel.clear();list=entsOfDrag(id,ev.altKey);}
+      drag={type:'move',s:[wx,wy],list:list.map(e=>[e,JSON.stringify(e)]),moved:false};
+      refreshUI();render();
+    }else{drag={type:'box',s:[wx,wy],c:[wx,wy],p0:[px,py],add:ev.shiftKey||ev.ctrlKey,big:false};}
+    return;
+  }
+  const [sx,sy]=snapPt(wx,wy);
+  if(tool==='del'){
+    const t=ev.target.closest&&ev.target.closest('[data-id]');
+    if(t) removeEnts([+t.dataset.id]);
+    else drag={type:'box',s:[wx,wy],c:[wx,wy],p0:[px,py],del:true,big:false};
+    return;
+  }
+  if(tool==='text'){
+    const s=prompt('文字を入力','');
+    if(s)addEnt({t:'text',x:sx,y:sy,s,h:3,a:0,al:'l'});
+    return;
+  }
+  if(!tmp)tmp={pts:[]};
+  tmp.pts.push([sx,sy]);tmp.cur=[sx,sy];tmp.added=Date.now();
+  const n=tmp.pts.length,p=tmp.pts;
+  if(tool==='line'&&n===2){addEnt({t:'line',x1:p[0][0],y1:p[0][1],x2:p[1][0],y2:p[1][1],k:'out'});tmp={pts:[[sx,sy]],cur:[sx,sy]};}
+  else if(tool==='rect'&&n===2){tmp=null;if(Math.abs(p[1][0]-p[0][0])>.1&&Math.abs(p[1][1]-p[0][1])>.1)addEnt({t:'rect',x:Math.min(p[0][0],p[1][0]),y:Math.min(p[0][1],p[1][1]),w:Math.abs(p[1][0]-p[0][0]),h:Math.abs(p[1][1]-p[0][1]),m:matSel});}
+  else if(tool==='circ'&&n===2){tmp=null;addEnt({t:'circ',x:p[0][0],y:p[0][1],r:Math.max(1,Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1])),m:'air'});}
+  else if(tool==='dim'&&n===3){const pe=previewEnt();tmp=null;addEnt(pe);}
+  else if(tool==='note'&&n===2){const s=prompt('引出線の文字','');const q=p.slice();tmp=null;if(s)addEnt({t:'note',x:q[0][0],y:q[0][1],tx:q[1][0],ty:q[1][1],s,h:2.5});else render();}
+  else render();
+});
+svg.addEventListener('pointermove',ev=>{
+  const [wx,wy,px,py]=toWorld(ev);cur=[wx,wy];
+  if(ev.pointerType==='touch'&&touches.has(ev.pointerId))touches.set(ev.pointerId,[px,py]);
+  if(drag&&drag.type==='pinch'){
+    if(touches.size<2)return;
+    const [a,b]=[...touches.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]),c=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+    const wx0=(drag.c0[0]-drag.tx0)/drag.z0,wy0=(drag.ty0-drag.c0[1])/drag.z0;
+    view.z=Math.max(.01,Math.min(40,drag.z0*d/drag.d0));
+    view.tx=c[0]-wx0*view.z;view.ty=c[1]+wy0*view.z;render();return;
+  }
+  if(drag){
+    if(drag.type==='pan'){view.tx=drag.tx+(px-drag.px);view.ty=drag.ty+(py-drag.py);render();return;}
+    if(drag.type==='box'){drag.c=[wx,wy];if(Math.hypot(px-drag.p0[0],py-drag.p0[1])>4)drag.big=true;render();return;}
+    if(drag.type==='grip'){const [sx,sy]=snapPt(wx,wy);drag.g.f(sx,sy);drag.moved=true;render();return;}
+    if(drag.type==='move'){
+      let dx=wx-drag.s[0],dy=wy-drag.s[1];
+      if(snapOn){dx=Math.round(dx/5)*5;dy=Math.round(dy/5)*5;}
+      drag.list.forEach(([e,js])=>{const o=JSON.parse(js);Object.keys(e).forEach(k=>{if(!(k in o))delete e[k];});Object.assign(e,o);shiftEnt(e,dx,dy);});
+      drag.moved=dx!==0||dy!==0;render();return;
+    }
+  }
+  if(tmp&&tool!=='sel'){tmp.cur=snapPt(wx,wy);}
+  render();
+});
+function endDrag(ev){
+  if(ev&&ev.pointerType==='touch'){touches.delete(ev.pointerId);if(drag&&drag.type==='pinch'){if(touches.size<2)drag=null;return;}}
+  if(!drag)return;
+  const d=drag;drag=null;
+  if(d.type==='box'){
+    if(!d.big){if(!d.del&&!d.add){sel=null;msel.clear();refreshUI();}render();return;}
+    const b=normBox(d.s,d.c),cr=isCross(d);
+    const hits=st.ents.filter(e=>boxHit(e,b,cr)).map(e=>e.id);
+    if(d.del){
+      if(hits.length&&(hits.length<30||confirm(hits.length+'個の図形を消去します。よろしいですか?')))removeEnts(hits);else render();
+      return;
+    }
+    setSelection(d.add?[...new Set([...selIds(),...hits])]:hits);
+    refreshUI();render();return;
+  }
+  if((d.type==='move'||d.type==='grip')&&d.moved){
+    st.details.forEach(r=>{r.box=expandBox(r);});
+    commit();
+  }
+}
+function expandBox(r){const es=st.ents.filter(e=>e.g===r.id);if(!es.length)return r.box;const b=entsBox(es,st.scale),S=st.scale;return {x0:b.x0-2*S,y0:b.y0-2*S,x1:b.x1+2*S,y1:b.y1+2*S};}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('wheel',ev=>{ev.preventDefault();const [,,px,py]=toWorld(ev);zoomAt(px,py,ev.deltaY<0?1.15:1/1.15);},{passive:false});
+svg.addEventListener('dblclick',()=>{if(tool==='line'){tmp=null;render();}});
+document.addEventListener('keydown',ev=>{
+  const tag=(ev.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select')return;
+  const k=ev.key;
+  if((ev.ctrlKey||ev.metaKey)&&k.toLowerCase()==='z'){ev.preventDefault();undo();return;}
+  if((ev.ctrlKey||ev.metaKey)&&k.toLowerCase()==='y'){ev.preventDefault();redo();return;}
+  if((ev.ctrlKey||ev.metaKey)&&k.toLowerCase()==='d'){ev.preventDefault();dupSel();return;}
+  if(k===' '){ev.preventDefault();if(!spaceDown){spaceDown=true;svg.style.cursor='grab';}return;}
+  if((ev.ctrlKey||ev.metaKey)&&k.toLowerCase()==='a'){ev.preventDefault();setTool('sel');setSelection(st.ents.map(e=>e.id));refreshUI();render();return;}
+  if(k==='Escape'){tmp=null;drag=null;if(tool!=='sel')setTool('sel');else{sel=null;msel.clear();refreshUI();}render();return;}
+  if((k==='Delete'||k==='Backspace')&&selIds().length){delSel();return;}
+  if(selIds().length&&k.startsWith('Arrow')){
+    ev.preventDefault();
+    const d=(ev.shiftKey?50:5),ids=new Set(selIds());
+    st.ents.forEach(e=>{if(ids.has(e.id))shiftEnt(e,k==='ArrowLeft'?-d:k==='ArrowRight'?d:0,k==='ArrowDown'?-d:k==='ArrowUp'?d:0);});
+    clearTimeout(window._ak);window._ak=setTimeout(()=>{st.details.forEach(r=>{r.box=expandBox(r);});commit();},300);render();
+  }
+});
+function delSel(){removeEnts(selIds());}
+/* 選択図形を数値で移動(copy=true で複写移動、grp=true で所属する詳細ごと) */
+function moveSelBy(dx,dy,copy,grp){
+  let ids=new Set(selIds());if(!ids.size||(!dx&&!dy&&!copy))return;
+  if(grp){const gs=new Set(st.ents.filter(e=>ids.has(e.id)&&e.g).map(e=>e.g));st.ents.forEach(e=>{if(gs.has(e.g))ids.add(e.id);});}
+  const tg=st.ents.filter(e=>ids.has(e.id));
+  if(copy){
+    const nw=tg.map(e=>{const c=JSON.parse(JSON.stringify(e));c.id=st.nextId++;c.g=0;shiftEnt(c,dx,dy);return c;});
+    st.ents.push(...nw);setSelection(nw.map(e=>e.id));
+  }else tg.forEach(e=>shiftEnt(e,dx,dy));
+  st.details.forEach(r=>{r.box=expandBox(r);});
+  commit();
+}
+document.addEventListener('keyup',ev=>{if(ev.key===' '){spaceDown=false;svg.style.cursor=tool==='sel'?'default':'crosshair';}});
+function dupSel(){const e=st.ents.find(x=>x.id===sel);if(!e)return;const c=JSON.parse(JSON.stringify(e));shiftEnt(c,50,-50);c.g=0;c.id=st.nextId++;st.ents.push(c);sel=c.id;commit();}
+
+/* ───────── エクスポート ───────── */
+function sheetSvg(px){
+  const [W,H]=SHEETS[st.sheet],S=st.scale;
+  let h=`<svg xmlns="http://www.w3.org/2000/svg" width="${px[0]}" height="${px[1]}" viewBox="0 0 ${W*S} ${H*S}"><rect width="${W*S}" height="${H*S}" fill="#fff"/><g transform="translate(0 ${H*S}) scale(1 -1)">`;
+  [...sysEnts(),...st.ents].forEach(e=>{h+=entSvg(e,{z:1,col:null});});
+  return h+'</g></svg>';
+}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+const fname=ext=>(st.meta.title||'納まり詳細図').replace(/[\\/:*?"<>|]/g,'_')+'_'+today().replace(/\./g,'')+'.'+ext;
+async function exportPDF(){
+  const [W,H]=SHEETS[st.sheet],dpi=200,pw=Math.round(W/25.4*dpi),ph=Math.round(H/25.4*dpi);
+  const svgStr=sheetSvg([pw,ph]);
+  const img=new Image();
+  const url=URL.createObjectURL(new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'}));
+  await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url;});
+  const cv=document.createElement('canvas');cv.width=pw;cv.height=ph;
+  const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,pw,ph);cx.drawImage(img,0,0,pw,ph);
+  URL.revokeObjectURL(url);
+  const jb=await new Promise(r=>cv.toBlob(r,'image/jpeg',.93));
+  const jpg=new Uint8Array(await jb.arrayBuffer());
+  const ptW=(W/25.4*72).toFixed(2),ptH=(H/25.4*72).toFixed(2);
+  const enc=new TextEncoder(),parts=[],offs=[];let pos=0;
+  const add=b=>{const u=typeof b==='string'?enc.encode(b):b;parts.push(u);pos+=u.length;};
+  add('%PDF-1.4\n');
+  offs[1]=pos;add('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n');
+  offs[2]=pos;add('2 0 obj\n<</Type/Pages/Kids[3 0 R]/Count 1>>\nendobj\n');
+  offs[3]=pos;add(`3 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${ptW} ${ptH}]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>\nendobj\n`);
+  offs[4]=pos;add(`4 0 obj\n<</Type/XObject/Subtype/Image/Width ${pw}/Height ${ph}/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ${jpg.length}>>\nstream\n`);add(jpg);add('\nendstream\nendobj\n');
+  const cs=`q ${ptW} 0 0 ${ptH} 0 0 cm /Im0 Do Q`;
+  offs[5]=pos;add(`5 0 obj\n<</Length ${cs.length}>>\nstream\n${cs}\nendstream\nendobj\n`);
+  const xr=pos;let x='xref\n0 6\n0000000000 65535 f \n';
+  for(let i=1;i<=5;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  add(x+`trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n${xr}\n%%EOF`);
+  dl(new Blob(parts,{type:'application/pdf'}),fname('pdf'));
+}
+function dxfStr(s){return [...String(s)].map(c=>{const n=c.codePointAt(0);return n>126?(n>0xFFFF?'?':'\\U+'+n.toString(16).toUpperCase().padStart(4,'0')):c;}).join('');}
+function exportDXF(){
+  const S=st.scale,prims=[];
+  sysEnts().forEach(e=>explode(e,S).forEach(p=>{if(p.k==='line')p.ly='DT-FRAME';prims.push(p);}));
+  st.ents.forEach(e=>explode(e,S).forEach(p=>prims.push(p)));
+  const used=new Set(['0']);prims.forEach(p=>used.add(p.ly));
+  const o=[],g=(c,v)=>{o.push(String(c),String(v));};
+  const n=v=>(Math.round(v*1000)/1000).toString();
+  g(0,'SECTION');g(2,'HEADER');g(9,'$ACADVER');g(1,'AC1009');g(9,'$LTSCALE');g(40,n(S));g(9,'$DWGCODEPAGE');g(3,'ANSI_932');g(0,'ENDSEC');
+  g(0,'SECTION');g(2,'TABLES');
+  g(0,'TABLE');g(2,'LTYPE');g(70,3);
+  g(0,'LTYPE');g(2,'CONTINUOUS');g(70,0);g(3,'Solid line');g(72,65);g(73,0);g(40,0);
+  g(0,'LTYPE');g(2,'DASHED');g(70,0);g(3,'Dashed');g(72,65);g(73,2);g(40,19.05);g(49,12.7);g(49,-6.35);
+  g(0,'LTYPE');g(2,'CENTER');g(70,0);g(3,'Center');g(72,65);g(73,4);g(40,50.8);g(49,31.75);g(49,-6.35);g(49,6.35);g(49,-6.35);
+  g(0,'ENDTAB');
+  g(0,'TABLE');g(2,'LAYER');g(70,used.size);
+  used.forEach(l=>{g(0,'LAYER');g(2,l);g(70,0);g(62,LAYERCOL[l]||7);g(6,l==='DT-CENTER'?'CENTER':l==='DT-HIDDEN'?'DASHED':'CONTINUOUS');});
+  g(0,'ENDTAB');
+  g(0,'TABLE');g(2,'STYLE');g(70,2);
+  [['STANDARD','txt'],['JP','msgothic.ttc']].forEach(([s,f])=>{g(0,'STYLE');g(2,s);g(70,0);g(40,0);g(41,1);g(50,0);g(71,0);g(42,2.5);g(3,f);g(4,'');});
+  g(0,'ENDTAB');
+  g(0,'ENDSEC');
+  g(0,'SECTION');g(2,'ENTITIES');
+  prims.forEach(p=>{
+    if(p.k==='line'){g(0,'LINE');g(8,p.ly);g(10,n(p.a[0]));g(20,n(p.a[1]));g(30,0);g(11,n(p.b[0]));g(21,n(p.b[1]));g(31,0);}
+    else if(p.k==='poly'){
+      g(0,'POLYLINE');g(8,p.ly);g(66,1);g(10,0);g(20,0);g(30,0);g(70,p.closed?1:0);
+      p.pts.forEach(q=>{g(0,'VERTEX');g(8,p.ly);g(10,n(q[0]));g(20,n(q[1]));g(30,0);});
+      g(0,'SEQEND');g(8,p.ly);
+      if(p.solid){const q=p.pts;g(0,'SOLID');g(8,p.ly);[[q[0],10],[q[1],11],[q[3],12],[q[2],13]].forEach(([pt,c])=>{g(c,n(pt[0]));g(c+10,n(pt[1]));g(c+20,0);});}
+    }
+    else if(p.k==='circ'&&p.fill==='#000'){
+      const r=p.r,cx=p.c[0],cy=p.c[1];
+      g(0,'POLYLINE');g(8,p.ly);g(66,1);g(10,0);g(20,0);g(30,0);g(70,1);g(40,n(r));g(41,n(r));
+      [[cx-r/2,cy],[cx+r/2,cy]].forEach(q=>{g(0,'VERTEX');g(8,p.ly);g(10,n(q[0]));g(20,n(q[1]));g(30,0);g(40,n(r));g(41,n(r));g(42,1);});
+      g(0,'SEQEND');g(8,p.ly);
+    }
+    else if(p.k==='circ'){g(0,'CIRCLE');g(8,p.ly);g(10,n(p.c[0]));g(20,n(p.c[1]));g(30,0);g(40,n(p.r));}
+    else if(p.k==='text'){
+      g(0,'TEXT');g(8,p.ly);g(10,n(p.p[0]));g(20,n(p.p[1]));g(30,0);g(40,n(p.h));g(1,dxfStr(p.s));if(p.a)g(50,n(p.a));g(7,'JP');
+      if(p.al==='c'){g(72,1);g(11,n(p.p[0]));g(21,n(p.p[1]));g(31,0);}
+    }
+  });
+  g(0,'ENDSEC');g(0,'EOF');
+  dl(new Blob([o.join('\r\n')+'\r\n'],{type:'application/dxf'}),fname('dxf'));
+}
+
+/* ───────── 左パネル ───────── */
+const USES=[['office','事務所・オフィス'],['house','住宅'],['shop','店舗・商業'],['wet','水まわり(浴室・厨房等)']];
+const opt=(list,val)=>list.map(a=>{const [v,l]=Array.isArray(a)?a:[a,a];return `<option value="${v}"${String(v)===String(val)?' selected':''}>${l}</option>`;}).join('');
+function renderProposePane(){
+  const p=$('#pane-p');
+  p.innerHTML=`
+  <h3>✎ 言葉で作図</h3>
+  <textarea id="pText" rows="3" placeholder="例)壁床の取り合い、床はRC下地に石貼り、石巾木H100、壁はt12.5ボード2枚貼り" style="width:100%;font:inherit;padding:6px;border:1px solid var(--bd);border-radius:6px;resize:vertical">${esc(promptText)}</textarea>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">${PROMPT_EX.map(x=>`<button class="tag" style="border:0;cursor:pointer" data-ex="${esc(x)}">${esc(x.length>18?x.slice(0,18)+'…':x)}</button>`).join('')}</div>
+  <div class="row" style="margin:2px 0 6px"><button id="micBtn" data-act="mic" style="flex:none">🎤 音声入力</button><span id="micSt" class="mut" style="font-size:11.5px">話し終えたら「作図して」で作図します</span></div>
+  <div id="pRes"></div>
+  <hr style="border:0;border-top:1px solid var(--bd);margin:12px 0">
+  <h3>1. 取り合い部位</h3>
+  <div class="row"><label>部位</label><select id="cCat">${opt(CATS.map(c=>[c.id,c.name]),cond.cat)}</select></div>
+  <h3>2. 条件</h3>
+  <div class="row"><label>用途</label><select id="cUse">${opt(USES,cond.use)}</select></div>
+  <div class="row"><label>耐火・防火区画</label><select id="cFire">${opt([[0,'なし'],[1,'準耐火〜1時間耐火'],[2,'2時間耐火']],cond.fire)}</select></div>
+  <div class="row"><label>遮音要求</label><select id="cSound">${opt([[0,'なし'],[1,'中(間仕切り一般)'],[2,'高(戸境・会議室)']],cond.sound)}</select></div>
+  <div class="row"><label>天井高(mm)</label><input id="cH" type="number" value="${cond.ceilH}" step="100"></div>
+  <div class="mut">スタッドは65形(W67)が標準です。天井高4.0m超は90形、4.5m超は100形に自動で上げます。</div>
+  <h3>3. 提案(おすすめ順)</h3>
+  <div id="cards"></div>`;
+  drawCards();drawPrompt();
+}
+let promptText='';
+const PROMPT_EX=['壁床の取り合い、床 RC下地石貼り、巾木 石貼り、壁t12.5ボード2枚貼り','二重床フローリング、木製巾木H60、壁ボード12.5 1枚 クロス','OAフロア タイルカーペット ソフト巾木 遮音壁','RC壁にタイル床 タイル巾木H100','壁 下貼りPB12.5 上貼り強化PB15 スタッド65形','壁と天井の取り合い 廻り縁 天井懐500','天井点検口 450角'];
+/* ───────── 音声入力(Web Speech API) ───────── */
+let SRec=window.SpeechRecognition||window.webkitSpeechRecognition;
+let srec=null,srecOn=false,srecBase='';
+const VOICE_GO=/[、。\s]*(作図して(?:ください)?|作図|描いて(?:ください)?|書いて(?:ください)?)[。\s]*$/;
+function setPromptText(t){promptText=t;const ta=$('#pText');if(ta)ta.value=t;drawPrompt();}
+function micUI(msg){
+  const b=$('#micBtn'),m=$('#micSt');if(!b)return;
+  b.classList.toggle('pri',srecOn);b.textContent=srecOn?'■ 停止':'🎤 音声入力';
+  if(m)m.textContent=msg||(srecOn?'聞き取り中… 話し終えたら「作図して」':'話し終えたら「作図して」で作図します');
+}
+function micToggle(){
+  if(!SRec){alert('このブラウザは音声入力(Web Speech API)に対応していません。\nPCはChrome/Edge、iPadはSafariでお使いください。\niPadではキーボードのマイクボタン(音声入力)でも入力できます。');return;}
+  if(srecOn){srec.stop();return;}
+  srec=new SRec();srec.lang='ja-JP';srec.interimResults=true;srec.continuous=true;
+  srecBase=promptText.trim()?promptText.replace(/[、。\s]*$/,'')+'、':'';
+  srec.onresult=e=>{
+    let fin='',itm='';
+    for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript;else itm+=r[0].transcript;}
+    if(fin){
+      srecBase+=fin;
+      if(VOICE_GO.test(srecBase)){
+        srecBase=srecBase.replace(VOICE_GO,'');setPromptText(srecBase);srec.stop();
+        const r=parsePrompt(promptText);
+        if(r.ok){const b=$('[data-act="pplace"]');if(b)b.click();}else micUI('部位が読み取れませんでした。言い直してください');
+        return;
+      }
+      srecBase+='、';
+    }
+    setPromptText((srecBase+itm).replace(/、$/,''));
+  };
+  srec.onerror=e=>{srecOn=false;micUI(e.error==='not-allowed'||e.error==='service-not-allowed'?'マイクの使用が許可されていません(ブラウザの設定で許可してください)':e.error==='no-speech'?'音声が聞き取れませんでした':'音声入力エラー: '+e.error);};
+  srec.onend=()=>{srecOn=false;micUI();};
+  try{srec.start();srecOn=true;micUI();}catch(err){micUI('音声入力を開始できませんでした');}
+}
+function drawPrompt(){
+  const box=$('#pRes');if(!box)return;
+  if(!promptText.trim()){box.innerHTML='<div class="mut">部位・材料・寸法を自由に書いてください。読点や空白で区切ると確実です。</div>';return;}
+  const r=parsePrompt(promptText);
+  if(!r.ok){box.innerHTML=`<div class="warnbox">${esc(r.msg)}${r.unk.length?'<br>未解釈:'+r.unk.map(esc).join(' / '):''}</div>`;return;}
+  box.innerHTML=`<div class="card best"><h4>解釈結果</h4>
+    <table style="width:100%;font-size:12px;border-collapse:collapse">${r.items.map(([k,v])=>`<tr><td style="color:var(--mut);width:56px;vertical-align:top;padding:2px 0">${esc(k)}</td><td style="padding:2px 0">${esc(v)}</td></tr>`).join('')}</table>
+    ${r.unk.length?`<div class="mut" style="color:var(--warn)">未解釈:${r.unk.map(esc).join(' / ')}</div>`:''}
+    <div class="row" style="margin-top:6px"><button class="pri" data-act="pplace">この内容で作図</button></div>
+    <div class="mut">寸法は配置後「② 配置済み」で変更できます。</div></div>`;
+}
+function drawCards(){
+  const vs=Object.values(V).filter(v=>v.cat===cond.cat).map(v=>({v,r:v.ev(cond)})).sort((a,b)=>b.r.s-a.r.s);
+  $('#cards').innerHTML=vs.map(({v,r},i)=>`
+    <div class="card${i===0?' best':''}">
+      <h4>${i===0?'★ ':''}${esc(v.title)}<span class="pill">適合度 ${r.s}</span></h4>
+      <div class="bar"><i style="width:${r.s}%"></i></div>
+      <div class="mut">${esc(v.desc)}</div>
+      <ul>${r.why.map(w=>`<li>${esc(w)}</li>`).join('')}${r.warn.map(w=>`<li class="w">⚠ ${esc(w)}</li>`).join('')}</ul>
+      <div class="ref">根拠:${esc(v.ref)}</div>
+      <div class="row" style="margin-top:6px"><button class="pri" data-act="place" data-v="${v.id}">シートに配置</button></div>
+    </div>`).join('');
+}
+/* ボード構成エディタ:1枚ごとに材料と厚さを指定(片面・下貼→上貼) */
+const BOARD_MATS=[['せっこうボード','pb','PB'],['強化せっこうボード','pb','強化PB'],['硬質せっこうボード','pb','硬質PB'],['シージングせっこうボード','pb','シージングPB'],['化粧せっこうボード','pb','化粧PB'],['けい酸カルシウム板','pb','ケイカル板'],['合板','ply','合板'],['構造用合板','ply','構造用合板']];
+const boardM=n=>(BOARD_MATS.find(b=>b[0]===n)||['','pb'])[1];
+const hasBoards=rec=>{const v=V[rec.variant];return !!v&&!rec.params.wrc&&(!!rec.params.wl||(rec.keys||v.keys).includes('pbn'));};
+function boardRow(l,i,n){
+  const nm=BOARD_MATS.some(b=>b[0]===l.name)?BOARD_MATS:[[l.name,l.m,l.name],...BOARD_MATS];
+  return `<div class="wlr" style="display:grid;grid-template-columns:34px 1fr 64px 26px;gap:4px;align-items:center;margin:3px 0">
+    <span class="mut" style="font-size:11px">${i===0?'下貼':i===n-1?'上貼':'中貼'}</span>
+    <select data-wm style="padding:2px 4px;border:1px solid var(--bd);border-radius:4px;min-width:0">${opt(nm.map(b=>[b[0],b[2]]),l.name)}</select>
+    <input data-wt type="number" step="any" min="1" list="btList" value="${l.t}" style="padding:2px 4px;border:1px solid var(--bd);border-radius:4px;width:100%">
+    <button data-act="wdel" title="この1枚を削除" style="padding:0 6px"${n<=1?' disabled':''}>×</button></div>`;
+}
+function boardEditor(rec){
+  const L=WL({...DEF,...rec.params});
+  return `<div class="wl" style="margin:6px 0;padding:6px;border:1px dashed var(--bd);border-radius:6px">
+    <div style="display:flex;align-items:center;gap:6px"><b style="font-size:12px;flex:1">ボード構成(片面・下貼→上貼)</b><span class="mut wlsum" style="font-size:11px">片面 ${L.reduce((a,l)=>a+l.t,0)}mm</span></div>
+    <div class="wlrows">${L.map((l,i)=>boardRow(l,i,L.length)).join('')}</div>
+    <button data-act="wadd" style="margin-top:2px">＋ ボードを1枚追加</button></div>`;
+}
+function readBoards(det){
+  const rows=$$('.wlr',det);if(!rows.length)return null;
+  return rows.map(r=>{const n=$('[data-wm]',r).value;return {name:n,m:boardM(n),t:parseFloat($('[data-wt]',r).value)||12.5};});
+}
+function refreshBoardRows(det){
+  const L=readBoards(det);if(!L)return;
+  $('.wlrows',det).innerHTML=L.map((l,i)=>boardRow(l,i,L.length)).join('');
+  $('.wlsum',det).textContent='片面 '+Math.round(L.reduce((a,l)=>a+l.t,0)*10)/10+'mm';
+}
+function paramInputs(rec){
+  const v=V[rec.variant];if(!v)return '';
+  const hb=hasBoards(rec);
+  return `<div class="pr">${(rec.keys||v.keys).filter(k=>!(hb&&(k==='pbn'||k==='bt'))).map(k=>{
+    const sp=PSPEC[k],val=rec.params[k]??DEF[k];
+    return `<div><label>${sp.l}</label>${sp.o?`<select data-pk="${k}">${opt(sp.o,val)}</select>`:`<input data-pk="${k}" type="number" step="any" value="${val}">`}</div>`;
+  }).join('')}</div>${hb?boardEditor(rec):''}`;
+}
+function renderDetails(){
+  const p=$('#pane-d');
+  const of=overflowList();
+  const sn=staleDetails().length;
+  p.innerHTML=(st.details.length?'':'<div class="mut">まだ詳細がありません。「① 作図」から配置してください。</div>')+
+    (sn?`<div class="warnbox">⚠ 旧仕様で作成された詳細が ${sn} 件あります(LGS幅・材料記号が古いまま)。<div class="row"><button class="pri" data-act2="stale">最新仕様で一括再生成</button></div></div>`:'')+
+    (of.length?`<div class="warnbox">⚠ 用紙からはみ出し:${of.map(esc).join(' / ')}<br>縮尺を小さく(1/10など)するか用紙サイズを大きくしてください。</div>`:'')+
+    st.details.map(r=>`<div class="det" data-rid="${r.id}">
+      <div class="hd"><span>${r.variant==='legend'?'':'No.'+r.no+' '}${esc(r.title||'')}</span><button data-act="zoom" title="拡大表示">🔍</button></div>
+      ${paramInputs(r)}
+      <div class="row">${r.variant?'<button data-act="regen">寸法を反映(再生成)</button>':''}<button data-act="tplreg">マイ納まり登録</button><button class="dng" data-act="deldet">削除</button></div>
+    </div>`).join('')+
+    (st.details.length?'<div class="mut">※再生成すると、その詳細への手動修正は初期状態に戻ります。</div>':'');
+}
+function renderSheetPane(){
+  const m=st.meta;
+  $('#pane-s').innerHTML=`
+  <h3>用紙・縮尺</h3>
+  <div class="row"><label>用紙</label><select id="sSheet">${opt(Object.keys(SHEETS),st.sheet)}</select></div>
+  <div class="row"><label>縮尺 1/</label><select id="sScale">${opt(SCALES,st.scale)}</select></div>
+  <div class="mut">縮尺を変えると、配置済みの詳細は寸法そのままで再生成され、手描き図形は位置が拡縮されます。</div>
+  <h3>表題欄</h3>
+  <div class="row"><label>工事名</label><input data-mk="proj" value="${esc(m.proj)}"></div>
+  <div class="row"><label>図面名</label><input data-mk="title" value="${esc(m.title)}"></div>
+  <div class="row"><label>作成者</label><input data-mk="by" value="${esc(m.by)}"></div>
+  <div class="row"><label>日付</label><input data-mk="date" value="${esc(m.date)}"></div>
+  <h3>引出線</h3>
+  <div class="row"><label>既定の角度</label><select data-mk="leadAng">${opt([[45,'45°'],[60,'60°(標準)'],[75,'75°'],[90,'90°(垂直)']],m.leadAng||60)}</select></div>
+  <div class="mut">全ての引出線に適用されます。個別の角度は図形を選択してプロパティで変更できます。文字位置が近い場合は自動で角度を立てます。</div>
+  <h3>配置</h3>
+  <div class="row"><button class="pri" data-act="legend">材料凡例を配置/更新</button></div>
+  <div class="mut">シートで使っている材料の記号一覧を作ります。詳細を追加した後に押すと内容が更新されます。</div>
+  <div class="row"><button data-act="best">全詳細が収まる最大縮尺にする</button></div>
+  <div class="row"><button data-act="reflow">詳細を自動整列(手動移動をリセット)</button></div>
+  <div class="row"><button data-act="clearall" class="dng">全て消去</button></div>`;
+}
+function renderTpl(){
+  $('#pane-t').innerHTML=`
+  <div class="mut">自社標準の納まりを登録しておき、シートに呼び出せます(この端末のブラウザに保存)。登録は「② 配置済み」の詳細から行います。</div>
+  ${tpl.length?'':'<div class="mut" style="margin-top:8px">登録済みはありません。</div>'}
+  ${tpl.map((t,i)=>`<div class="det" data-ti="${i}"><div class="hd"><span>${esc(t.name)}</span></div><div class="mut">縮尺 1/${t.S}</div><div class="row"><button class="pri" data-act="tplplace">シートに配置</button><button class="dng" data-act="tpldel">削除</button></div></div>`).join('')}
+  <div class="row" style="margin-top:10px"><button data-act="tplexp">書き出し(JSON)</button><button data-act="tplimp">読み込み</button></div>`;
+}
+const HELP=$('#props').innerHTML;
+function renderProps(){
+  const box=$('#props'),e=sel&&st.ents.find(x=>x.id===sel);
+  document.body.classList.toggle('hassel',!!e||msel.size>1);
+  if(msel.size>1){box.innerHTML=`<b>${msel.size}個 選択中</b><div class="mut" style="margin:6px 0">ドラッグでまとめて移動、Delで一括消去できます。</div>${movePanel(false)}<div class="row"><button class="dng" data-pa="del">まとめて削除</button><button data-pa="clr">選択解除</button></div>`;return;}
+  if(!e){box.innerHTML=HELP;return;}
+  const f=(k,l,ty)=>`<label>${l}</label><input data-k="${k}" type="${ty||'number'}" ${ty?'':'step="any"'} value="${esc(e[k]??'')}">`;
+  const num=v=>Math.round(v*100)/100;
+  let h='<div class="pi">';
+  switch(e.t){
+    case 'rect':h+=f('x','X')+f('y','Y')+f('w','幅')+f('h','高さ')+`<label>材料</label><select data-k="m">${opt(Object.keys(MAT).map(k=>[k,MAT[k].n]),e.m)}</select>`;break;
+    case 'line':h+=f('x1','X1')+f('y1','Y1')+f('x2','X2')+f('y2','Y2')+`<label>線種</label><select data-k="k">${opt([['out','外形(太)'],['thin','細線'],['dash','破線'],['center','一点鎖線']],e.k||'out')}</select>`;break;
+    case 'circ':h+=f('x','中心X')+f('y','中心Y')+f('r','半径');break;
+    case 'text':h+=f('s','文字','text')+f('x','X')+f('y','Y')+f('h','高さ(紙面mm)')+f('a','角度');break;
+    case 'dim':h+=f('txt','寸法値(空=自動)','text')+f('off','オフセット');break;
+    case 'note':h+=f('s','文字','text')+f('tx','文字位置X')+f('ty','文字位置Y')+f('ang','引出角度°(空=既定)');break;
+  }
+  h+=`</div>${movePanel(!!e.g)}<div class="row"><button data-pa="dup">複写</button><button class="dng" data-pa="del">削除</button></div>`;
+  if(e.g){const r=st.details.find(d=>d.id===e.g);if(r)h+=`<div class="mut">所属: No.${r.no} ${esc(r.title||'')}<br>(Alt+ドラッグで詳細ごと移動)</div>`;}
+  box.innerHTML=h;
+}
+let mvDX=0,mvDY=0,mvGrp=false;
+function movePanel(inGroup){
+  return `<div style="border-top:1px solid var(--bd);margin-top:8px;padding-top:6px"><b style="font-size:12px">数値で移動(実寸mm)</b>
+  <div class="pi"><label>X方向 →</label><input id="mvDX" type="number" step="any" value="${mvDX}"><label>Y方向 ↑</label><input id="mvDY" type="number" step="any" value="${mvDY}"></div>
+  ${inGroup?`<label style="font-size:12px"><input type="checkbox" id="mvGrp"${mvGrp?' checked':''}> 所属する詳細ごと移動</label>`:''}
+  <div class="row"><button class="pri" data-pa="mv">移動</button><button data-pa="mvc">複写して移動</button></div>
+  <div class="mut">右・上が＋、左・下が－。Enterでも移動します。</div></div>`;
+}
+function refreshUI(){renderDetails();renderSheetPane();renderTpl();renderProps();}
+
+/* ───────── イベント配線 ───────── */
+$$('.tabs [data-tab]').forEach(b=>b.onclick=()=>{
+  $$('.tabs [data-tab]').forEach(x=>x.classList.toggle('on',x===b));
+  $$('.pane').forEach(x=>x.classList.toggle('on',x.id==='pane-'+b.dataset.tab));
+});
+function showTab(t){const b=$(`.tabs [data-tab="${t}"]`);if(b)b.click();}
+$('#pane-p').addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.id==='cCat')cond.cat=t.value;else if(t.id==='cUse')cond.use=t.value;
+  else if(t.id==='cFire')cond.fire=+t.value;else if(t.id==='cSound')cond.sound=+t.value;else if(t.id==='cH')cond.ceilH=+t.value||2700;
+  drawCards();
+});
+$('#pane-p').addEventListener('input',ev=>{if(ev.target.id==='pText'){promptText=ev.target.value;drawPrompt();}});
+$('#pane-p').addEventListener('keydown',ev=>{if(ev.target.id==='pText'&&ev.key==='Enter'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();const b=$('[data-act="pplace"]');if(b)b.click();}});
+$('#pane-p').addEventListener('click',ev=>{
+  if(ev.target.closest('[data-act="mic"]')){micToggle();return;}
+  const ex=ev.target.closest('[data-ex]');
+  if(ex){promptText=ex.dataset.ex;$('#pText').value=promptText;drawPrompt();return;}
+  if(ev.target.closest('[data-act="pplace"]')){
+    const r=parsePrompt(promptText);if(!r.ok)return;
+    const rec=addDetail(r.variant,r.params,{title:r.title,keys:r.keys,prompt:promptText});
+    showTab('d');fitBox(rec.box.x0,rec.box.y0,rec.box.x1,rec.box.y1,.8);return;
+  }
+  const b=ev.target.closest('[data-act="place"]');if(!b)return;
+  const v=V[b.dataset.v];
+  const rec=addDetail(v.id,condParams(cond,v));
+  showTab('d');
+  const r=rec.box;fitBox(r.x0,r.y0,r.x1,r.y1,.8);
+});
+$('#pane-d').addEventListener('input',ev=>{const det=ev.target.closest('.det');if(det&&ev.target.closest('.wlr')){const L=readBoards(det);$('.wlsum',det).textContent='片面 '+Math.round(L.reduce((a,l)=>a+l.t,0)*10)/10+'mm';}});
+$('#pane-d').addEventListener('change',ev=>{const det=ev.target.closest('.det');if(det&&ev.target.matches('[data-wm]'))refreshBoardRows(det);});
+$('#pane-d').addEventListener('click',ev=>{
+  if(ev.target.closest('[data-act2="stale"]')){if(confirm('旧仕様の詳細を再生成します。手動修正は初期状態に戻ります。よろしいですか?'))regenStale();return;}
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  const rid=+b.closest('.det').dataset.rid,rec=st.details.find(d=>d.id===rid);if(!rec)return;
+  const a=b.dataset.act;
+  if(a==='zoom')fitBox(rec.box.x0,rec.box.y0,rec.box.x1,rec.box.y1,.85);
+  else if(a==='wadd'){
+    const det=b.closest('.det'),L=readBoards(det);L.push({...L[L.length-1]});
+    $('.wlrows',det).innerHTML=L.map((l,i)=>boardRow(l,i,L.length)).join('');refreshBoardRows(det);
+  }else if(a==='wdel'){
+    const det=b.closest('.det');b.closest('.wlr').remove();refreshBoardRows(det);
+  }else if(a==='regen'){
+    if(!confirm('この詳細を再生成します。手動修正は初期状態に戻ります。よろしいですか?'))return;
+    $$('[data-pk]',b.closest('.det')).forEach(i=>{rec.params[i.dataset.pk]=+i.value;});
+    const wl=readBoards(b.closest('.det'));
+    if(wl){rec.params.wl=wl;rec.params.pbn=wl.length;rec.params.bt=wl[0].t;}
+    regen(rec);
+  }else if(a==='deldet'){
+    st.ents=st.ents.filter(e=>e.g!==rec.id);st.details=st.details.filter(d=>d!==rec);sel=null;reflow();commit();
+  }else if(a==='tplreg'){
+    const name=prompt('マイ納まり名',rec.title||'');if(!name)return;
+    const es=st.ents.filter(e=>e.g===rec.id).map(e=>JSON.parse(JSON.stringify(e)));
+    const b0=rec.box;es.forEach(e=>{shiftEnt(e,-b0.x0,-b0.y0);delete e.id;delete e.g;});
+    tpl.push({name,S:st.scale,ents:es,w:b0.x1-b0.x0,h:b0.y1-b0.y0});
+    saveTpl();renderTpl();alert('登録しました(④ マイ納まり)');
+  }
+});
+function saveTpl(){try{localStorage.setItem('detailApp.tpl',JSON.stringify(tpl));}catch(e){}}
+function scaleEnt(e,k){
+  ['x','y','x1','y1','x2','y2','tx','ty','w','h','r','off'].forEach(f=>{if(f in e&&!(e.t==='text'&&f==='h'))e[f]*=k;});
+  if(e.t==='dim'||e.t==='note'||e.t==='text'){/* h は紙面mmのまま */}
+  if(e.t==='rect'){e.w=e.w;}
+}
+
+function changeScale(ns,silent){
+  const os=st.scale;
+  if(ns===os)return true;
+  if(!silent&&st.details.length&&!confirm('縮尺を変更すると、配置済みの詳細が再生成されます(詳細への手動修正は失われます)。よろしいですか?'))return false;
+  const k=ns/os;
+  st.ents.forEach(e=>{if(!e.g)scaleEnt(e,k);});
+  st.scale=ns;
+  st.details.forEach(r=>{
+    if(!r.variant){st.ents.filter(e=>e.g===r.id).forEach(e=>scaleEnt(e,k));r.box={x0:r.box.x0*k,y0:r.box.y0*k,x1:r.box.x1*k,y1:r.box.y1*k};return;}
+    st.ents=st.ents.filter(e=>e.g!==r.id);
+    const x=buildDetail(r);x.ents.forEach(e=>{e.id=st.nextId++;e.g=r.id;st.ents.push(e);});r.box=x.box;
+  });
+  reflow();commit();fitSheet();
+  return true;
+}
+function bestScale(){
+  const os=st.scale;let pick=SCALES[SCALES.length-1];
+  for(const S of SCALES){
+    st.scale=S;const a=area(),gap=6*S;
+    let x=a.x0,y=a.y1,rowH=0,ok=true;
+    for(const r of st.details){
+      let w,h;
+      if(r.variant){const b=buildDetail(r).box;w=b.x1-b.x0;h=b.y1-b.y0;}
+      else{w=(r.box.x1-r.box.x0)/os*S;h=(r.box.y1-r.box.y0)/os*S;}
+      if(w>a.x1-a.x0){ok=false;break;}
+      if(x+w>a.x1&&x>a.x0){x=a.x0;y-=rowH+gap;rowH=0;}
+      if(y-h<a.y0){ok=false;break;}
+      x+=w+gap;rowH=Math.max(rowH,h);
+    }
+    if(ok){pick=S;break;}
+  }
+  st.scale=os;return pick;
+}
+$('#pane-t').addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  const a=b.dataset.act,d=b.closest('.det'),t=d?tpl[+d.dataset.ti]:null;
+  if(a==='tplplace'&&t){
+    const k=st.scale/t.S;
+    const rec={id:st.nextId++,variant:null,title:t.name,params:{},no:++st.seq,box:null};
+    const es=JSON.parse(JSON.stringify(t.ents));
+    es.forEach(e=>{
+      if(e.t==='rect'){e.x*=k;e.y*=k;e.w*=k;e.h*=k;}
+      else if(e.t==='line'){e.x1*=k;e.y1*=k;e.x2*=k;e.y2*=k;}
+      else if(e.t==='circ'){e.x*=k;e.y*=k;e.r*=k;}
+      else if(e.t==='text'){e.x*=k;e.y*=k;}
+      else if(e.t==='dim'){e.x1*=k;e.y1*=k;e.x2*=k;e.y2*=k;e.off*=k;}
+      else if(e.t==='note'){e.x*=k;e.y*=k;e.tx*=k;e.ty*=k;}
+      e.id=st.nextId++;e.g=rec.id;st.ents.push(e);
+    });
+    const bb=entsBox(es,st.scale),S=st.scale;
+    rec.box={x0:bb.x0-2*S,y0:bb.y0-2*S,x1:bb.x1+2*S,y1:bb.y1+2*S};
+    st.details.push(rec);reflow();commit();showTab('d');
+    fitBox(rec.box.x0,rec.box.y0,rec.box.x1,rec.box.y1,.8);
+  }else if(a==='tpldel'&&t){if(confirm('削除しますか?')){tpl.splice(+d.dataset.ti,1);saveTpl();renderTpl();}}
+  else if(a==='tplexp')dl(new Blob([JSON.stringify(tpl)],{type:'application/json'}),'マイ納まり.json');
+  else if(a==='tplimp')$('#fTpl').click();
+});
+$('#fTpl').onchange=async ev=>{
+  const f=ev.target.files[0];if(!f)return;
+  try{const a=JSON.parse(await f.text());if(Array.isArray(a)){tpl=tpl.concat(a);saveTpl();renderTpl();}}catch(e){alert('読み込めませんでした');}
+  ev.target.value='';
+};
+$('#pane-s').addEventListener('change',ev=>{
+  const t=ev.target;
+  if(t.id==='sSheet'){st.sheet=t.value;reflow();commit();fitSheet();}
+  else if(t.id==='sScale'){
+    if(+t.value===st.scale)return;
+    if(!changeScale(+t.value))t.value=st.scale;
+  }else if(t.dataset.mk){st.meta[t.dataset.mk]=t.value;commit();}
+});
+$('#pane-s').addEventListener('input',ev=>{const t=ev.target;if(t.dataset.mk){st.meta[t.dataset.mk]=t.value;render();}});
+$('#pane-s').addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  if(b.dataset.act==='reflow'){reflow();commit();}
+  else if(b.dataset.act==='legend'){const r=addLegend();showTab('d');fitBox(r.box.x0,r.box.y0,r.box.x1,r.box.y1,.8);}
+  else if(b.dataset.act==='best'){if(!st.details.length)return;const S=bestScale();if(S===st.scale)alert('現在の縮尺 1/'+S+' が最適です');else changeScale(S);}
+  else if(b.dataset.act==='clearall'&&confirm('シート上の全ての図形を消去します。よろしいですか?')){st.ents=[];st.details=[];sel=null;commit();}
+});
+function readMv(){const a=$('#mvDX'),b=$('#mvDY'),g=$('#mvGrp');mvDX=a?parseFloat(a.value)||0:0;mvDY=b?parseFloat(b.value)||0:0;mvGrp=!!(g&&g.checked);}
+$('#props').addEventListener('keydown',ev=>{if(ev.key==='Enter'&&(ev.target.id==='mvDX'||ev.target.id==='mvDY')){ev.preventDefault();readMv();moveSelBy(mvDX,mvDY,false,mvGrp);}});
+$('#props').addEventListener('change',ev=>{
+  const t=ev.target;if(t.id==='mvDX'||t.id==='mvDY'||t.id==='mvGrp'){readMv();return;}
+  if(!t.dataset.k)return;
+  const e=st.ents.find(x=>x.id===sel);if(!e)return;
+  const k=t.dataset.k;
+  e[k]=(t.type==='number')?(parseFloat(t.value)||0):t.value;
+  if(e.t==='rect'&&(k==='w'||k==='h'))e[k]=Math.abs(e[k]);
+  st.details.forEach(r=>{r.box=expandBox(r);});
+  commit();
+});
+$('#props').addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-pa]');if(!b)return;
+  if(b.dataset.pa==='mv'||b.dataset.pa==='mvc'){readMv();moveSelBy(mvDX,mvDY,b.dataset.pa==='mvc',mvGrp);return;}
+  if(b.dataset.pa==='del')delSel();else if(b.dataset.pa==='clr'){sel=null;msel.clear();refreshUI();render();}else if(b.dataset.pa==='dup')dupSel();
+});
+
+/* ツールバー */
+(function(){
+  const tools=[['sel','▶ 選択'],['line','／ 線'],['rect','▭ 材料追加'],['circ','◯ 円'],['text','A 文字'],['dim','↔ 寸法'],['note','↗ 引出'],['del','✕ 消去']];
+  $('#tb').innerHTML=tools.map(([k,l])=>`<button data-tool="${k}"${k==='sel'?' class="on"':''}>${l}</button>`).join('')+
+   `<select id="tMat" title="追加する材料(2点クリックで範囲指定)">${opt(Object.keys(MAT).map(k=>[k,'材料:'+MAT[k].n]),matSel)}</select>
+    <label style="font-size:12px"><input type="checkbox" id="tSnap" checked> スナップ</label>
+    <span class="sp"></span>
+    <button id="tZout">－</button><button id="tZin">＋</button><button id="tFit">全体表示</button>`;
+  $('#tb').addEventListener('click',ev=>{const b=ev.target.closest('[data-tool]');if(b)setTool(b.dataset.tool);});
+  $('#tMat').onchange=e=>{matSel=e.target.value;};
+  $('#tSnap').onchange=e=>{snapOn=e.target.checked;};
+  const c=()=>{const r=svg.getBoundingClientRect();return [r.width/2,r.height/2];};
+  $("#tZout").onclick=()=>zoomAt(...c(),1/1.3);
+  $("#tZin").onclick=()=>zoomAt(...c(),1.3);
+  $('#tFit').onclick=fitSheet;
+})();
+
+/* ヘッダ */
+$('#bUndo').onclick=undo;$('#bRedo').onclick=redo;
+$('#bPdf').onclick=()=>exportPDF().catch(e=>alert('PDF出力に失敗しました: '+e));
+$('#bDxf').onclick=exportDXF;
+$('#bSave').onclick=()=>dl(new Blob([snapState()],{type:'application/json'}),fname('json'));
+$('#bLoad').onclick=()=>$('#fLoad').click();
+$('#fLoad').onchange=async ev=>{
+  const f=ev.target.files[0];if(!f)return;
+  try{loadState(await f.text());commit();fitSheet();setTimeout(checkStale,100);}catch(e){alert('読み込めませんでした');}
+  ev.target.value='';
+};
+window.addEventListener('resize',render);
+
+/* 初期化 */
+(function init(){
+  try{const s=localStorage.getItem('detailApp.state');if(s)loadState(s);}catch(e){}
+  renderProposePane();
+  hist.push(snapState());
+  refreshUI();
+  fitSheet();
+  setTimeout(checkStale,300);
+})();
+</script>
+</body>
+</html>
