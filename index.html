@@ -261,7 +261,7 @@ function explode(e,S){
       const d=[(ux+nx)*.7071,(uy+ny)*.7071];
       [a,b].forEach(q=>P.push({k:'circ',c:[q[0],q[1]],r:.5*S,ly:'DT-DIM',w:W.hair,fill:'#000'}));  /* 玉止め φ1.0 */
       let ang=Math.atan2(dy,dx)*180/Math.PI; if(ang>90) ang-=180; else if(ang<=-90) ang+=180;
-      const r=ang*Math.PI/180,ln=[-Math.sin(r),Math.cos(r)],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+      const r=ang*Math.PI/180,ln=[-Math.sin(r),Math.cos(r)],mx=(a[0]+b[0])/2+ux*(e.tsh||0),my=(a[1]+b[1])/2+uy*(e.tsh||0);
       P.push({k:'text',p:[mx+ln[0]*.9*S,my+ln[1]*.9*S],s:e.txt||String(Math.round(L)),h:(e.h||2.5)*S,a:ang,al:'c',ly:'DT-DIM'});
       break;}
     case 'note':{
@@ -302,6 +302,84 @@ function shiftEnt(e,dx,dy){
 }
 
 /* ───────── ビルダー ───────── */
+/* ───────── 寸法の自動よけ ─────────
+   寸法線・寸法値が図形の線や他の寸法値に重ならないよう、オフセット量・反対側・寸法値の位置を候補から選ぶ。
+   採点: 文字と線の交差・文字どうしの重なり・寸法線と図形線の重なり(平行に重なって走る)・ハッチ上の文字 を減点。元の位置に近いほど良い */
+function segHitsBox(s,b){            /* 線分[x1,y1,x2,y2] と 箱[x0,y0,x1,y1] の交差(Liang-Barsky) */
+  let t0=0,t1=1;const dx=s[2]-s[0],dy=s[3]-s[1];
+  const P=[-dx,dx,-dy,dy],Q=[s[0]-b[0],b[2]-s[0],s[1]-b[1],b[3]-s[1]];
+  for(let i=0;i<4;i++){ if(Math.abs(P[i])<1e-12){ if(Q[i]<0) return false; } else { const r=Q[i]/P[i]; if(P[i]<0){ if(r>t1) return false; if(r>t0) t0=r; } else { if(r<t0) return false; if(r<t1) t1=r; } } }
+  return t1-t0>1e-9;
+}
+const bxOv=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
+function dimGeom(e,o,tsh,S){
+  const dx=e.x2-e.x1,dy=e.y2-e.y1,L=Math.hypot(dx,dy); if(L<1e-6) return null;
+  const ux=dx/L,uy=dy/L,nx=-uy,ny=ux;
+  const a=[e.x1+nx*o,e.y1+ny*o],b=[e.x2+nx*o,e.y2+ny*o];
+  let ang=Math.atan2(dy,dx)*180/Math.PI; if(ang>90) ang-=180; else if(ang<=-90) ang+=180;
+  const r=ang*Math.PI/180,ln=[-Math.sin(r),Math.cos(r)],h=(e.h||2.5)*S,w=tw(e.txt||String(Math.round(L)),h);
+  const mx=(a[0]+b[0])/2+ux*tsh,my=(a[1]+b[1])/2+uy*tsh,tu=[Math.cos(r),Math.sin(r)];
+  const pts=[[-w/2,.6*S],[w/2,.6*S],[w/2,.9*S+h*1.05],[-w/2,.9*S+h*1.05]].map(([u,v])=>[mx+tu[0]*u+ln[0]*v,my+tu[1]*u+ln[1]*v]);
+  const xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]);
+  return {L,ux,uy,nx,ny,a,b,w,tb:[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)]};
+}
+function layoutDims(ents,S){
+  const segs=[],hard=[],areas=[];
+  ents.forEach(e=>{
+    if(e.t==='rect'){ const {x,y,w,h}=e; segs.push([x,y,x+w,y],[x+w,y,x+w,y+h],[x+w,y+h,x,y+h],[x,y+h,x,y]);
+      if(w>1.5*S&&h>1.5*S) areas.push([x,y,x+w,y+h,MAT[e.m]&&MAT[e.m].h?3:1.5]); }
+    else if(e.t==='line') segs.push([e.x1,e.y1,e.x2,e.y2]);
+    else if(e.t==='pg'){ e.pts.forEach((q,i)=>{const n=e.pts[(i+1)%e.pts.length];segs.push([q[0],q[1],n[0],n[1]]);});
+      const xs=e.pts.map(q=>q[0]),ys=e.pts.map(q=>q[1]); areas.push([Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys),MAT[e.m]&&MAT[e.m].h?3:1.5]); }
+    else if(e.t==='circ') hard.push([e.x-e.r,e.y-e.r,e.x+e.r,e.y+e.r]);
+    else if(e.t==='text'){ const h=(e.h||2.5)*S,w=tw(e.s,h); hard.push([e.x-(e.al==='c'?w/2:0),e.y,e.x+(e.al==='c'?w/2:w),e.y+h]); }
+  });
+  const placedT=[],placedL=[];
+  const shrink=(b,k)=>[b[0]+k,b[1]+k,b[2]-k,b[3]-k];
+  const cross=(s,t)=>{ const d=(s[2]-s[0])*(t[3]-t[1])-(s[3]-s[1])*(t[2]-t[0]); if(Math.abs(d)<1e-12) return false;
+    const u=((t[0]-s[0])*(t[3]-t[1])-(t[1]-s[1])*(t[2]-t[0]))/d, v=((t[0]-s[0])*(s[3]-s[1])-(t[1]-s[1])*(s[2]-s[0]))/d; return u>0&&u<1&&v>=0&&v<=1; };
+  const cost=(e,g,o0,o,tsh)=>{
+    let c=0;const tb=shrink(g.tb,.15*S),tm=shrink(g.tb,-.4*S);   /* tm:文字の周りに余白をとった判定枠 */
+    segs.forEach(s=>{ if(segHitsBox(s,tm)) c+=segHitsBox(s,tb)?10:4; });
+    hard.forEach(b=>{ if(bxOv(b,tm)) c+=10; });
+    placedT.forEach(b=>{ if(bxOv(b,g.tb)) c+=14; });
+    placedL.forEach(s=>{ if(segHitsBox(s,tb)) c+=8; });
+    areas.forEach(a=>{ if(bxOv(a,tb)) c+=a[4]; });
+    /* 自分の補助線をまたぐ文字(短い寸法) */
+    { const k=o>=0?1:-1; [[e.x1,e.y1],[e.x2,e.y2]].forEach(([px,py])=>{ if(segHitsBox([px+g.nx*k*S,py+g.ny*k*S,px+g.nx*(o+k*2*S),py+g.ny*(o+k*2*S)],tb)) c+=10; }); }
+    /* 寸法線:図形線と平行に重なって走る/図形線を横切る */
+    const dl=[g.a[0]+g.ux*S,g.a[1]+g.uy*S,g.b[0]-g.ux*S,g.b[1]-g.uy*S];
+    segs.forEach(s=>{
+      const sx=s[2]-s[0],sy=s[3]-s[1],sl=Math.hypot(sx,sy); if(sl<1e-6) return;
+      if(Math.abs(sx*g.uy-sy*g.ux)/sl<=.02){
+        const dist=Math.abs((s[0]-g.a[0])*g.nx+(s[1]-g.a[1])*g.ny); if(dist>.7*S) return;
+        const p0=(s[0]-g.a[0])*g.ux+(s[1]-g.a[1])*g.uy,p1=(s[2]-g.a[0])*g.ux+(s[3]-g.a[1])*g.uy;
+        if(Math.min(Math.max(p0,p1),g.L)-Math.max(Math.min(p0,p1),0)>1.5*S) c+=6;
+      }else if(cross(dl,s)) c+=.6;
+    });
+    /* 補助線(寸法線まで延びる線)が図形線を横切る */
+    if(Math.abs(o)>Math.abs(o0)+.1){
+      const k=Math.sign(o)||1,ex=[[e.x1,e.y1],[e.x2,e.y2]].map(([px,py])=>[px+g.nx*k*Math.abs(o0),py+g.ny*k*Math.abs(o0),px+g.nx*o,py+g.ny*o]);
+      ex.forEach(t=>segs.forEach(s=>{ if(cross(t,s)) c+=.5; }));
+    }
+    c+=Math.abs(o-o0)/S*.25+(Math.sign(o)!==Math.sign(o0)&&o0!==0?3:0)+(tsh?2.5:0);
+    return c;
+  };
+  ents.filter(e=>e.t==='dim'&&!e.fixed).forEach(e=>{
+    const o0=e.off,sg=o0>=0?1:-1,m0=Math.abs(o0);
+    const g0=dimGeom(e,o0,0,S); if(!g0) return;
+    const offs=[];
+    for(let k=0;k<=16;k++) offs.push(sg*(m0+k*2.5*S));
+    [2.5,5].forEach(d=>{ if(m0-d*S>=4*S) offs.push(sg*(m0-d*S)); });
+    for(let k=0;k<=4;k++) offs.push(-sg*(m0+k*4*S));
+    const shs=[0]; if(g0.L<g0.w+2.5*S){ const d=g0.L/2+g0.w/2+1.5*S; shs.push(d,-d); }
+    else { const room=(g0.L-g0.w)/2-.8*S; [.35,.7,1].forEach(f=>{ if(room*f>1.5*S) shs.push(room*f,-room*f); }); }   /* 寸法線に沿って空いている区間へ */
+    let best=null;
+    for(const o of offs){ for(const t of shs){ const g=dimGeom(e,o,t,S),c=cost(e,g,o0,o,t)+(t&&Math.abs(t)<g0.L/2?-1:0); if(!best||c<best.c-1e-9) best={c,o,t,g}; } }
+    e.off=best.o; if(best.t) e.tsh=best.t; else delete e.tsh;
+    placedT.push(best.g.tb); placedL.push([best.g.a[0],best.g.a[1],best.g.b[0],best.g.b[1]]);
+  });
+}
 class B{
   constructor(S){this.S=S;this.e=[];this.n=[];}
   r(x,y,w,h,m){this.e.push({t:'rect',x,y,w,h,m});}
@@ -317,6 +395,7 @@ class B{
     for(let i=0;i<5;i++)this.l(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'thin');}
   finish(title,no,noScale){
     const S=this.S,ents=this.e.slice();
+    layoutDims(ents,S);
     const bd=entsBox(ents.filter(e=>e.t==='rect'||e.t==='line'||e.t==='circ'),S);
     const bx=entsBox(ents,S);
     const nx=Math.max(bd.x1,bx.x1)+8*S;
@@ -450,7 +529,7 @@ function genFW(b,P,cfg){
     b.note(RW(P)/2-1.2,ry+20,runTxt(P)+(ry===ys?' 打込みピン@900程度':''));
     if(+P.snd&&!(bb&&bb.inset)) b.note(xr+1.5,1.5,'シーリング材又はジョイントコンパウンド');
   }
-  if(bb) b.note(bx0+bt/2,P.hb*.6,`${bb.name} H=${P.hb}`+(bb.showT?` t${bt}`:'')+(bb.inset&&(!isRC||isGL)?`(壁面より${bb.p}出)`:''),{minTy:P.hb+8*b.S});
+  if(bb) b.note(bx0+bt/2,P.hb*.6,(bb.name==='畳寄せ'?`畳寄せ ${bb.t}×105/2`:`${bb.name} H=${P.hb}`+(bb.showT?` t${Math.round(bb.t*10)/10}`:''))+(bb.inset&&(!isRC||isGL)?`(壁面より${bb.p}出)`:''),{minTy:P.hb+8*b.S});
   L.forEach(l=>b.note(ext-90,l.y0+l.h/2,l.label));
   if(cfg.leg) b.note(first==='floor'?300:wf+gap+130,ys+P.leg/2,'調整式支持脚(防振ゴム付)');
   if(gap>0) b.note(xr+gap/2,-sumL/2,`壁際隙間${gap}(吸音材充填)`);
@@ -637,14 +716,15 @@ GEN.tbar_ceiling=(b,P)=>{
 /* 屋上パラペット(第4巻 5-03 屋根露出防水工法):防水立上りは水上300以上、入隅はモルタル又は成形キャント材(70)で45度、
    端部はアルミニウム製押え金物+ステンレスビス@450以下+シール材。コンクリート笠木(あご付き)又はアルミニウム製笠木 */
 GEN.parapet=(b,P)=>{
-  const H=Math.max(300,+P.ph||400),pt=180,ext=520,alu=+P.kasa===1;
+  const ti=+P.pins===1?(+P.dit||25):0,H=Math.max(300,+P.ph||400)+ti,pt=180,ext=520,alu=+P.kasa===1;   /* 5-04:絶縁断熱工法は平場の防水層下に断熱材 */
   b.r(-ext,-150,ext+pt+20,150,'rc'); b.brkH(-ext,-ext+60,-150);
   const top=alu?H+80:H+195;
   b.r(0,0,pt,top,'rc');
   b.r(pt,-150,20,top+150,'finish');                     /* 外壁仕上げ(塗膜防水又は指定仕上材) */
   b.brkH(pt-10,pt+30,-150);
-  b.pg([[-70,0],[0,0],[0,70]],'mortar');                  /* キャント材 */
-  b.pg([[-ext,0],[-70,0],[0,70],[0,H],[-5,H],[-5,72],[-72,5],[-ext,5]],'water');   /* 防水層 */
+  if(ti) b.r(-ext,0,ext,ti,'ins');                          /* 断熱材(5-04) */
+  b.pg([[-70,ti],[0,ti],[0,70+ti]],'mortar');                  /* キャント材 */
+  b.pg([[-ext,ti],[-70,ti],[0,70+ti],[0,H],[-5,H],[-5,72+ti],[-72,5+ti],[-ext,5+ti]],'water');   /* 防水層 */
   if(!alu){
     b.r(-90,H,90,195,'rc');                               /* あご */
     b.l(-90,H+195,pt+20,H+195+25*0,'out');
@@ -658,10 +738,11 @@ GEN.parapet=(b,P)=>{
     b.r(20,top-8,pt-40,4,'lgsc');                         /* 押え金物 */
     b.dim(-35,top+4,pt+35,top+4,8,'(250)'); b.dim(0,0,pt,0,-14,'(180)');
   }
-  b.dim(-ext+40,0,-ext+40,H,8,'H(水上300以上)='+H);
+  b.dim(-ext+40,ti,-ext+40,H,8,'H(水上300以上)='+(H-ti));
+  if(ti){ b.note(-ext+200,ti/2,`断熱材 t=${ti}(絶縁断熱工法)`); b.dim(-ext+80,0,-ext+80,ti,8,String(ti)); }
   b.dim(-70,-30,0,-30,-6,'(70)');
-  b.note(-ext+120,2.5,'防水層(露出防水)');
-  b.note(-30,30,'モルタル又は成形キャント材(立上り入隅45度)');
+  b.note(-ext+120,ti+2.5,ti?'防水層(露出防水・絶縁工法)':'防水層(露出防水)');
+  b.note(-30,30+ti,'モルタル又は成形キャント材(立上り入隅45度)');
   if(!alu){ b.note(-6,H-20,'アルミニウム製押え金物 ステンレスビス@450以下'); b.note(-6,H-3,'シール材'); b.note(-45,H+100,'コンクリート笠木(あご)・天端は内側へ水勾配'); }
   else{ b.note(pt/2,top+2,'アルミニウム製笠木(押出形材)'); b.note(pt/2,top-6,'アルミニウム製押え金物'); }
   b.note(pt+10,H*.5,'塗膜防水又は指定仕上材');
@@ -1149,6 +1230,144 @@ GEN.legend=(b,P)=>{
     if(i<mats.length-1) b.l(0,y,W,y,'thin');
   });
 };
+/* 和室 出入口回り 敷居部(6-41):敷居90×40(溝2本)・パッキング@450・根太40×45@450・畳下床板・畳t55、
+   大引90×90/2をあと施工アンカーM10@1,200程度で固定。床高180(大引直置き)/280(束90/2×90)。ふすま見込み18〜21、木部は塗装なし */
+GEN.wa_shikii=(b,P)=>{
+  const H=+P.wfh===280?280:180,ys=-H,L=480,X0=-420,S=b.S;
+  b.r(X0,ys-150,L-X0,150,'rc'); b.brkH(X0,L,ys-150); b.brkV(L,ys-160,10);
+  const yO=H===280?ys+20+100:ys+23;                                             /* 大引の下端 */
+  b.r(10,ys,120,20,'mortar');                                                  /* 敷きモルタル */
+  if(H===280){ b.r(25,ys+20,90,100,'wood'); }                                  /* 束 90/2×90 */
+  b.r(25,yO,90,45,'wood');                                                     /* 大引 90×90/2 */
+  b.l(70,ys-40,70,yO+45,'thin'); b.r(62,yO+45,16,6,'steel');                   /* あと施工アンカー */
+  const yN=yO+45; b.r(-45,yN,L+45,45,'air');                                   /* 根太 40×45@450 */
+  b.r(45,yN+45,L-45,12,'ply');                                                 /* 畳下床板 */
+  b.r(45,yN+57,L-45,-(yN+57),'finish');                                        /* 畳 */
+  b.r(-30,yN+45,60,-40-(yN+45),'wood');                                        /* パッキング@450 */
+  b.pg([[-45,-40],[45,-40],[45,0],[30,0],[30,-3],[9,-3],[9,0],[-9,0],[-9,-3],[-30,-3],[-30,0],[-45,0]],'woodf');   /* 敷居 90×40 */
+  [[-29,-10],[10,29]].forEach(([a,c])=>{ b.r(a,-2,c-a,262,'air'); }); b.brkH(-45,45,262);   /* ふすま */
+  b.r(X0,-35,X0*-1-46,15,'woodf'); b.r(X0,-47,X0*-1-46,12,'ply'); b.r(X0,ys,X0*-1-46,-47-ys,'air');   /* 隣室床(フローリング) */
+  b.dim(X0+40,ys,X0+40,0,8,'床高 ('+H+')'); b.dim(-45,-20,-45,0,-14,'20');
+  b.dim(-45,0,45,0,20,'90'); b.dim(45,-40,45,0,-8,'40'); b.dim(L-40,-55,L-40,0,-8,'55');
+  b.note(-20,-20,'敷居 90×40(溝2本)'); b.note(20,120,'ふすま 見込み18〜21'); b.note(0,-50,'パッキング @450');
+  b.note(300,yN+22,'根太 40×45 @450'); b.note(320,yN+51,'畳下床板'); b.note(380,-27,'畳 t55');
+  b.note(70,yO+22,H===280?'大引 90×90/2・束 90/2×90':'大引 90×90/2'); b.note(70,ys-20,'あと施工アンカー M10 @1,200程度');
+  b.note(X0+120,-27,'隣室床 フローリング(別途)'); b.note(X0+100,ys-75,'RCスラブ');
+};
+/* 和室 出入口回り 鴨居部(6-41-4):軽量鉄骨の小壁の下端にランナー+パッキング、鴨居90×40(壁仕上げ面より8出し、下面に溝2本)、
+   ふすま上端は溝に12差込み。天井は見切縁で納め壁との間(10)、スペーサー@600程度、仕上げGB-R */
+GEN.wa_kamoi=(b,P)=>{
+  const rw=RW(P)/2,wt=WT(P),wf=rw+wt,kw=wf+8,kh=35,ch=420,ct=P.ct||9.5,cn=P.cn||2,yt=ct*cn,S=b.S;
+  /* 鴨居(溝 21×15 ×2) */
+  b.pg([[-kw,0],[-31,0],[-31,15],[-10,15],[-10,0],[10,0],[10,15],[31,15],[31,0],[kw,0],[kw,kh],[-kw,kh]],'woodf');
+  b.r(-rw+3,kh,2*rw-6,5,'wood');                                                   /* パッキング */
+  b.r(-rw,kh+5,2*rw,40,'lgsc'); b.l(-rw+1.2,kh+6.2,rw-1.2,kh+6.2,'thin');          /* ランナー */
+  b.l(0,kh,0,ch+yt+60,'center');
+  b.l(-rw,kh+45,-rw,ch+yt+60,'thin'); b.l(rw,kh+45,rw,ch+yt+60,'thin');            /* スタッド */
+  b.r(-rw,ch+yt-10,2*rw,10,'lgsc');                                                /* スペーサー */
+  let o=0; WL(P).forEach(l=>{ b.r(rw+o,kh,l.t,ch+yt+60-kh,l.m); b.r(-rw-o-l.t,kh,l.t,ch+yt+60-kh,l.m); o+=l.t; });
+  b.brkH(-wf,wf,ch+yt+60);
+  /* 天井(見切縁・壁との間10) */
+  [[1],[-1]].forEach(([d])=>{
+    const x0=d*(wf+10),x1=d*(wf+360);
+    for(let k=0;k<cn;k++) b.r(Math.min(x0,x1),ch+k*ct,Math.abs(x1-x0),ct,'pb');
+    b.l(d*(wf+10),ch-1.5,d*(wf+40),ch-1.5,'out'); b.l(d*(wf+10),ch-1.5,d*(wf+10),ch+yt,'out');   /* 見切縁 */
+    b.r(Math.min(d*(wf+30),d*(wf+360)),ch+yt,330,19,'lgsc');                       /* 野縁 */
+  });
+  /* ふすま */
+  [[-29.5,-10.5],[10.5,29.5]].forEach(([a,c])=>b.r(a,-280,c-a,280+12,'air')); b.brkH(-31,31,-280);
+  b.dim(-kw,0,kw,0,-10,String(Math.round(2*kw))); b.dim(kw,0,kw,kh,-8,String(kh));
+  b.dim(-wf,kh+60,-kw,kh+60,8,'8'); b.dim(wf,kh+60,kw,kh+60,8,'8'); b.dim(-60,0,-60,12,8,'12');
+  b.dim(wf,ch-30,wf+10,ch-30,-8,'(10)');
+  b.note(kw-10,kh/2,`鴨居 ${Math.round(2*kw)}×40(溝2本・壁面より8出し)`); b.note(20,-150,'ふすま 見込み18〜21(溝に12差込み)');
+  b.note(-rw+20,kh+2.5,'パッキング'); b.note(rw-10,kh+25,'ランナー'); b.note(rw,ch*.6,studTxt(P));
+  b.note(wf-wt/2,ch*.45,pbTxt(P)+'(GB-R)+仕上'); b.note(0,ch+yt-5,'スペーサー @600程度');
+  b.note(wf+25,ch-1.5,'見切縁'); b.note(wf+250,ch+yt/2,`天井 ${pbTxt({bt:ct,pbn:cn})}`);
+};
+/* 防火・防煙シャッター ガイドレール平面詳細(4-49):ガイドレール ステンレスt1.5曲げ加工、幅(45以上)・のみ込み(60以上)、
+   壁仕上げ面より(10)出し、底板ステンレスt1.5、取付用PL-1.6@600以下、RC欠込み+充填モルタル */
+GEN.shutter_rail=(b,P)=>{
+  const gw=Math.max(45,+P.srw||45),gd=60,hw=gw/2,X1=320,Y=230,S=b.S,ft=12.5,gl=+P.glg||12;
+  /* 躯体(RC)と欠込み */
+  b.pg([[ft+gl,-Y],[X1,-Y],[X1,Y],[ft+gl,Y],[ft+gl,hw+70],[150,hw+70],[150,-hw-70],[ft+gl,-hw-70]],'rc');
+  b.r(ft,-hw-70,150-ft,2*hw+140,'mortar');                                       /* 充填モルタル */
+  b.brkH(0,X1,Y); b.brkH(0,X1,-Y); b.brkV(X1,-Y,Y);
+  /* 開口側の壁仕上げ(直張り) */
+  [[hw,Y],[-Y,-hw]].forEach(([a,c])=>{ b.r(0,a,ft,c-a,'pb'); for(let y=a+100;y<c-40;y+=120) b.r(ft,y,gl,50,'mortar'); });
+  /* ガイドレール(ステンレスt1.5) */
+  b.r(-10,-hw,gd,gw,'finish');
+  const sl=8;
+  [[-10,-sl],[-10,-hw],[gd-10,-hw],[gd-10,hw],[-10,hw],[-10,sl]].reduce((p,q)=>{b.l(p[0],p[1],q[0],q[1],'out');return q;});
+  b.l(-10,-sl,-2,-sl,'out'); b.l(-10,sl,-2,sl,'out');
+  b.r(-6,-hw+2,gd-14,hw-sl-2,'air'); b.r(-6,sl,gd-14,hw-sl-2,'air');              /* 底板 */
+  b.r(-10,-6,gd-6,12,'air'); b.l(-10,-6,gd-16,6,'thin'); b.l(-10,6,gd-16,-6,'thin');   /* スラット(シャッターカーテン) */
+  b.l(-120,0,-10,0,'center');
+  [[-1],[1]].forEach(([d])=>{ const y0=d*(hw+1),y1=d*(hw+10); b.l(gd-10,y0,150,y0,'dash'); b.l(gd-10,y1,150,y1,'dash'); b.l(150,y0,150,y1,'dash'); });   /* 取付用PL */
+  b.dim(-10,hw+90,0,hw+90,8,'(10)'); b.dim(-30,-hw,-30,hw,8,`(${gw}以上)`); b.dim(-10,-hw-90,gd-10,-hw-90,-8,'(60以上)');
+  b.note(-10,hw,'ガイドレール:ステンレス t=1.5 曲げ加工'); b.note(20,-hw+8,'底板:ステンレス t=1.5 曲げ加工');
+  b.note(20,0,'シャッターカーテン(スラット)'); b.note(100,hw+5,'取付用 PL-1.6 @600以下'); b.note(100,-hw-40,'充填モルタル');
+  b.note(ft/2,Y-60,'せっこうボード(直張り)+仕上'); b.note(240,0,'RC壁'); b.note(-100,0,'← 開口 W');
+};
+/* ルーフドレン(5-32):縦型・打込み(既製品)。ドレン回りはスラブを下げる(露出防水(300)/保護防水(150))、
+   防水層はドレンのつばに張り掛け押え金物で留める。断熱(スラブ下)の場合は管回り(250)に断熱補修材t50。縦どいは配管用炭素鋼鋼管 白管+防露材料 */
+GEN.roof_drain=(b,P)=>{
+  const ts=+P.slab||200,prot=+P.rdp===1,ins=+P.rdi===1,dep=prot?150:300,L=dep+130+260,fr=130,ro=57,yb=-ts-420,S=b.S;
+  const zz=(x0,x1,y)=>{const m=(x0+x1)/2;[[x0,y],[m-2*S,y],[m-.7*S,y+2.2*S],[m+.7*S,y-2.2*S],[m+2*S,y],[x1,y]].reduce((p,q)=>{b.l(p[0],p[1],q[0],q[1],'thin');return q;});};
+  [-1,1].forEach(sd=>{
+    const X=x=>sd*x, pg=(pts,m)=>b.pg(pts.map(q=>[X(q[0]),q[1]]),m);
+    pg([[L,0],[fr+dep,0],[fr,-30],[fr,-38],[75,-38],[75,-ts],[L,-ts]],'rc');
+    pg([[L,0],[fr+dep,0],[fr,-30],[85,-30],[85,-25],[fr+1,-25],[fr+dep+1,5],[L,5]],'water');
+    if(prot) pg([[L,5],[fr+dep,5],[fr+dep+80,85],[L,85]],'rc');
+    b.r(sd<0?-100:70,-25,30,8,'steel');                                   /* 押え金物(ドレン付属) */
+    if(ins){ b.r(sd<0?-L:75+250,-ts-25,L-75-250,25,'ins'); b.r(sd<0?-75-250:75,-ts-50,250,50,'ins'); }
+    const yi=-ts-(ins?50:0); b.r(sd<0?-ro-20:ro,yb,20,yi-yb,'ins');        /* 防露材料 */
+  });
+  b.brkV(-L,-ts-10,prot?95:15); b.brkV(L,-ts-10,prot?95:15);
+  b.r(-fr,-38,2*fr,8,'steel');                                             /* ドレンつば */
+  b.pg([[-75,-38],[-75,-150],[-62,-170],[62,-170],[75,-150],[75,-38]],'air');   /* ドレン本体(打込み) */
+  b.l(-ro,-170,-ro,yb,'out'); b.l(ro,-170,ro,yb,'out'); b.l(-ro+5,-170,-ro+5,yb,'thin'); b.l(ro-5,-170,ro-5,yb,'thin');
+  zz(-ro-25,ro+25,yb);
+  b.pg([[-72,-17],[-72,20],[-50,105],[-25,128],[25,128],[50,105],[72,20],[72,-17]],'air');   /* ストレーナー */
+  for(let x=-45;x<=45;x+=18){ b.l(x,0,x*.55,100,'thin'); }
+  b.dim(fr,0,fr+dep,0,12,'('+dep+')'); b.dim(-fr-dep,0,-fr,0,12,'('+dep+')');
+  if(ins){ b.dim(75,-ts-50,75+250,-ts-50,-10,'(250)'); b.dim(75+250+20,-ts-50,75+250+20,-ts,-8,'50'); }
+  b.note(30,110,'ルーフドレン(既製品)打込み・ストレーナー');
+  b.note(-fr-dep*.5,prot?3:2.5,prot?'防水層(保護防水)':'防水層(露出防水)');
+  if(prot) b.note(-L+80,45,'保護コンクリート');
+  b.note(85,-21,'押え金物(ドレン付属)'); b.note(-L+60,-ts/2,`RCスラブ t=${ts}`);
+  b.note(-ro+5,yb+60,'縦どい 配管用炭素鋼鋼管 白管'); b.note(ro+10,yb+90,'防露材料');
+  if(ins){ b.note(L-80,-ts-12,'断熱材'); b.note(200,-ts-25,'断熱補修材'); }
+};
+/* くつふきマット(8-21):縁金物 SUS304 6×25(PL-2.3@400で固定)、マット厚(15)を床に埋め込み、マット敷き下地モルタル。
+   泥だまり付き:鋳鉄製側溝ふた500×250×15、L-30×30×3+アンカーD10@400、ます内モルタルt20、深さ(200)、硬質塩ビ管VP65φ(底から75以上) */
+GEN.kutsufuki=(b,P)=>{
+  const dor=+P.kfm===1,yS=dor?-160:-80,L=dor?700:420,X0=-260;
+  b.r(X0,yS,-X0-6,yS<0?-3-yS:0,'mortar'); b.r(X0,-3,-X0-6,3,'finish');
+  b.r(-6,yS,6,-25-yS,'mortar');
+  b.r(-6,-25,6,25,'steel');                                                    /* 縁金物 SUS304 6×25 */
+  [[-6,-22],[-22,-42],[-22,-52]].reduce((p,q)=>{b.l(p[0],p[1],q[0],q[1],'out');return q;});   /* PL-2.3@400 */
+  if(!dor){
+    b.r(0,yS,L,-15-yS,'mortar'); b.r(5,-15,L-5,15,'carpet');
+    b.r(X0,yS-150,L-X0,150,'rc'); b.brkV(L,yS-160,10); b.brkV(X0,yS-160,10);
+  }else{
+    const p0=330,p1=530,w=20,yb=-15-200;
+    b.r(0,yS,p0-w,-15-yS,'mortar'); b.r(5,-15,p0-w-5,15,'carpet');
+    b.r(p1+w,yS,L-p1-w,-15-yS,'mortar'); b.r(p1+w,-15,L-p1-w,15,'carpet');
+    b.pg([[p0-w,-15],[p0,-15],[p0,yb],[p1,yb],[p1,-15],[p1+w,-15],[p1+w,yb-w],[p0-w,yb-w]],'mortar');
+    b.r(p0-w,-15,w+3,15,'mortar'); b.r(p1-3,-15,w+3,15,'mortar');
+    b.pg([[X0,yS],[p0-w,yS],[p0-w,yb-w],[p1+w,yb-w],[p1+w,yS],[L,yS],[L,yS-150],[p1+w+40,yS-150],[p1+w+40,yb-w-150],[p0-w-40,yb-w-150],[p0-w-40,yS-150],[X0,yS-150]],'rc');
+    [[p0,1],[p1,-1]].forEach(([x,d])=>{ b.r(d>0?x:x-3,-45,3,30,'steel'); b.r(d>0?x:x-30,-18,30,3,'steel'); b.l(x-d*3,-40,x-d*40,-70,'out'); });   /* L-30×30×3+アンカー */
+    b.r(p0+3,-15,p1-p0-6,15,'air'); for(let x=p0+25;x<p1-15;x+=25) b.l(x,-15,x,0,'thin');   /* 鋳鉄製側溝ふた */
+    b.l(p1,yb+75,L,yb+60,'out'); b.l(p1,yb+75+76,L,yb+60+76,'out');           /* VP65φ */
+    b.brkV(L,yS-160,10); b.brkV(X0,yS-160,10);
+    b.dim(p0,yb,p0,-15,10,'(200)'); b.dim(p1-40,yb,p1-40,yb+75,-8,'(75以上)'); b.dim(p0,0,p1,0,10,'200(ます内法)');
+    b.note((p0+p1)/2,-7,'鋳鉄製側溝ふた 500×250×15'); b.note(p1-1.5,-30,'L-30×30×3'); b.note(p1+20,-60,'アンカー D10@400');
+    b.note(p1+w/2,yb-w/2,'モルタル t=20'); b.note(L-60,yb+105,'硬質塩ビ管 VP65φ 排水ますに接続');
+  }
+  b.dim(-6,0,0,0,10,'(6)'); b.dim(0,0,5,0,10,'5'); b.dim(dor?250:L-30,-15,dor?250:L-30,0,-8,'(15)');
+  b.note(-3,-12,'縁金物 ステンレス SUS304 6×25'); b.note(-22,-48,'PL-2.3@400'); b.note(120,-7,'マット(既製品)');
+  b.note(150,(yS-15)/2,'マット敷き下地モルタル'); b.note(X0+60,-1.5,'床仕上げ');
+};
 /* 断熱材打込み(7-01):外壁を内断熱とした場合の標準範囲。断熱材はJIS A 9521 押出法ポリスチレンフォーム3種bA、
    原則コンクリート打込み、補修部分は現場発泡断熱材。寒地は間仕切壁・梁へ300折返し(打増し) */
 GEN.ins_doma=(b,P)=>{
@@ -1257,8 +1476,12 @@ const CATS=[
   {id:'door',name:'建具取合い(鋼製建具)'},
   {id:'roof',name:'屋上 パラペット・防水'}
 ];
-const DEF={dext:0,dit:25,dkt:0,kanchi:0,rfins:0,lw:600,wp:0,alct:100,cbt:0,kzw:0,wins:0,zen:0,ph:400,kasa:0,sh:500,ah:180,dwall:0,dtype:0,wj:0,gl:0,glg:12,dh:300,sj:0,snd:0,cext:0,stud:65,pbn:1,bt:12.5,mortar:30,hb:60,leg:130,slab:200,ins:1,rc:180,gap:25,plen:450,ct:9.5,cn:2,tileT:10,carpet:6,step:10,curbH:150,upH:250,opening:600};
+const DEF={srw:45,pins:0,wfh:180,rdp:0,rdi:0,kfm:0,dext:0,dit:25,dkt:0,kanchi:0,rfins:0,lw:600,wp:0,alct:100,cbt:0,kzw:0,wins:0,zen:0,ph:400,kasa:0,sh:500,ah:180,dwall:0,dtype:0,wj:0,gl:0,glg:12,dh:300,sj:0,snd:0,cext:0,stud:65,pbn:1,bt:12.5,mortar:30,hb:60,leg:130,slab:200,ins:1,rc:180,gap:25,plen:450,ct:9.5,cn:2,tileT:10,carpet:6,step:10,curbH:150,upH:250,opening:600};
 const PSPEC={
+  srw:{l:'ガイドレール幅',o:[45,50,60]},
+  pins:{l:'断熱',o:[[0,'なし(5-03)'],[1,'絶縁断熱工法(5-04)']]},
+  wfh:{l:'和室の床高',o:[[180,'180(大引直置き)'],[280,'280(束立て)']]},
+  rdp:{l:'屋根防水',o:[[0,'露出防水'],[1,'保護防水']]},rdi:{l:'スラブ下断熱',o:[[0,'なし'],[1,'あり(断熱補修材)']]},kfm:{l:'マットの種類',o:[[0,'屋内用'],[1,'泥だまり付き']]},
   dext:{l:'内部/外部',o:[[0,'内部用'],[1,'外部用(簡易気密型)']]},
   dit:{l:'断熱材厚',o:[20,25,30,50]},dkt:{l:'土間の種類',o:[[0,'土間床版'],[1,'土間コンクリート']]},kanchi:{l:'地域',o:[[0,'標準地'],[1,'寒地(折返し300)']]},rfins:{l:'屋根断熱',o:[[0,'スラブ下打込み'],[1,'断熱防水']]},
   wp:{l:'防水の種類',o:[[0,'塗膜防水'],[1,'アスファルト防水'],[2,'シート防水(屋内保護密着)']]},alct:{l:'ALCパネル厚'},cbt:{l:'カーテンボックス',o:[[0,'A 150×80'],[1,'B 120×80'],[2,'C 120×150'],[3,'D 180×150']]},
@@ -1342,6 +1565,8 @@ def('wet_rc','wet','屋内防水 RC壁取合い(防水立上り300+ラス立上�
 def('legend','legend','材料凡例',{keys:['auto'],desc:'',ev:()=>rate(0,[])});
 def('step_ceiling','ceiling','下がり壁(天井の段違い)',{keys:['dh','plen','ct','cn','cext','sj'],desc:'天井高さの差や吹出口のための段違いを、天井下地材で組んだ下がり壁で納める(建築工事標準詳細図3-12)。',
  ev:c=>rate(50,[c.use==='office'&&[8,'庁舎・事務所の天井段違いで標準'],c.use==='shop'&&[6,'売場の天井段差'],[0,'吹出口等を設ける場合は補強枠を設ける']])});
+def('shutter_rail','door','防火・防煙シャッター ガイドレール(平面)',{keys:['srw','glg'],desc:'防火・防煙シャッターのガイドレール平面詳細(建築工事標準詳細図4-49)。ステンレスt1.5、幅45以上・のみ込み60以上、壁面より10出し、取付用PL-1.6@600以下。',
+ ev:c=>rate(45,[[0,'防火区画のシャッター']])});
 def('door_plan','door','鋼製建具 縦枠(平面)',{keys:['dwall','dtype','dext','stud','pbn','bt','rc','glg'],defs:{pbn:2},desc:'鋼製建具枠の縦枠と壁の取合い(建築工事標準詳細図4-22〜4-24)。枠見込み=壁厚+(10)×2、見付25、戸当り15。',
  ev:c=>rate(60,[[0,'壁の種類(軽量鉄骨壁/RC直張り/RC打放し)を切替え可'],c.use==='office'&&[6,'事務所の標準的な鋼製扉']])});
 def('kutsuzuri','door','くつずり(扉下)',{keys:['stud','pbn','bt','kzw'],defs:{pbn:2},desc:'扉下のステンレス製くつずり(建築工事標準詳細図4-31)。モルタル充填、便所・湯沸室などは防水層を立上げる。',
@@ -1350,10 +1575,18 @@ def('win_sill','door','窓回り(水切り・ぜん板)',{keys:['rc','wins','zen
  ev:c=>rate(55,[[0,'断熱材t=25・断熱補修材の有無を切替え可']])});
 def('door_head','door','鋼製建具 上枠(断面)',{keys:['dwall','dtype','dext','stud','pbn','bt','rc','glg'],defs:{pbn:2},desc:'鋼製建具枠の上枠と壁の取合い(建築工事標準詳細図4-22〜4-24)。',
  ev:c=>rate(55,[[0,'縦枠(平面)と対で作図']])});
-def('parapet','roof','屋上パラペット(露出防水)',{keys:['ph','kasa','slab'],desc:'屋根露出防水のパラペット立上り(建築工事標準詳細図 5-03)。水上300以上、キャント材(70)、押え金物+シール材、コンクリート笠木又はアルミニウム製笠木。',
+def('roof_drain','roof','ルーフドレン(縦型)',{keys:['rdp','rdi','slab'],desc:'屋根のルーフドレン縦型・打込み(建築工事標準詳細図5-32)。ドレン回りのスラブ下げ、防水層の張り掛け、縦どい白管+防露材料、断熱補修材。',
+ ev:c=>rate(55,[[0,'屋上の排水口']])});
+def('kutsufuki','floor_trans','くつふきマット',{keys:['kfm'],desc:'出入口のくつふきマット(建築工事標準詳細図8-21)。縁金物SUS304 6×25、マット厚15、泥だまり付きは鋳鉄製側溝ふた。',
+ ev:c=>rate(50,[[0,'風除室・出入口']])});
+def('parapet','roof','屋上パラペット(露出防水)',{keys:['ph','kasa','pins','dit','slab'],desc:'屋根露出防水のパラペット立上り(建築工事標準詳細図 5-03)。水上300以上、キャント材(70)、押え金物+シール材、コンクリート笠木又はアルミニウム製笠木。',
  ev:c=>rate(60,[[0,'笠木はコンクリート(あご付き)/アルミニウム製を切替え可']])});
 def('smoke_wall','ceiling','防煙垂れ壁(固定式・ガラス)',{keys:['sh','plen','ct','cn'],desc:'網入りガラスの固定式防煙垂れ壁(建築工事標準詳細図 8-01)。天井バー・押え金物はアルミ型材、上部は2C-60で吊る。',
  ev:c=>rate(40,[c.use==='office'&&[12,'事務所・庁舎の防煙区画'],c.use==='shop'&&[12,'店舗・物販の防煙区画'],c.use==='house'&&[-20,'住宅では一般的でない']])});
+def('wa_kamoi','floor_trans','和室 出入口 鴨居部(LGS小壁)',{keys:['stud','pbn','bt','ct','cn'],defs:{pbn:1},desc:'和室出入口の鴨居部断面(建築工事標準詳細図6-41-4)。鴨居90×40を壁面より8出し、溝2本、ランナー+パッキング、天井見切縁(10)。',
+ ev:c=>rate(45,[[0,'和室の出入口(ふすま)上部']])});
+def('wa_shikii','floor_trans','和室 出入口 敷居部',{keys:['wfh'],desc:'和室出入口の敷居部断面(建築工事標準詳細図6-41)。敷居90×40、根太40×45@450、畳下床板、大引90×90/2、床高180/280。',
+ ev:c=>rate(45,[[0,'和室の出入口(ふすま)']])});
 def('agari','floor_trans','上がりがまち(150≦H≦200)',{keys:['ah'],desc:'土間から木床への段差部(建築工事標準詳細図 6-45)。框90×60、蹴込み合板t5.5、根太45×55@300・大引90×90@900。',
  ev:c=>rate(45,[c.use==='house'&&[18,'玄関・和室の段差'],c.use==='office'&&[-6,'事務所では宿直室・和室など'],[0,'H200超は-2・-3の納まり(H=280程度)']])});
 def('alc_wall','wall','ALCパネル間仕切壁(頭部・脚部)',{keys:['alct'],desc:'ALCパネル(t100)の間仕切壁(建築工事標準詳細図2-31)。頭部は間仕切L形金物と耐火目地材、脚部はフットプレート。',
@@ -1397,10 +1630,11 @@ const BASES={
   tile:{k:/タイル/,name:'タイル巾木',m:'tile',t:10,h:100,showT:1},
   sus:{k:/ステンレス|SUS|金属|アルミ/i,name:'金属巾木(SUS)',m:'steel',t:1.5,h:60},
   soft:{k:/ソフト|ビニル|塩ビ/,name:'ビニル巾木',m:'finish',t:2.5,h:60},
+  yose:{k:/畳寄せ|畳寄/,name:'畳寄せ',m:'woodf',t:25,p:8,inset:1,h:52.5,showT:1},
   wood:{k:/木/,name:'木製巾木',m:'woodf',t:21,p:8,inset:1,h:60,showT:1}
 };
 const FNAME={'畳':'','金ごて':'','金鏝':'','ゴム床':'ゴム床タイル','ゴム床タイル':'ゴム床タイル','ビニル床タイル':'ビニル床タイル','ビニル床シート':'ビニル床シート','フローリングブロック':'フローリングブロック','複合フローリング':'複合フローリング','フローリングボード':'フローリングボード','石':'','長尺':'長尺シート','シート':'長尺シート','塩ビ':'塩ビシート','ビニル':'ビニル床シート','御影':'御影石','テラゾ':'テラゾー','カーペット':'タイルカーペット','タイル':'','木床':'フローリング','無垢':'無垢フローリング'};
-const FLOOR_BASE={stone:'stone',tile:'tile',wood:'wood',sheet:'soft',carpet:'soft',tatami:'wood',mortar:'soft'};
+const FLOOR_BASE={stone:'stone',tile:'tile',wood:'wood',sheet:'soft',carpet:'soft',tatami:'yose',mortar:'soft'};
 function floorBase(P){
   const F=FLOORS[P.fl]||FLOORS.sheet;
   if(P.fbk&&FBASE[P.fbk]) return FBASE[P.fbk].m?{...FBASE[P.fbk]}:null;
@@ -1455,7 +1689,7 @@ const TERM_ALIAS=[
 let _knownRe=null;
 function knownRe(){
   if(_knownRe)return _knownRe;
-  const w=new Set(['パラペット','外部用','外部','簡易気密','気密','玄関扉','勝手口','断熱材','打込','土間','寒地','標準地','暖地','屋根スラブ','防湿','照明','ダウンライト','器具','開口','吹出口','笠木','屋上','屋根','防水','立上り','立ち上がり','防煙','垂れ壁','かまち','框','建具','扉','ドア','枠','下がり壁','天井','床','壁','取り合い','巾木','野縁','ボード','スタッド','ランナ','モルタル','ガラス','見切','目地','玄関','和室','洋室','窓','断熱','サッシ','くつずり','防水','笠木','階段','手すり','便所','浴室','ALC','ブラインド','カーテン','水まわり','水回り','間仕切']);
+  const w=new Set(['パラペット','シャッター','ガイドレール','防火','防煙','防火戸','ヒンジクローザー','出入口','敷居','鴨居','ふすま','床高','畳寄せ','畳寄','ルーフドレン','ドレン','縦どい','くつふき','マット','泥だまり','保護防水','外部用','外部','簡易気密','気密','玄関扉','勝手口','断熱材','打込','土間','寒地','標準地','暖地','屋根スラブ','防湿','照明','ダウンライト','器具','開口','吹出口','笠木','屋上','屋根','防水','立上り','立ち上がり','防煙','垂れ壁','かまち','框','建具','扉','ドア','枠','下がり壁','天井','床','壁','取り合い','巾木','野縁','ボード','スタッド','ランナ','モルタル','ガラス','見切','目地','玄関','和室','洋室','窓','断熱','サッシ','くつずり','防水','笠木','階段','手すり','便所','浴室','ALC','ブラインド','カーテン','水まわり','水回り','間仕切']);
   (typeof GLOSSARY!=='undefined'?GLOSSARY:[]).forEach(([,list])=>list.forEach(([t])=>t.split(/[\/・()(（）]/).forEach(x=>{x=x.trim();if(x.length>=2)w.add(x);})));
   _knownRe=new RegExp([...w].sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'));
   return _knownRe;
@@ -1540,14 +1774,19 @@ function parsePrompt(raw){
   /* 部位の判定 */
   let cat;
   if(/断熱材打込|打込み断熱|打込断熱|断熱防水/.test(t)||(/断熱/.test(t)&&/屋根スラブ|土間/.test(t)&&!/パラペット|笠木/.test(t)))cat='insul';
+  else if(/ルーフドレン|縦どい|たてどい|竪樋|ドレン/.test(t))cat='drain';
+  else if(/くつふき|靴ふき|靴拭き|泥だまり|泥溜/.test(t))cat='kfm';
   else if(/パラペット|笠木|屋上|屋根|露出防水/.test(t))cat='roof';
   else if(/カーテンボックス|ブラインドボックス/.test(t))cat='cbox';
   else if(/ALC|ＡＬＣ/i.test(t))cat='alc';
   else if(/屋内防水|アスファルト防水|塗膜防水|シート防水|ラス立上り/.test(t)&&!/くつずり|沓摺/.test(t))cat='wetrc';
-  else if(/防煙/.test(t))cat='smoke';
+  else if(/防煙/.test(t)&&!/シャッター/.test(t))cat='smoke';
+  else if(/鴨居|かもい/.test(t))cat='wakamoi';
+  else if(/敷居|しきい/.test(t)||(/和室/.test(t)&&/出入口|ふすま|襖/.test(t)))cat='washikii';
   else if(/上がりがまち|上り框|上がり框|かまち|框/.test(t))cat='agari';
   else if(/くつずり|沓摺/.test(t))cat='kutsu';
   else if(/窓|サッシ|水切り|水切板|ぜん板|額縁/.test(t))cat='win';
+  else if(/シャッター/.test(t))cat='shutter';
   else if(/建具|ドア|扉|戸枠|ドア枠|縦枠|上枠/.test(t)&&!/点検口/.test(t))cat='door';
   else if(/下がり壁|段違い|天井段差/.test(t))cat='step';
   else if(/点検口/.test(t))cat='hatch';
@@ -1615,12 +1854,24 @@ function parsePrompt(raw){
   }else if(cat==='wetrc'){
     variant='wet_rc'; P.wp=/アスファルト/.test(t)?1:/シート/.test(t)?2:0;
     items.push(['部位','屋内防水 RC壁取合い'],['防水',['塗膜防水','アスファルト防水','合成高分子系ルーフィングシート防水(屋内保護密着工法)'][P.wp]+' / 立上り300+ラス立上り150']);
+  }else if(cat==='drain'){
+    variant='roof_drain'; P.rdp=/保護/.test(t)?1:0; P.rdi=/断熱/.test(t)?1:0; title=`ルーフドレン 縦型・${P.rdp?'保護':'露出'}防水${P.rdi?'・断熱':''}`;
+    items.push(['部位','ルーフドレン 縦型(5-32)'],['防水',P.rdp?'保護防水(スラブ下げ150)':'露出防水(スラブ下げ300)'],['断熱',P.rdi?'スラブ下断熱+断熱補修材(250)':'なし']);
+  }else if(cat==='kfm'){
+    variant='kutsufuki'; P.kfm=/泥|排水|側溝/.test(t)?1:0; title=`くつふきマット(${P.kfm?'泥だまり付き':'屋内用'})`;
+    items.push(['部位','くつふきマット(8-21)'],['種類',P.kfm?'泥だまり付き(鋳鉄製側溝ふた)':'屋内用'],['縁金物','ステンレス SUS304 6×25']);
   }else if(cat==='roof'){
-    variant='parapet'; const hm=t.match(/(?:H|立上り|立ち上がり)\s*=?\s*(\d{3,4})/i); if(hm)P.ph=+hm[1]; P.kasa=/アルミ/.test(t)?1:0;
-    items.push(['部位','屋上パラペット(屋根露出防水)'],['笠木',P.kasa?'アルミニウム製笠木':'コンクリート笠木(あご付き)'],['防水立上り',`H=${P.ph}(水上300以上)`]);
+    variant='parapet'; const hm=t.match(/(?:H|立上り|立ち上がり)\s*=?\s*(\d{3,4})/i); if(hm)P.ph=+hm[1]; P.kasa=/アルミ/.test(t)?1:0; P.pins=/断熱/.test(t)?1:0; if(P.pins)title=`屋上パラペット(露出防水・絶縁断熱工法・${P.kasa?'アルミ笠木':'コンクリート笠木'})`; const dm=t.match(/断熱[^\d]{0,6}(?:t\s*=?\s*)?(25|30|40|50)/i); if(dm)P.dit=+dm[1];
+    items.push(['部位','屋上パラペット(屋根露出防水'+(P.pins?'・絶縁断熱工法 5-04':'')+')'],['笠木',P.kasa?'アルミニウム製笠木':'コンクリート笠木(あご付き)'],['防水立上り',`H=${P.ph}(水上300以上)`]);
   }else if(cat==='smoke'){
     variant='smoke_wall'; const hm=t.match(/(?:H|高さ)\s*=?\s*(\d{3,4})/i); if(hm)P.sh=+hm[1];
     items.push(['部位','防煙垂れ壁(固定式)'],['垂れ壁',`網入りガラスt6.8 H=${P.sh}`]);
+  }else if(cat==='wakamoi'){
+    variant='wa_kamoi'; if(!R.w.pbn&&!R.w.wl)P.pbn=1; title='和室 出入口 鴨居部(LGS小壁)';
+    items.push(['部位','和室 出入口回り 鴨居部(6-41-4)'],['鴨居','90×40 溝2本・壁面より8出し'],['小壁','LGS '+pbTxt(P)+'(GB-R)']);
+  }else if(cat==='washikii'){
+    variant='wa_shikii'; P.wfh=/280/.test(t)?280:180; title=`和室 出入口 敷居部(床高${P.wfh})`;
+    items.push(['部位','和室 出入口回り 敷居部(6-41)'],['床高',P.wfh+(P.wfh===280?'(束立て)':'(大引直置き)')],['敷居','90×40 溝2本・ふすま見込み18〜21']);
   }else if(cat==='agari'){
     variant='agari'; const hm=t.match(/(?:H|高さ|段差)\s*=?\s*(\d{3})/i); if(hm)P.ah=+hm[1];
     items.push(['部位','上がりがまち'],['段差',`H=${P.ah}(150〜200)`]);
@@ -1630,6 +1881,9 @@ function parsePrompt(raw){
   }else if(cat==='win'){
     variant='win_sill'; P.wins=/断熱/.test(t)?1:0; P.zen=/木製/.test(t)?1:0;
     items.push(['部位','窓回り(下枠)'],['外部','アルミニウム製水切板+シーリング材(10×10)'],['内部','ぜん板 '+(P.zen?'木製':'アルミニウム製')+(P.wins?' / 断熱材t25':'')]);
+  }else if(cat==='shutter'){
+    variant='shutter_rail'; title='防火・防煙シャッター ガイドレール平面詳細';
+    items.push(['部位','防火・防煙シャッター ガイドレール(4-49)'],['ガイドレール','ステンレス t1.5 幅45以上・のみ込み60以上'],['取付','PL-1.6 @600以下・充填モルタル']);
   }else if(cat==='door'){
     variant=/上枠|頭部|断面|縦断/.test(t)?'door_head':'door_plan';
     P.dwall=R.w.gl?1:R.w.rc?2:0; P.dtype=/木製/.test(t)?2:/軽量建具|軽量扉|鋼製軽量/.test(t)?1:0; if(/外部|簡易気密|気密型|玄関扉|勝手口/.test(t)){P.dext=1;if(!R.w.gl&&!R.w.rc&&P.dwall===0)P.dwall=2;} if(!R.w.pbn&&!R.w.wl)P.pbn=2;
@@ -1681,7 +1935,7 @@ function condParams(c,v){
 
 /* ───────── シート構成 ───────── */
 /* 生成ロジックの版。作図ルールを変えたら上げる(古い版の詳細を検出して再生成を促す) */
-const GENVER=18;
+const GENVER=25;
 const staleDetails=()=>st.details.filter(r=>r.variant&&r.variant!=='legend'&&r.ver!==GENVER);
 function regenStale(){
   const list=staleDetails();if(!list.length)return;
@@ -2161,10 +2415,10 @@ const opt=(list,val)=>list.map(a=>{const [v,l]=Array.isArray(a)?a:[a,a];return `
 function renderProposePane(){
   const p=$('#pane-p');
   p.innerHTML=`
-  <h3>✎ 言葉で作図</h3>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">✎ 言葉で作図</h3><button id="micBtn" data-act="mic" style="flex:none;margin-left:auto">🎤 音声入力</button></div>
+  <div id="micSt" class="mut" style="font-size:11.5px;text-align:right;margin:2px 0 4px">話し終えたら「作図して」で作図します</div>
   <textarea id="pText" rows="3" placeholder="例)壁床の取り合い、床はRC下地に石貼り、石巾木H100、壁はt12.5ボード2枚貼り" style="width:100%;font:inherit;padding:6px;border:1px solid var(--bd);border-radius:6px;resize:vertical">${esc(promptText)}</textarea>
   <div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">${PROMPT_EX.map(x=>`<button class="tag" style="border:0;cursor:pointer" data-ex="${esc(x)}">${esc(x.length>18?x.slice(0,18)+'…':x)}</button>`).join('')}</div>
-  <div class="row" style="margin:2px 0 6px"><button id="micBtn" data-act="mic" style="flex:none">🎤 音声入力</button><span id="micSt" class="mut" style="font-size:11.5px">話し終えたら「作図して」で作図します</span></div>
   <div id="pRes"></div>
   <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;font-size:12.5px">📖 用語集(建築工事標準詳細図の用語)— 言葉で作図に使えます</summary>
     <div style="max-height:260px;overflow:auto;font-size:11.5px;line-height:1.55;margin-top:4px">${GLOSSARY.map(([g,list])=>`<div style="font-weight:700;margin-top:6px">${g}</div>`+list.map(([w,d])=>`<div><b>${esc(w)}</b>:${esc(d)}</div>`).join('')).join('')}</div>
@@ -2216,12 +2470,22 @@ const GLOSSARY=[
   ['キャント材','立上り入隅に入れる45度の面取り材(モルタル又は成形品・70)'],
   ['押え金物','防水層の立上り端部を押さえるアルミニウム製金物。ステンレスビス@450以下+シール材'],
   ['露出防水/保護防水','防水層をそのまま露出させる工法と、保護コンクリート等で覆う工法'],
-  ['ルーフドレン/縦どい','屋上の排水口と雨水を下ろす管'],['上がりがまち','土間と床の段差部の化粧材(框)。150≦H≦200は框90×60・蹴込み合板t5.5'],
+  ['ルーフドレン/縦どい','屋上の排水口と雨水を下ろす管。縦型(床)と横型(パラペット)がある'],
+  ['ドレン回りのスラブ下げ','ドレンへ水を集めるため周囲を下げる。露出防水で(300)、保護防水で(150)'],
+  ['ストレーナー','ドレン上部のごみよけ(既製品)'],['配管用炭素鋼鋼管 白管','縦どいに用いる亜鉛めっき鋼管(SGP白管)'],
+  ['防露材料','管表面の結露を防ぐ保温材。有無・材種は特記'],['呼びとい','横型ドレンから縦どいへつなぐ短い管。空気孔10φ'],['乾式保護材','パラペット立上り防水層を保護する成形板(H≦600)'],['上がりがまち','土間と床の段差部の化粧材(框)。150≦H≦200は框90×60・蹴込み合板t5.5'],
+  ['畳寄せ','和室で畳と壁の取合いに入れる見切材(25×105/2=52.5)。壁仕上げ面より8出し、ボードは畳寄せの天端で止める(6-43)。和室は巾木なしが一般'],
+  ['廻り縁(和室)','和室の天井と壁の取合いの見切材(20×40)。天井から35下げ・壁面から8出す'],['畳下床板','畳を受ける下地板。根太40×45@450の上に張る'],
+  ['敷居/鴨居','建具(ふすま・障子)の下枠と上枠。90×40で溝2本。木部は塗装なし(6-41)'],['ふすま','和室の引違い建具。見込み18〜21が標準'],
+  ['床高','和室の床を上げる高さ。180は大引をスラブに直置き、280は束(90/2×90)を立てる'],['束/大引/根太','床組の部材。束が大引(90×90/2)を受け、大引が根太(40×45@450)を受ける'],
+  ['パッキング','高さ調整のため部材の下にかう小片(@450)'],['蹴込み','段差の立ち上がり面。合板t5.5等で張る'],['縁甲板','幅の狭い化粧の床板(フローリングの一種)'],
   ['根太/大引','床板を受ける角材(45×55@300)と、それを受ける太い角材(90×90@900)']]],
  ['断熱・雑・外構(第5・6巻)',[
   ['断熱材打込み','RC躯体の型枠に断熱材を打ち込む工法。直張りの仕上り厚は(11〜13)+ボード'],['断熱補修材','断熱材の切れ目や金物周りを補う材料'],
   ['防煙垂れ壁','煙の広がりを抑える天井からの垂れ壁。固定式は網入りガラスt6.8、天井バー・押え金物(アルミ型材)'],
-  ['くつふきマット','出入口床に埋め込むマット(屋内用・排水付き)'],['タラップ','ステンレス製の昇降はしご'],
+  ['くつふきマット','出入口床に埋め込むマット(屋内用・排水付き・泥だまり付き)。マット厚(15)、縁金物との間5'],
+  ['縁金物','くつふきマットの周囲を見切るステンレスSUS304 6×25のフラットバー。PL-2.3@400でモルタルに固定'],
+  ['泥だまり/側溝ふた','マット中央の排水ます(内法200、深さ200)と鋳鉄製ふた(500×250×15、溶融亜鉛めっき)'],['タラップ','ステンレス製の昇降はしご'],
   ['側溝・街きょ・縁石','構内道路の排水溝と歩車道境界の部材'],['インターロッキングブロック舗装','かみ合わせて敷き並べるブロック舗装']]],
  ['建具(4-01〜4-55)',[
   ['枠見込み','壁の厚さ方向の枠の寸法。軽量鉄骨壁・RC直張りは壁厚+(10)×2、RC打放しは100(壁面から10出し、RC開口は欠込み+充填モルタル)'],['見付','正面から見える枠の幅(鋼製建具枠25)'],
@@ -2230,6 +2494,14 @@ const GLOSSARY=[
   ['開口部補強材','LGS壁の開口周りの補強(C-60×30×10×2.3)'],
   ['簡易気密型鋼製建具','気密材を戸当りに設けた外部用の鋼製建具(4-41〜4-46)。枠見込みは標準120、簡易気密型は119程度'],['気密材','戸当り部に付けるゴム等。すき間風・雨水の浸入を抑える'],
   ['水切り(建具上枠)','外部建具の上枠の上に設けるPL-1.6の板。雨水を壁面から切り離す'],['小口ふた','枠・くつずりの端部(小口)をふさぐ鋼板'],['扉の召合わせ','両開き戸の2枚の扉が合わさる部分'],
+  ['防火戸(90度開き/180度開き)','常時開放し、火災時に自動で閉じる防火戸(4-47/48)。開いた扉は壁の欠込み(戸袋状)に納め、壁・床仕上げと揃える。防火認定品を使う'],
+  ['自動閉鎖機構/ヒンジクローザー','防火戸を自動で閉じる装置。ヒンジクローザーは丁番型の閉鎖装置'],
+  ['ヒューズ装置/煙感知器連動','閉鎖の作動方式。温度ヒューズ式と、煙・熱感知器と連動する方式。連動式は吸着板・ラッチ受け座が別途'],
+  ['防火・防煙シャッター','防火区画・防煙区画の開口に設けるシャッター(4-49)。手動閉鎖装置はFL+800〜1,500、避難用扉はW1≧750・H1≧1,800(常時閉鎖)'],
+  ['ガイドレール','シャッターカーテンを案内する溝形材。ステンレスt1.5曲げ加工、幅45以上・のみ込み60以上、取付用PL-1.6@600以下'],
+  ['スラット/シャッターカーテン','シャッターの幕を構成する横長の板材とその幕'],['座板','シャッターカーテン最下部の部材。危害防止機構(障害物感知)を付ける'],
+  ['軸受/シャッターケース','巻取りシャフトを支える部材と、巻き取った幕を納める箱。上部に天井点検口600×600を設ける'],
+  ['危害防止機構','閉鎖時に人を挟まないよう、障害物を感知して停止する装置(種類は特記)'],
   ['鋼板類の厚さ(特記)','片開き等で有効開口幅950超、又は有効高さ2,400超の場合は扉の鋼板厚さを特記'],['充填モルタル','RC壁の開口と鋼製枠の間に詰めるモルタル'],
   ['木製建具枠','堅木の枠。枠見込み=壁厚+(10)×2、見付(25)、戸当り(12)'],['ぜん板/額縁','窓の内側の窓台と枠回りの見切材(アルミニウム製押出形材又は木製)'],['水切板','窓下枠の外側で雨水を切るアルミニウム製の板。四周にシーリング材'],
   ['カーテンボックス','窓際天井のカーテン・ブラインド収まり。鋼製埋込み形 PL-1.6、標準寸法A150×80/B120×80/C120×150/D180×150'],
@@ -2256,7 +2528,7 @@ const GLOSSARY=[
   ['再生クラッシャラン/切込砂利/切込砕石','地業に用いる砕石・砂利類'],['土間床版/土間コンクリート','構造スラブとしての床版/地盤に直接打つ非構造の床コンクリート'],
   ['外周地盤','建物外周の地盤面。外壁内側の断熱材は外周地盤から400程度下まで'],['断熱防水','防水層の下に断熱材を敷く屋根工法。スラブ下の打込み断熱は不要']]]
 ];
-const PROMPT_EX=['外部用 鋼製建具 上枠 RC壁','土間床版 断熱材打込み t50','屋根スラブ 断熱材打込み 寒地','照明器具開口 600 天井懐450','屋内防水 アスファルト防水','ALC間仕切 t100','カーテンボックス 横形ブラインド','木製建具 縦枠 LGS壁','くつずり 便所','窓回り 断熱 アルミぜん板','屋上パラペット コンクリート笠木 立上り400','防煙垂れ壁 H500','上がりがまち H180','鋼製建具 縦枠 LGS壁 PB12.5 2枚','鋼製軽量建具 上枠 RC壁 直張り','天井の下がり壁 H400 突付け目地','RC壁 直張り工法 PB12.5 目透し','壁床の取り合い 床 直均し ビニル床シート ビニル巾木','和室 床 畳 木製巾木 壁PB12.5','壁床の取り合い、床 RC下地石貼り、巾木 石貼り、壁t12.5ボード2枚貼り','二重床フローリング、木製巾木H60、壁ボード12.5 1枚 クロス','OAフロア タイルカーペット ソフト巾木 遮音壁','RC壁にタイル床 タイル巾木H100','壁 下貼りPB12.5 上貼り強化PB15 スタッド65形','壁と天井の取り合い 廻り縁 天井懐500','天井点検口 450角'];
+const PROMPT_EX=['防火シャッター ガイドレール','和室 鴨居 LGS壁','和室 出入口 敷居 床高180','ルーフドレン 露出防水 断熱','くつふきマット 泥だまり','外部用 鋼製建具 上枠 RC壁','土間床版 断熱材打込み t50','屋根スラブ 断熱材打込み 寒地','照明器具開口 600 天井懐450','屋内防水 アスファルト防水','ALC間仕切 t100','カーテンボックス 横形ブラインド','木製建具 縦枠 LGS壁','くつずり 便所','窓回り 断熱 アルミぜん板','屋上パラペット コンクリート笠木 立上り400','防煙垂れ壁 H500','上がりがまち H180','鋼製建具 縦枠 LGS壁 PB12.5 2枚','鋼製軽量建具 上枠 RC壁 直張り','天井の下がり壁 H400 突付け目地','RC壁 直張り工法 PB12.5 目透し','壁床の取り合い 床 直均し ビニル床シート ビニル巾木','和室 床 畳 木製巾木 壁PB12.5','壁床の取り合い、床 RC下地石貼り、巾木 石貼り、壁t12.5ボード2枚貼り','二重床フローリング、木製巾木H60、壁ボード12.5 1枚 クロス','OAフロア タイルカーペット ソフト巾木 遮音壁','RC壁にタイル床 タイル巾木H100','壁 下貼りPB12.5 上貼り強化PB15 スタッド65形','壁と天井の取り合い 廻り縁 天井懐500','天井点検口 450角'];
 /* ───────── 音声入力(Web Speech API) ───────── */
 let SRec=window.SpeechRecognition||window.webkitSpeechRecognition;
 let srec=null,srecOn=false,srecBase='';
@@ -2588,13 +2860,13 @@ $('#props').addEventListener('click',ev=>{
 /* ツールバー */
 (function(){
   const tools=[['sel','▶ 選択'],['line','／ 線'],['rect','▭ 材料追加'],['circ','◯ 円'],['text','A 文字'],['dim','↔ 寸法'],['note','↗ 引出'],['del','✕ 消去']];
-  $('#tb').innerHTML=tools.map(([k,l])=>`<button data-tool="${k}"${k==='sel'?' class="on"':''}>${l}</button>`).join('')+
-   `<select id="tMat" title="追加する材料(2点クリックで範囲指定)">${opt(Object.keys(MAT).map(k=>[k,'材料:'+MAT[k].n]),matSel)}</select>
-    <label style="font-size:12px"><input type="checkbox" id="tSnap" checked> スナップ</label>
+  const matSelHtml=`<select id="tMat" title="追加する材料(選ぶと材料追加ツールになります。2点クリックで範囲指定)" style="margin-left:-3px;border-top-left-radius:0;border-bottom-left-radius:0">${opt(Object.keys(MAT).map(k=>[k,MAT[k].n]),matSel)}</select>`;
+  $('#tb').innerHTML=tools.map(([k,l])=>k==='rect'?`<span style="display:inline-flex;align-items:stretch;white-space:nowrap"><button data-tool="${k}" style="border-top-right-radius:0;border-bottom-right-radius:0">${l}</button>${matSelHtml}</span>`:`<button data-tool="${k}"${k==='sel'?' class="on"':''}>${l}</button>`).join('')+
+   `<label style="font-size:12px"><input type="checkbox" id="tSnap" checked> スナップ</label>
     <span class="sp"></span>
     <button id="tZout">－</button><button id="tZin">＋</button><button id="tFit">全体表示</button>`;
   $('#tb').addEventListener('click',ev=>{const b=ev.target.closest('[data-tool]');if(b)setTool(b.dataset.tool);});
-  $('#tMat').onchange=e=>{matSel=e.target.value;};
+  $('#tMat').onchange=e=>{matSel=e.target.value;setTool('rect');};
   $('#tSnap').onchange=e=>{snapOn=e.target.checked;};
   const c=()=>{const r=svg.getBoundingClientRect();return [r.width/2,r.height/2];};
   $("#tZout").onclick=()=>zoomAt(...c(),1/1.3);
