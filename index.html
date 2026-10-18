@@ -133,7 +133,7 @@ const MAT={
   stone:{n:'石材',fill:'#fff',ly:'DT-STONE',h:'stn',pitch:1.8},
   tile:{n:'タイル',fill:'#fff',ly:'DT-TILE',h:'diag',pitch:1.5},
   lgsc:{n:'軽量鉄骨下地',fill:'#fff',ly:'DT-STEEL',thinLine:1},
-  alc:{n:'ALCパネル',fill:'#fff',ly:'DT-ALC',h:'diag',pitch:5},
+  alc:{n:'ALCパネル',fill:'#fff',ly:'DT-ALC',h:'g',lines:2,gap:.6,pitch:9},
   pb:{n:'せっこうボード',fill:'#fff',ly:'DT-PB'},
   finish:{n:'仕上材',fill:'#fff',ly:'DT-FINISH'},
   carpet:{n:'カーペット',fill:'#fff',ly:'DT-FINISH'},
@@ -1935,7 +1935,7 @@ function condParams(c,v){
 
 /* ───────── シート構成 ───────── */
 /* 生成ロジックの版。作図ルールを変えたら上げる(古い版の詳細を検出して再生成を促す) */
-const GENVER=25;
+const GENVER=26;
 const staleDetails=()=>st.details.filter(r=>r.variant&&r.variant!=='legend'&&r.ver!==GENVER);
 function regenStale(){
   const list=staleDetails();if(!list.length)return;
