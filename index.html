@@ -123,7 +123,7 @@ const SCALES=[2,3,5,10,20];
 /* ───────── 材料 ───────── */
 /* 材料構造表示記号:JIS A 0150(建築製図通則)/建築工事標準詳細図の表記に準拠。寸法は紙面mm */
 const MAT={
-  rc:{n:'鉄筋コンクリート',fill:'#fff',ly:'DT-RC',h:'g',lines:3,gap:.6,pitch:4.5},
+  rc:{n:'鉄筋コンクリート',fill:'#fff',ly:'DT-RC',h:'g',lines:3,gap:.6,pitch:9},
   mortar:{n:'モルタル',fill:'#fff',ly:'DT-MORTAR',h:'dot',sp:2.2},
   ins:{n:'保温・吸音材',fill:'#fff',ly:'DT-INSUL',h:'zig'},
   wood:{n:'木材 構造材',fill:'#fff',ly:'DT-WOOD',h:'x'},
@@ -207,6 +207,24 @@ function hatchSegs(e,S){
   return out;
 }
 
+/* ハッチ線分を多角形の内側だけに切り抜く(非凸も可) */
+function inPoly(x,y,pts){let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const[xi,yi]=pts[i],[xj,yj]=pts[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;}
+function clipPoly(segs,pts){
+  const out=[];
+  segs.forEach(([a,b])=>{
+    const dx=b[0]-a[0],dy=b[1]-a[1],ts=[0,1];
+    for(let i=0,j=pts.length-1;i<pts.length;j=i++){
+      const[x1,y1]=pts[j],[x2,y2]=pts[i],ex=x2-x1,ey=y2-y1,den=dx*ey-dy*ex;
+      if(Math.abs(den)<1e-12)continue;
+      const t=((x1-a[0])*ey-(y1-a[1])*ex)/den,u=((x1-a[0])*dy-(y1-a[1])*dx)/den;
+      if(t>0&&t<1&&u>=0&&u<=1)ts.push(t);
+    }
+    ts.sort((p,q)=>p-q);
+    for(let k=0;k<ts.length-1;k++){const t0=ts[k],t1=ts[k+1];if(t1-t0<1e-9)continue;const tm=(t0+t1)/2;
+      if(inPoly(a[0]+dx*tm,a[1]+dy*tm,pts))out.push([[a[0]+dx*t0,a[1]+dy*t0],[a[0]+dx*t1,a[1]+dy*t1]]);}
+  });
+  return out;
+}
 /* エンティティ → 描画プリミティブ(SVG/DXF共通) */
 function explode(e,S){
   const P=[], W={out:.35*S,thin:.13*S,hair:.09*S};
@@ -223,7 +241,9 @@ function explode(e,S){
       break;}
     case 'pg':{
       const m=MAT[e.m]||MAT.air;
-      P.push({k:'poly',pts:e.pts.map(q=>[q[0],q[1]]),closed:1,ly:m.ly,w:m.thinLine?W.thin:W.out,fill:m.fill});
+      P.push({k:'poly',pts:e.pts.map(q=>[q[0],q[1]]),closed:1,ly:m.ly,w:m.thinLine?W.thin:W.out,fill:m.fill,solid:m.solid});
+      if(m.h){ const xs=e.pts.map(q=>q[0]),ys=e.pts.map(q=>q[1]),x0=Math.min(...xs),y0=Math.min(...ys);
+        clipPoly(hatchSegs({x:x0,y:y0,w:Math.max(...xs)-x0,h:Math.max(...ys)-y0,m:e.m},S),e.pts).forEach(s=>P.push({k:'line',a:s[0],b:s[1],ly:'DT-HATCH',w:W.hair})); }
       break;}
     case 'circ':{
       const m=MAT[e.m]||MAT.air;
@@ -693,9 +713,37 @@ function mapB(b,f){
     r:(x,y,w,h,m)=>{const a=f(x,y),c=f(x+w,y+h);b.r(Math.min(a[0],c[0]),Math.min(a[1],c[1]),Math.abs(c[0]-a[0]),Math.abs(c[1]-a[1]),m);},
     l:(x1,y1,x2,y2,k)=>{const a=f(x1,y1),c=f(x2,y2);b.l(a[0],a[1],c[0],c[1],k);},
     dim:(x1,y1,x2,y2,o,t)=>{const a=f(x1,y1),c=f(x2,y2);b.dim(a[0],a[1],c[0],c[1],o,t);},
-    note:(x,y,s,o)=>{const a=f(x,y);b.note(a[0],a[1],s,o);}};
+    note:(x,y,s,o)=>{const a=f(x,y);b.note(a[0],a[1],s,o);},
+    pg:(pts,mm)=>b.pg(pts.map(q=>f(q[0],q[1])),mm)};
+}
+/* RC壁(打放し)の鋼製建具枠(4-21・4-41):枠見込み100、見付25、壁面から(10)出す、戸当り15、内側返し(25)、
+   RC開口は欠込み(25)+充填モルタル。外部用はRC面と枠の入隅にシーリング材(10×10)、上枠に水切りPL-1.6 */
+function genDoorRC(b,P,view){
+  const light=+P.dtype===1,dt=light?36:40,xd=+P.dext===1,rc=+P.rc||180,L=300,OP=300,head=view==='head';
+  const m=mapB(b,head?(x,y)=>[y,-x]:(x,y)=>[x,y]);
+  const yT=10,yD=yT-3,yS=yD-dt-3,yB=yT-100,yR=-98;
+  m.pg([[-L,0],[-45,0],[-45,yR],[-10,yR],[-10,-rc],[-L,-rc]],'rc');
+  m.pg([[-45,0],[-25,0],[-25,yT],[0,yT],[0,yS],[15,yS],[15,yB],[-10,yB],[-10,yR],[-45,yR]],'mortar');
+  const F=[[-25,-14],[-25,yT],[0,yT],[0,yS],[15,yS],[15,yB],[-10,yB],[-10,yB+10]];
+  for(let i=0;i<F.length-1;i++) m.l(F[i][0],F[i][1],F[i+1][0],F[i+1][1],'out');
+  const S=b.S,zz=(x,y0,y1)=>{const ym=(y0+y1)/2;[[x,y0],[x,ym-2*S],[x+2.2*S,ym-.7*S],[x-2.2*S,ym+.7*S],[x,ym+2*S],[x,y1]].reduce((p,q)=>{m.l(p[0],p[1],q[0],q[1],'thin');return q;});};
+  zz(-L,10,-rc-10);
+  m.r(3,yD-dt,OP-3,dt,'air'); zz(OP,yD-dt-10,yD+10);                       /* 扉 */
+  m.r(5,yS,8,3,'seal');                                                   /* 戸当りゴム/気密材 */
+  if(xd){ m.r(-35,-10,10,10,'seal');                                      /* シーリング材(10×10) */
+    if(head){ m.l(-37,0,-27,40,'out'); m.l(-27,40,-3,40,'out'); m.l(-3,40,-3,35,'out'); } }   /* 水切り PL-1.6 */
+  m.dim(-25,yT,0,yT,8,'25'); m.dim(0,yT,3,yT,14,'(3〜5)'); m.dim(0,yS,15,yS,-8,'15');
+  m.dim(-10,yB,15,yB,-8,'(25)'); m.dim(-45,yR,-10,yR,-8,'(35)');
+  m.dim(-70,0,-70,yT,head?-8:8,'(10)');
+  m.dim(OP+30,yT,OP+30,yB,head?10:-14,'枠見込み 100'); m.dim(OP-40,yD-dt,OP-40,yD,head?8:-8,String(dt));
+  m.note(-12,yT,`${xd?'簡易気密型':''}${light?'鋼製軽量建具枠':'鋼製建具枠'} t=1.6(${head?'上枠':'縦枠'})`);
+  m.note(9,yS+1.5,xd?'気密材':head?'戸当り':'戸当りゴム(片開きは縦枠)');
+  m.note(OP-80,yD-dt/2,`${light?'鋼製軽量扉':'鋼製扉'} 見込み${dt}`);
+  m.note(-35,-60,'充填モルタル'); m.note(-160,-rc/2,`RC壁 t=${rc}(打放し)`);
+  if(xd){ m.note(-30,-5,'シーリング材(10×10)'); if(head) m.note(-15,40,'水切り PL-1.6'); }
 }
 function genDoor(b,P,view){
+  if(+P.dwall===2&&+P.dtype!==2) return genDoorRC(b,P,view);
   const wt=+P.dwall||0,wood=+P.dtype===2,light=+P.dtype===1,dt=light?36:40,isRC=wt>0,gl=wt===1;
   let sw=light?42:46;
   const g=+P.glg||12, wf=isRC?P.rc/2+(gl?g+WT(P):0):wallFace(P), hD=wf+10, D=2*hD, L=380, OP=320;
@@ -1630,7 +1678,7 @@ function condParams(c,v){
 
 /* ───────── シート構成 ───────── */
 /* 生成ロジックの版。作図ルールを変えたら上げる(古い版の詳細を検出して再生成を促す) */
-const GENVER=16;
+const GENVER=17;
 const staleDetails=()=>st.details.filter(r=>r.variant&&r.variant!=='legend'&&r.ver!==GENVER);
 function regenStale(){
   const list=staleDetails();if(!list.length)return;
@@ -2173,7 +2221,7 @@ const GLOSSARY=[
   ['くつふきマット','出入口床に埋め込むマット(屋内用・排水付き)'],['タラップ','ステンレス製の昇降はしご'],
   ['側溝・街きょ・縁石','構内道路の排水溝と歩車道境界の部材'],['インターロッキングブロック舗装','かみ合わせて敷き並べるブロック舗装']]],
  ['建具(4-01〜4-55)',[
-  ['枠見込み','壁の厚さ方向の枠の寸法。鋼製建具枠は壁厚+(10)×2'],['見付','正面から見える枠の幅(鋼製建具枠25)'],
+  ['枠見込み','壁の厚さ方向の枠の寸法。軽量鉄骨壁・RC直張りは壁厚+(10)×2、RC打放しは100(壁面から10出し、RC開口は欠込み+充填モルタル)'],['見付','正面から見える枠の幅(鋼製建具枠25)'],
   ['戸当り/戸当りゴム','扉が当たって止まる枠の段(15)。戸当りゴムは片開きなら縦枠、両開きは上枠'],
   ['鋼製建具/鋼製軽量建具','扉見込み40/36の鋼製扉。標準型・簡易気密型(気密材付き)がある'],
   ['開口部補強材','LGS壁の開口周りの補強(C-60×30×10×2.3)'],
