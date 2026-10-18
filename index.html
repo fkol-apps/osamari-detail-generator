@@ -730,8 +730,11 @@ function genDoorRC(b,P,view){
   zz(-L,10,-rc-10);
   m.r(3,yD-dt,OP-3,dt,'air'); zz(OP,yD-dt-10,yD+10);                       /* 扉 */
   m.r(5,yS,8,3,'seal');                                                   /* 戸当りゴム/気密材 */
-  if(xd){ m.r(-35,-10,10,10,'seal');                                      /* シーリング材(10×10) */
-    if(head){ m.l(-37,0,-27,40,'out'); m.l(-27,40,-3,40,'out'); m.l(-3,40,-3,35,'out'); } }   /* 水切り PL-1.6 */
+  if(xd){
+    if(head){ /* 水切り PL-1.6:元端をモルタルへ差し込み、上部(壁面との入隅)にシーリング材 → 雨水を水切りの上で止める */
+      [[-27,-14],[-27,12],[-17,40],[-2,40],[-2,36]].reduce((p,q)=>{m.l(p[0],p[1],q[0],q[1],'out');return q;});
+      m.r(-38,-10,10,10,'seal'); }
+    else m.r(-35,-10,10,10,'seal'); }                                      /* シーリング材(10×10) */
   m.dim(-25,yT,0,yT,8,'25'); m.dim(0,yT,3,yT,14,'(3〜5)'); m.dim(0,yS,15,yS,-8,'15');
   m.dim(-10,yB,15,yB,-8,'(25)'); m.dim(-45,yR,-10,yR,-8,'(35)');
   m.dim(-70,0,-70,yT,head?-8:8,'(10)');
@@ -740,7 +743,7 @@ function genDoorRC(b,P,view){
   m.note(9,yS+1.5,xd?'気密材':head?'戸当り':'戸当りゴム(片開きは縦枠)');
   m.note(OP-80,yD-dt/2,`${light?'鋼製軽量扉':'鋼製扉'} 見込み${dt}`);
   m.note(-35,-60,'充填モルタル'); m.note(-160,-rc/2,`RC壁 t=${rc}(打放し)`);
-  if(xd){ m.note(-30,-5,'シーリング材(10×10)'); if(head) m.note(-15,40,'水切り PL-1.6'); }
+  if(xd){ m.note(head?-33:-30,-5,head?'シーリング材(10×10)(水切りの上)':'シーリング材(10×10)'); if(head) m.note(-22,26,'水切り PL-1.6'); }
 }
 function genDoor(b,P,view){
   if(+P.dwall===2&&+P.dtype!==2) return genDoorRC(b,P,view);
@@ -1678,7 +1681,7 @@ function condParams(c,v){
 
 /* ───────── シート構成 ───────── */
 /* 生成ロジックの版。作図ルールを変えたら上げる(古い版の詳細を検出して再生成を促す) */
-const GENVER=17;
+const GENVER=18;
 const staleDetails=()=>st.details.filter(r=>r.variant&&r.variant!=='legend'&&r.ver!==GENVER);
 function regenStale(){
   const list=staleDetails();if(!list.length)return;
