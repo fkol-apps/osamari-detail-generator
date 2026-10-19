@@ -159,7 +159,7 @@ const MAT={
   finish:{n:'仕上材',fill:'#fff',ly:'DT-FINISH'},
   carpet:{n:'カーペット',fill:'#fff',ly:'DT-FINISH'},
   water:{n:'防水層',fill:'#222',ly:'DT-WATER',solid:1},
-  seal:{n:'シーリング',fill:'#222',ly:'DT-SEAL',solid:1},
+  seal:{n:'シーリング',fill:'#fff',ly:'DT-SEAL',h:'cross',pitch:.45},
   air:{n:'輪郭のみ',fill:'none',ly:'DT-OUT'}
 };
 /* 薄い鋼材(紙面で thin mm 未満)は2本線が描けないため塗りつぶし */
@@ -203,6 +203,10 @@ function hatchSegs(e,S){
         for(let d=0;d<L;d+=dl+gl){const d2=Math.min(L,d+dl);out.push([[a[0]+u[0]*d,a[1]+u[1]*d],[a[0]+u[0]*d2,a[1]+u[1]*d2]]);}
       }else out.push([a,e2]);
     }
+  }else if(m.h==='cross'){            /* シーリング:±45°のクロスハッチ */
+    const P=m.pitch*S*Math.SQRT2;
+    for(let c=Math.floor((x-(y+h))/P)*P;c<=x+w-y;c+=P){const r=clipT(c,0,1,1,x,y,w,h); if(r) out.push([[c+r[0],r[0]],[c+r[1],r[1]]]);}
+    for(let c=Math.floor((x+y)/P)*P;c<=x+w+y+h;c+=P){const r=clipT(c,0,1,-1,x,y,w,h); if(r) out.push([[c+r[0],-r[0]],[c+r[1],-r[1]]]);}
   }else if(m.h==='joint'){            /* タイル:厚さ方向の目地線 */
     if(mn<1.0*S) return out;
     const p=m.pitch*S;
@@ -276,7 +280,7 @@ function explode(e,S){
     case 'dim':{
       const dx=e.x2-e.x1,dy=e.y2-e.y1,L=Math.hypot(dx,dy); if(L<1e-6) break;
       const ux=dx/L,uy=dy/L,nx=-uy,ny=ux,o=e.off,sg=o>=0?1:-1;
-      const a=[e.x1+nx*o,e.y1+ny*o],b=[e.x2+nx*o,e.y2+ny*o],g=1*S,ov=2*S;
+      const a=[e.x1+nx*o,e.y1+ny*o],b=[e.x2+nx*o,e.y2+ny*o],g=1*S,ov=0;   /* 補助線は玉止め(寸法線)で止める */
       [[e.x1,e.y1,a],[e.x2,e.y2,b]].forEach(([px,py,q])=>P.push({k:'line',a:[px+nx*sg*g,py+ny*sg*g],b:[q[0]+nx*sg*ov,q[1]+ny*sg*ov],ly:'DT-DIM',w:W.thin}));
       P.push({k:'line',a:a,b:b,ly:'DT-DIM',w:W.thin});
       const d=[(ux+nx)*.7071,(uy+ny)*.7071];
@@ -449,6 +453,7 @@ class B{
 }
 /* LGS下地の幅はランナー幅で表す(スタッド65形→67(標準)、100形→102) */
 const RW=P=>P.stud+2;
+const INS_T=P=>Math.max(5,Math.min(+P.insT||50,P.stud));   /* 吸音材の厚み:指定がなければ50(スタッド幅まで)【ユーザー】 */
 /* 壁の貼り材(片面分、下地側→表面側)。P.wl があれば材料・厚さ違いの重ね貼り、無ければ bt×pbn */
 const WL=P=>(P.wl&&P.wl.length)?P.wl:Array.from({length:P.pbn||1},()=>({name:P.pbName||'せっこうボード',t:P.bt,m:P.pbM||'pb'}));
 const WT=P=>WL(P).reduce((a,l)=>a+l.t,0);
@@ -464,22 +469,22 @@ function pinMark(b,x,y,dir){ /* 打込みピン(破線) dir=-1:下のスラブ�
   b.l(x-2,y,x-2,y+dir*34,'dash');b.l(x+2,y,x+2,y+dir*34,'dash');b.l(x-2,y+dir*34,x,y+dir*40,'dash');b.l(x+2,y+dir*34,x,y+dir*40,'dash');
 }
 function runnerU(b,xc,y,P,dir,pin){ /* ランナ断面(コの字、t0.8を細線2本で表現)。dir=+1:上向き開口(床)、-1:下向き開口(上部) */
-  const w=RW(P),xl=xc-w/2,xr=xc+w/2,h=40*dir,t=1.2*dir;
-  b.l(xl,y,xr,y,'thin');b.l(xl+1.2,y+t,xr-1.2,y+t,'thin');
-  b.l(xl,y,xl,y+h,'thin');b.l(xl+1.2,y+t,xl+1.2,y+h,'thin');b.l(xl,y+h,xl+1.2,y+h,'thin');
-  b.l(xr,y,xr,y+h,'thin');b.l(xr-1.2,y+t,xr-1.2,y+h,'thin');b.l(xr,y+h,xr-1.2,y+h,'thin');
+  const w=RW(P),xl=xc-w/2,xr=xc+w/2,h=40*dir,tk=.8,t=tk*dir;   /* ランナー:外側幅=スタッド+2、板厚0.8 */
+  b.l(xl,y,xr,y,'thin');b.l(xl+tk,y+t,xr-tk,y+t,'thin');
+  b.l(xl,y,xl,y+h,'thin');b.l(xl+tk,y+t,xl+tk,y+h,'thin');b.l(xl,y+h,xl+tk,y+h,'thin');
+  b.l(xr,y,xr,y+h,'thin');b.l(xr-tk,y+t,xr-tk,y+h,'thin');b.l(xr,y+h,xr-tk,y+h,'thin');
   if(pin) pinMark(b,xc,y,-dir);
 }
 function wallStrip(b,xc,s0,s1,p0,p1,P,cut){
-  const s=RW(P),xl=xc-s/2+1.2,xr=xc+s/2-1.2;
-  if(P.ins) b.r(xl+.5,s0,xr-xl-1,s1-s0,'ins');
+  const s=RW(P),xl=xc-P.stud/2,xr=xc+P.stud/2;          /* スタッド幅(65)。ボードはランナー外面(67)に張る【ユーザー】 */
+  if(P.ins){ const ti=INS_T(P); b.r(xc-ti/2,s0,ti,s1-s0,'ins'); }   /* 吸音材 t(既定50)をスタッド間の中央に */
   b.l(xl,s0,xl,s1,'thin');b.l(xr,s0,xr,s1,'thin');b.l(xc,s0,xc,s1,'center');   /* スタッド(見え掛り)+中心線 */
   let o=0;WL(P).forEach(l=>{
     const q0=(cut&&o+l.t>cut.from+.01)?cut.y:p0;   /* 幅木の入り込む範囲のボードは幅木天端で止める */
     b.r(xc-s/2-o-l.t,q0,l.t,p1-q0,l.m); b.r(xc+s/2+o,q0,l.t,p1-q0,l.m); o+=l.t;});
 }
 function spacers(b,xc,y0,y1,P){ /* スペーサ@600程度(見え掛り) */
-  const s=RW(P);for(let y=y0+600;y<y1-20;y+=600) b.r(xc-s/2+1.2,y,s-2.4,12,'lgsc');
+  for(let y=y0+600;y<y1-20;y+=600) b.r(xc-P.stud/2+.8,y,P.stud-1.6,12,'lgsc');   /* スタッドの溝内 */
 }
 const pbTxt=P=>{
   const L=WL(P),same=L.every(l=>l.name===L[0].name&&l.t===L[0].t);
@@ -506,7 +511,7 @@ function genFW(b,P,cfg){
   let bx0=xr,bt=bb?bb.t:0,cut=null;
   const bf=isGL?P.rc/2:RW(P)/2;   /* 幅木裏の基準面(LGS:ランナ面/直張り:RC面) */
   if(bb&&bb.inset&&(!isRC||isGL)){
-    const inner=Math.max(bf-(isGL?0:1.2),xr+bb.p-bb.t); bx0=inner; bt=xr+bb.p-inner; cut={y:P.hb,from:Math.max(0,inner-bf)};
+    const inner=Math.max(bf-(isGL?0:1),xr+bb.p-bb.t); bx0=inner; bt=xr+bb.p-inner; cut={y:P.hb,from:Math.max(0,inner-bf)};
   }
   /* 床仕上げは壁先行なら壁面まで(入り幅木の範囲は幅木の裏面まで) */
   const fx=cut&&first!=='floor'?bx0:xr;
@@ -526,7 +531,7 @@ function genFW(b,P,cfg){
       let o=0;WL(P).forEach(l=>{ const q0=(cut&&rh+g+o+l.t>bx0+.01)?P.hb:10; b.r(rh+g+o,q0,l.t,top-q0,l.m); b.r(-rh-g-o-l.t,q0,l.t,top-q0,l.m); o+=l.t; });
     }
   }
-  else{ wallStrip(b,0,ry+1.2,top,pb0,top,P,cut); runnerU(b,0,ry,P,1,ry===ys); }
+  else{ wallStrip(b,0,ry+.8,top,pb0,top,P,cut); runnerU(b,0,ry,P,1,ry===ys); }
   b.brkH(xl,xr,top);
   if(bb){ b.r(bx0,0,bt,P.hb,bb.m); b.r(-bx0-bt,0,bt,P.hb,bb.m); }
   const bgap=cut?bx0-bf:0;   /* 幅木裏とランナの間の空き → 裏込め(石材:モルタル/木製:パッキング) */
@@ -545,9 +550,9 @@ function genFW(b,P,cfg){
   }
   else{
     b.note(RW(P)/2+WT(P)/2,top-60,pbTxt(P)+'+'+(cfg.wfin||'仕上'));
-    b.note(RW(P)/2-1.2,top-130,studTxt(P));
-    if(P.ins) b.note(-RW(P)/4,top-200,'吸音材(グラスウール)');
-    b.note(RW(P)/2-1.2,ry+20,runTxt(P)+(ry===ys?' 打込みピン@900程度':''));
+    b.note(P.stud/2,top-130,studTxt(P));
+    if(P.ins) b.note(-RW(P)/4,top-200,'吸音材(グラスウール) t'+INS_T(P));
+    b.note(P.stud/2,ry+20,runTxt(P)+(ry===ys?' 打込みピン@900程度':''));
     if(+P.snd&&!(bb&&bb.inset)) b.note(xr+1.5,1.5,'シーリング材又はジョイントコンパウンド');
   }
   if(bb) b.note(bx0+bt/2,P.hb*.6,(bb.name==='畳寄せ'?`畳寄せ ${bb.t}×105/2`:`${bb.name} H=${P.hb}`+(bb.showT?` t${Math.round(bb.t*10)/10}`:''))+(bb.inset&&(!isRC||isGL)?`(壁面より${bb.p}出)`:''),{minTy:P.hb+8*b.S});
@@ -584,7 +589,7 @@ GEN.oa_floor=(b,P)=>genFloor(b,P,{leg:1,layers:[{m:'carpet',h:6.5,label:'タイ�
 function genWallPlan(b,P,v){
   const len=900,st=RW(P),LS=WL(P),WTT=WT(P),n=LS.length,tOut=LS[n-1].t;
   const sp=studPitch(P),stw=P.stud;
-  const studAt=(x,y0)=>{ const a=y0+(st-stw)/2,c=a+stw; b.l(x+45,a+10,x+45,a,'thin');b.l(x+45,a,x,a,'thin');b.l(x,a,x,c,'thin');b.l(x,c,x+45,c,'thin');b.l(x+45,c,x+45,c-10,'thin'); };
+  const studAt=(x,y0)=>{ const a=y0+(st-stw)/2,c=a+stw;   /* スタッド65(ランナー外面=ボード内面から片側1内側) */ b.l(x+45,a+10,x+45,a,'thin');b.l(x+45,a,x,a,'thin');b.l(x,a,x,c,'thin');b.l(x,c,x+45,c,'thin');b.l(x+45,c,x+45,c-10,'thin'); };
   let y=0,T;
   if(v==='rc_gl'){ /* RC壁 直張り工法(2-03 -6〜-9):せっこう系直張り用接着材 @250程度、仕上り厚(11〜13)+ボード */
     const g=+P.glg||12;
@@ -602,7 +607,7 @@ function genWallPlan(b,P,v){
   if(v==='rc_furring'){
     b.r(0,0,len,P.rc,'rc'); y=P.rc;
     b.r(0,y,len,P.gap,'air'); y+=P.gap;
-    if(P.ins) b.r(0,y,len,st,'ins');
+    if(P.ins) b.r(0,y+(st-INS_T(P))/2,len,INS_T(P),'ins');
     for(let x=150;x<len;x+=sp) studAt(x,y);
     y+=st;
     LS.forEach(l=>{b.r(0,y,len,l.t,l.m);y+=l.t;});
@@ -618,7 +623,7 @@ function genWallPlan(b,P,v){
   }
   [...LS].reverse().forEach(l=>{b.r(0,y,len,l.t,l.m);y+=l.t;});
   const y0=y;
-  if(P.ins) b.r(0,y,len,st,'ins');
+  if(P.ins) b.r(0,y+(st-INS_T(P))/2,len,INS_T(P),'ins');   /* 吸音材 t(既定50) */
   for(let x=150;x<len;x+=sp) studAt(x,y0);
   y+=st;
   LS.forEach(l=>{b.r(0,y,len,l.t,l.m);y+=l.t;});
@@ -630,7 +635,7 @@ function genWallPlan(b,P,v){
   b.note(len-80,WTT/2,pbTxt(P)+'+仕上');
   boardJoint(b,P,150+sp*Math.floor((len/2-150)/sp)+22,0,1);
   b.note(len-60,y0+st/2,studTxt(P));
-  if(P.ins) b.note(len-200,y0+st*.3,'吸音材(グラスウール)');
+  if(P.ins) b.note(len-200,y0+st/2,'吸音材(グラスウール) t'+INS_T(P));
   if(v==='lgs_sound'&&n>=2) b.note(len-120,tOut+.7,'遮音シート t1.5(ボード間)');
   if(v==='lgs_fire'||n>=2) b.note(len-300,T-WTT/2,'重ね貼り(目地を重ねない)');
 }
@@ -834,18 +839,18 @@ function genDoorRC(b,P,view){
   m.r(5,yS,8,3,'seal');                                                   /* 戸当りゴム/気密材 */
   if(xd){
     if(head){ /* 水切り PL-1.6:元端をモルタルへ差し込み、上部(壁面との入隅)にシーリング材 → 雨水を水切りの上で止める */
-      [[-27,-14],[-27,12],[-17,40],[-2,40],[-2,36]].reduce((p,q)=>{m.l(p[0],p[1],q[0],q[1],'out');return q;});
-      m.r(-38,-10,10,10,'seal'); }
-    else m.r(-35,-10,10,10,'seal'); }                                      /* シーリング材(10×10) */
+      [[-25,-14],[-25,12],[-15,40],[-2,40],[-2,36]].reduce((p,q)=>{m.l(p[0],p[1],q[0],q[1],'out');return q;});
+      m.r(-45,-10,20,10,'seal'); }                                        /* 水切りの上からRC欠込み面まで */
+    else m.r(-45,-10,20,10,'seal'); }                                       /* 枠からRC欠込み面まで */                                      /* シーリング材(10×10) */
   m.dim(-25,yT,0,yT,8,'25'); m.dim(0,yT,3,yT,14,'(3〜5)'); m.dim(0,yS,15,yS,-8,'15');
   m.dim(-10,yB,15,yB,-8,'(25)'); m.dim(-45,yR,-10,yR,-8,'(35)');
-  m.dim(-70,0,-70,yT,head?-8:8,'(10)');
+  m.dim(-25,0,-25,yT,9,'(10)');                                  /* 枠の角と壁面から補助線を出す */
   m.dim(OP+30,yT,OP+30,yB,head?10:-14,'枠見込み 100'); m.dim(OP-40,yD-dt,OP-40,yD,head?8:-8,String(dt));
   m.note(-12,yT,`${xd?'簡易気密型':''}${light?'鋼製軽量建具枠':'鋼製建具枠'} t=1.6(${head?'上枠':'縦枠'})`);
   m.note(9,yS+1.5,xd?'気密材':head?'戸当り':'戸当りゴム(片開きは縦枠)');
   m.note(OP-80,yD-dt/2,`${light?'鋼製軽量扉':'鋼製扉'} 見込み${dt}`);
   m.note(-35,-60,'充填モルタル'); m.note(-160,-rc/2,`RC壁 t=${rc}(打放し)`);
-  if(xd){ m.note(head?-33:-30,-5,head?'シーリング材(10×10)(水切りの上)':'シーリング材(10×10)'); if(head) m.note(-22,26,'水切り PL-1.6'); }
+  if(xd){ m.note(head?-36:-35,-5,head?'シーリング材 幅20(水切りの上・RC面まで)':'シーリング材 幅20(RC面まで)'); if(head) m.note(-20,26,'水切り PL-1.6'); }
 }
 function genDoor(b,P,view){
   if(+P.dwall===2&&+P.dtype!==2) return genDoorRC(b,P,view);
@@ -859,7 +864,7 @@ function genDoor(b,P,view){
   /* 壁 */
   if(!isRC){
     let o=0;WL(P).forEach(l=>{m.r(-L,RW(P)/2+o,L-12,l.t,l.m);m.r(-L,-RW(P)/2-o-l.t,L-12,l.t,l.m);o+=l.t;});
-    if(P.ins) m.r(-L,-RW(P)/2+1,L-80,RW(P)-2,'ins');
+    if(P.ins) m.r(-L,-INS_T(P)/2,L-80,INS_T(P),'ins');
     const C=(cx,h,dir,fl,lp)=>{m.l(cx,-h,cx,h,'thin');m.l(cx,h,cx+dir*fl,h,'thin');m.l(cx,-h,cx+dir*fl,-h,'thin');m.l(cx+dir*fl,h,cx+dir*fl,h-lp,'thin');m.l(cx+dir*fl,-h,cx+dir*fl,-h+lp,'thin');};
     C(-2,30,-1,30,10);                       /* 開口部補強材 C-60×30×10×2.3 */
     C(-36,P.stud/2,-1,45,10);                 /* スタッド(65×45×0.8) */
@@ -886,7 +891,7 @@ function genDoor(b,P,view){
   const dy0=-hD+sw+(wood?2:3); m.r(28,dy0,OP-28,dt,wood?'woodf':'air'); zig(OP,dy0-10,dy0+dt+10);
   /* 寸法 */
   m.dim(0,hD,25,hD,8,wood?'(25)':'25'); m.dim(25,-hD,25+stp,-hD,-8,wood?'(12)':'15'); m.dim(25,dy0+dt,28,dy0+dt,6,wood?'(3)':'(3〜5)');
-  m.dim(-60,wf,-60,hD,head?-8:8,'(10)'); m.dim(-60,-hD,-60,-wf,head?-8:8,'(10)');
+  m.dim(-12,wf,-12,hD,9,'(10)'); m.dim(-12,-hD,-12,-wf,9,'(10)');   /* 枠の縁から補助線を出す */
   m.dim(70,-hD,70,hD,head?10:-14,'枠見込み '+Math.round(D));
   m.dim(OP-40,-hD,OP-40,-hD+sw,head?8:-8,'('+sw+')'); m.dim(OP-40,dy0,OP-40,dy0+dt,head?8:-8,String(dt));
   /* 注記 */
@@ -1000,18 +1005,18 @@ GEN.wc_ceil_first=(b,P)=>{
   b.r(-ext,yU0,ext*2,C.uh,'lgsc');
   xs.forEach(x=>b.r(x-6,yU0-3,12,C.uh*.55,'lgsc'));
   [-450,450].forEach(hx=>hanger(b,hx,yU0,yU1,pl));
-  wallStrip(b,0,below,-1.2,below,0,P); runnerU(b,0,0,P,-1,false);
+  wallStrip(b,0,below,-.8,below,0,P); runnerU(b,0,0,P,-1,false);
   b.l(-2,0,-2,yt+C.nh-2,'dash');b.l(2,0,2,yt+C.nh-2,'dash');           /* タッピンねじ */
   b.brkH(xl,xr,below);
   b.dim(-ext,0,-ext,pl,8,'天井ふところ '+pl);
   b.dim(-RW(P)/2,below,RW(P)/2,below,-6);b.dim(xl,below,xr,below,-13);
   b.note(0,yt+C.nh/2,'ダブル野縁(壁位置)');
   b.note(2,yt/2,'タッピンねじ又は溶接 @900程度');
-  b.note(RW(P)/2-1.2,-20,runTxt(P)+'(天井下地に固定)');
+  b.note(P.stud/2,-20,runTxt(P)+'(天井下地に固定)');
   b.note(ext-60,yt/2,`天井 ${pbTxt({bt:ct,pbn:cn})}(壁上部も連続)`);
   b.note(ext-90,(yU0+yU1)/2,`${C.uTxt} @900程度`);
   b.note(xr-WT(P)/2,below+60,'壁:'+pbTxt(P));
-  b.note(RW(P)/2-1.2,below+140,studTxt(P));
+  b.note(P.stud/2,below+140,studTxt(P));
   b.note(450+4.5,(yU1+37+pl)/2,'つりボルト ねじ外径9.0φ @900程度');
 };
 function genWC(b,P,v){
@@ -1023,7 +1028,7 @@ function genWC(b,P,v){
   if(v!=='cornice'){
     wallStrip(b,0,below,pl-20,below,pl,P);
     runnerU(b,0,pl,P,-1,true); spacers(b,0,below,pl-40,P);
-    b.note(RW(P)/2-1.2,pl-20,runTxt(P)+' 打込みピン@900程度');
+    b.note(P.stud/2,pl-20,runTxt(P)+' 打込みピン@900程度');
     b.note(xr-3,pl-80,pbTxt(P)+'(スラブ下まで)');
     if(+P.snd){b.r(xr,pl-4,3,4,'seal');b.r(xl-3,pl-4,3,4,'seal');b.note(xr+1.5,pl-2,'シーリング材又はジョイントコンパウンド');}
   }else{
@@ -1048,8 +1053,8 @@ function genWC(b,P,v){
   b.dim(xr,g.yU1+90,xr+150,g.yU1+90,6,'150以内');
   b.dim(-RW(P)/2,below,RW(P)/2,below,-6);b.dim(xl,below,xr,below,-13);
   b.note(xr-WT(P)/2,below+60,'壁:'+pbTxt(P));
-  b.note(RW(P)/2-1.2,below+140,studTxt(P));
-  if(v!=='cornice'&&pl-40-below>600) b.note(RW(P)/2-1.2,below+606,'スペーサ@600程度');
+  b.note(P.stud/2,below+140,studTxt(P));
+  if(v!=='cornice'&&pl-40-below>600) b.note(P.stud/2,below+606,'スペーサ@600程度');
   b.note(ext-60,yt/2,`天井 ${pbTxt({bt:ct,pbn:cn})}`);
   const e0=g.xs[0];
   if(e0) b.note(e0.x+e0.w/2,yt+g.nh*.5,`壁際野縁 ${e0.W?'W(ダブル)':'S(シングル)'}`);
@@ -1069,7 +1074,7 @@ function genWW(b,P,v){
   const studV=(x0,y)=>{const a=x0+dd,c=a+sw;b.l(a+10,y+45,a,y+45,'thin');b.l(a,y+45,a,y,'thin');b.l(a,y,c,y,'thin');b.l(c,y,c,y+45,'thin');b.l(c,y+45,c-10,y+45,'thin');};
   const hs=st/2;
   if(v==='L'){
-    if(P.ins){b.r(-hs,-hs,L+hs,st,'ins');b.r(-hs,-L,st,L-hs,'ins');}
+    if(P.ins){const ti=INS_T(P),di=(st-ti)/2;b.r(-hs+di,-hs+di,L+hs-di,ti,'ins');b.r(-hs+di,-L,ti,L-hs+di,'ins');}
     for(let x=150;x<L-60;x+=spc) studH(x,-hs);
     for(let y=-hT-60;y>-L+30;y-=spc) studV(-hs,y);
     each((o,t,m)=>{
@@ -1087,7 +1092,7 @@ function genWW(b,P,v){
     b.note(450+20,-hs+1,studTxt(P));
     b.note(-hs-20,-L+100,'縦壁スタッドを横壁にビス固定');
   }else{
-    if(P.ins){b.r(-L,-hs,2*L,st,'ins');b.r(-hs,-L,st,L-hT,'ins');}
+    if(P.ins){const ti=INS_T(P),di=(st-ti)/2;b.r(-L,-hs+di,2*L,ti,'ins');b.r(-hs+di,-L,ti,L-hT,'ins');}
     for(let x=-L+150;x<L-60;x+=spc) if(Math.abs(x)>hs+70) studH(x,-hs);
     for(let y=-hT-60;y>-L+30;y-=spc) studV(-hs,y);
     studH(-hs-47,-hs); studH(hs+2,-hs);
@@ -1282,9 +1287,9 @@ GEN.wa_kamoi=(b,P)=>{
   /* 鴨居(溝 21×15 ×2) */
   b.pg([[-kw,0],[-31,0],[-31,15],[-10,15],[-10,0],[10,0],[10,15],[31,15],[31,0],[kw,0],[kw,kh],[-kw,kh]],'woodf');
   b.r(-rw+3,kh,2*rw-6,5,'wood');                                                   /* パッキング */
-  b.r(-rw,kh+5,2*rw,40,'lgsc'); b.l(-rw+1.2,kh+6.2,rw-1.2,kh+6.2,'thin');          /* ランナー */
+  b.r(-rw,kh+5,2*rw,40,'lgsc'); b.l(-rw+.8,kh+5.8,rw-.8,kh+5.8,'thin');            /* ランナー(板厚0.8) */
   b.l(0,kh,0,ch+yt+60,'center');
-  b.l(-rw,kh+45,-rw,ch+yt+60,'thin'); b.l(rw,kh+45,rw,ch+yt+60,'thin');            /* スタッド */
+  b.l(-rw+1,kh+45,-rw+1,ch+yt+60,'thin'); b.l(rw-1,kh+45,rw-1,ch+yt+60,'thin');    /* スタッド(65) */
   b.r(-rw,ch+yt-10,2*rw,10,'lgsc');                                                /* スペーサー */
   let o=0; WL(P).forEach(l=>{ b.r(rw+o,kh,l.t,ch+yt+60-kh,l.m); b.r(-rw-o-l.t,kh,l.t,ch+yt+60-kh,l.m); o+=l.t; });
   b.brkH(-wf,wf,ch+yt+60);
@@ -1299,7 +1304,7 @@ GEN.wa_kamoi=(b,P)=>{
   [[-29.5,-10.5],[10.5,29.5]].forEach(([a,c])=>b.r(a,-280,c-a,280+12,'air')); b.brkH(-31,31,-280);
   b.dim(-kw,0,kw,0,-10,String(Math.round(2*kw))); b.dim(kw,0,kw,kh,-8,String(kh));
   b.dim(-wf,kh+60,-kw,kh+60,8,'8'); b.dim(wf,kh+60,kw,kh+60,8,'8'); b.dim(-60,0,-60,12,8,'12');
-  b.dim(wf,ch-30,wf+10,ch-30,-8,'(10)');
+  b.dim(wf,ch,wf+10,ch,-8,'(10)');
   b.note(kw-10,kh/2,`鴨居 ${Math.round(2*kw)}×40(溝2本・壁面より8出し)`); b.note(20,-150,'ふすま 見込み18〜21(溝に12差込み)');
   b.note(-rw+20,kh+2.5,'パッキング'); b.note(rw-10,kh+25,'ランナー'); b.note(rw,ch*.6,studTxt(P));
   b.note(wf-wt/2,ch*.45,pbTxt(P)+'(GB-R)+仕上'); b.note(0,ch+yt-5,'スペーサー @600程度');
@@ -1324,7 +1329,7 @@ GEN.shutter_rail=(b,P)=>{
   b.r(-10,-6,gd-6,12,'air'); b.l(-10,-6,gd-16,6,'thin'); b.l(-10,6,gd-16,-6,'thin');   /* スラット(シャッターカーテン) */
   b.l(-120,0,-10,0,'center');
   [[-1],[1]].forEach(([d])=>{ const y0=d*(hw+1),y1=d*(hw+10); b.l(gd-10,y0,150,y0,'dash'); b.l(gd-10,y1,150,y1,'dash'); b.l(150,y0,150,y1,'dash'); });   /* 取付用PL */
-  b.dim(-10,hw+90,0,hw+90,8,'(10)'); b.dim(-30,-hw,-30,hw,8,`(${gw}以上)`); b.dim(-10,-hw-90,gd-10,-hw-90,-8,'(60以上)');
+  b.dim(-10,hw,0,hw,8,'(10)'); b.dim(-30,-hw,-30,hw,8,`(${gw}以上)`); b.dim(-10,-hw-90,gd-10,-hw-90,-8,'(60以上)');
   b.note(-10,hw,'ガイドレール:ステンレス t=1.5 曲げ加工'); b.note(20,-hw+8,'底板:ステンレス t=1.5 曲げ加工');
   b.note(20,0,'シャッターカーテン(スラット)'); b.note(100,hw+5,'取付用 PL-1.6 @600以下'); b.note(100,-hw-40,'充填モルタル');
   b.note(ft/2,Y-60,'せっこうボード(直張り)+仕上'); b.note(240,0,'RC壁'); b.note(-100,0,'← 開口 W');
@@ -1336,7 +1341,7 @@ GEN.hand_rail=(b,P)=>{
   const wf=lgs?wallFace(P):0, top=Hh+250, bot=-120;
   if(lgs){
     const x0=-WT(P); let q=0; WL(P).forEach(l=>{ b.r(-q-l.t,bot,l.t,top-bot,l.m); b.r(x0-RW(P)-WT(P)+q,bot,l.t,top-bot,l.m); q+=l.t; });
-    b.l(x0-RW(P),bot,x0-RW(P),top,'thin'); b.l(x0,bot,x0,top,'thin');                    /* スタッド */
+    b.l(x0-RW(P)+1,bot,x0-RW(P)+1,top,'thin'); b.l(x0-1,bot,x0-1,top,'thin');            /* スタッド(65) */
     [Hh].concat(two?[H2]:[]).forEach(h=>{ b.r(x0-60,h-30,60,60,'lgsc'); b.l(x0-60+2.3,h-30+2.3,x0-2.3,h-30+2.3,'thin'); });   /* 手すり受け C-60×30×10×2.3 */
     b.brkH(x0-RW(P)-WT(P),0,top); b.brkH(x0-RW(P)-WT(P),0,bot);
   }else{ b.r(-180,bot,180,top-bot,'rc'); b.brkH(-180,0,top); b.brkH(-180,0,bot); }
@@ -1391,7 +1396,7 @@ GEN.dbl_window=(b,P)=>{
   [[x1-37,x1-25],[x1-67,x1-55]].forEach(([a,c])=>b.r(a+1,kh-5,c-a-2,220,'air')); b.brkH(x1-70,x1-22,kh+215);   /* 内窓障子 */
   b.r(x0-3,kh,3,30,'steel'); b.r(x0-3,kh-3,22,3,'steel');                                /* L形金物 アルミニウム製 */
   b.r(x0-70,0,67,70,'lgsc'); b.brkH(x0-75,x0,70);                                        /* 外部サッシ下枠(参考) */
-  b.dim(x0,kh+40,x1,kh+40,8,'(100)'); b.dim(x1+15,0,x1+15,kh,-8,'(35)'); b.dim(xf,-60,x1,-60,-8,'(10)');
+  b.dim(x0,kh+40,x1,kh+40,8,'(100)'); b.dim(x1+15,0,x1+15,kh,-8,'(35)'); b.dim(xf,0,x1,0,-8,'(10)');
   b.note(x1-50,kh/2,'内窓 下枠 100×35(溝2本)'); b.note(x0-1.5,kh+20,'L形金物 アルミニウム製'); b.note(x0-35,40,'外部サッシ(4-51による)');
   b.note(x1-30,kh+120,'内窓障子(木製)'); b.note(-rc/2,-10,'充填モルタル'); b.note(-rc/2,-180,`RC壁 t=${rc}`);
   b.note(xf-gb/2,-200,'せっこうボード(GB-R)+仕上');
@@ -1458,7 +1463,7 @@ GEN.corner_guard=(b,P)=>{
   b.pg([[-G,-wt],[-wt,-wt],[-wt,-G],[pj,-G],[pj,pj-c],[pj-c,pj],[-G,pj]],'woodf');            /* コーナーガード 集成材 */
   b.r(-G/2-4,pj-8,8,8,'wood'); b.l(-G/2,pj-8,-G/2,-wt-25,'dash'); b.r(pj-8,-G/2-4,8,8,'wood'); b.l(pj-8,-G/2,-wt-25,-G/2,'dash');   /* 埋め木・ビス止め@450 */
   if(mt){ b.l(-G-gap,-wt,-G-gap+1.5,-1.5,'thin'); b.l(-wt,-G-gap,-1.5,-G-gap+1.5,'thin'); }   /* 糸面取り */
-  b.dim(-G,pj,pj,pj,10,'(80)'); b.dim(pj,-G,pj,pj,-10,'(80)'); b.dim(0,-G-30,pj,-G-30,-8,'(10)');
+  b.dim(-G,pj,pj,pj,10,'(80)'); b.dim(pj,-G,pj,pj,-10,'(80)'); b.dim(0,-G,pj,-G,-8,'(10)');
   if(mt) b.dim(-G-gap,-wt-30,-G,-wt-30,-8,'(8)');
   b.dim(-L+40,-T,-L+40,0,8,'('+Math.round(T)+')');
   b.note(-G/2,pj/2,'コーナーガード 集成材(樹種・塗装は特記)'); b.note(-G/2,pj-4,'埋め木、ビス止め @450');
@@ -1528,7 +1533,7 @@ GEN.fire_door_sec=(b,P)=>{
   [[dx+15,yF],[dx+15,yF-30],[FD-10,yF-30],[FD-10,yF]].reduce((p,q)=>{b.l(p[0],p[1],q[0],q[1],'dash');return q;});   /* ヒンジクローザー */
   b.r(dx+3,yF+9,D-6,3,'steel');
   b.dim(-40,25,-40,50,8,'(25)'); b.dim(-40,0,-40,25,8,'(25)'); b.dim(-40,-15,-40,0,8,'(15)');
-  b.dim(FD+20,0,FD+20,45,-8,'(45)'); b.dim(110,80,FD,80,8,'(10)');
+  b.dim(FD+20,0,FD+20,45,-8,'(45)'); b.dim(110,45,FD,45,7,'(10)');
   b.dim(st,-110,dx,-110,-8,'(30)'); b.dim(dx,-110,FD,-110,-8,'('+D+')'); b.dim(0,-140,FD,-140,-8,'('+FD+')');
   b.dim(FD+40,yF,FD+40,yF+9,-8,'(9)'); b.dim(FD+80,yF,FD+80,0,-10,'H');
   b.note(st/2,-7,'上枠 鋼製t=1.6・戸当り'); b.note(60,30,'充填モルタル'); b.note(-150,34,'天井仕上げ面'); b.note(104,150,'下がり壁 直張りGB-R');
@@ -1552,7 +1557,7 @@ GEN.fire_door180=(b,P)=>{
   [[-D,0],[0,0],[0,-Wo],[-D,-Wo]].reduce((p,q)=>{b.l(p[0],p[1],q[0],q[1],'dash');return q;}); b.l(-D,0,-D,-Wo,'dash');   /* 閉鎖時の扉 */
   const hx=-D/2,hy=-4; b.c(hx,hy,13,'air'); b.l(hx-18,hy,hx+18,hy,'center'); b.l(hx,hy-18,hx,hy+18,'center');
   b.dim(-PK,Lp*.3,0,Lp*.3,-8,'('+PK+')'); b.dim(-D,-Wo+40,0,-Wo+40,-8,'('+D+')'); b.dim(-FD,-60,0,-60,-14,'('+FD+')');
-  b.dim(30,Lp-5,30,Lp+5,-8,'(5)'); b.dim(55,Lp+5,55,Lp+25,-8,'(20)'); b.dim(-10,Lp+120,0,Lp+120,8,'(10)');
+  b.dim(30,Lp-5,30,Lp+5,-8,'(5)'); b.dim(55,Lp+5,55,Lp+25,-8,'(20)'); b.dim(-10,Lp+45,0,Lp+45,8,'(10)');
   b.note(-D/2,Lp*.35,'防火戸(開放時・欠込みに納まる) 見込み(58)'); b.note(hx,hy,'ヒンジクローザー(扉厚中心の軸)');
   b.note(-D/2,-Wo*.6,'閉鎖時の扉(破線)'); b.note(-PK/2,Lp+5,'B部 欠込み端部の枠 鋼製t=1.6'); b.note(-FD+10,-24,'A部 吊元の枠・充填モルタル');
   b.note(xb+gl+fin/2,Lp*.75,'欠込み奥 直張りGB-R'); b.note(-180,Lp*.5,'RC壁');
@@ -1725,7 +1730,7 @@ const CATS=[
   {id:'door',name:'建具取合い(鋼製建具)'},
   {id:'roof',name:'屋上 パラペット・防水'}
 ];
-const DEF={cgj:0,bcs:0,rfh:1100,dwi:0,lnd:200,lnh:1200,hrw:0,hr2:0,hrh:800,srw:45,pins:0,wfh:180,rdp:0,rdi:0,kfm:0,dext:0,dit:25,dkt:0,kanchi:0,rfins:0,lw:600,wp:0,alct:100,cbt:0,kzw:0,wins:0,zen:0,ph:400,kasa:0,sh:500,ah:180,dwall:0,dtype:0,wj:0,gl:0,glg:12,dh:300,sj:0,snd:0,cext:0,stud:65,pbn:1,bt:12.5,mortar:30,hb:60,leg:130,slab:200,ins:1,rc:180,gap:25,plen:450,ct:9.5,cn:2,tileT:10,carpet:6,step:10,curbH:150,upH:250,opening:600};
+const DEF={insT:50,cgj:0,bcs:0,rfh:1100,dwi:0,lnd:200,lnh:1200,hrw:0,hr2:0,hrh:800,srw:45,pins:0,wfh:180,rdp:0,rdi:0,kfm:0,dext:0,dit:25,dkt:0,kanchi:0,rfins:0,lw:600,wp:0,alct:100,cbt:0,kzw:0,wins:0,zen:0,ph:400,kasa:0,sh:500,ah:180,dwall:0,dtype:0,wj:0,gl:0,glg:12,dh:300,sj:0,snd:0,cext:0,stud:65,pbn:1,bt:12.5,mortar:30,hb:60,leg:130,slab:200,ins:1,rc:180,gap:25,plen:450,ct:9.5,cn:2,tileT:10,carpet:6,step:10,curbH:150,upH:250,opening:600};
 const PSPEC={
   cgj:{l:'ボードとの取合い',o:[[0,'目地無し'],[1,'目透し(8)']]},
   bcs:{l:'天井の壁際',o:[[0,'水上側(塩ビ製ジョイナー)'],[1,'水下側(水切りとい)']]},
@@ -1750,7 +1755,7 @@ const PSPEC={
   auto:{l:'表示する材料',o:[[1,'使用中の材料のみ'],[0,'全材料']]},
   stud:{l:'スタッド(形)',o:[45,50,65,75,90,100]},pbn:{l:'ボード枚数/面',o:[1,2,3]},bt:{l:'ボード厚',o:[9.5,12.5,15,21]},
   mortar:{l:'下地モルタル厚'},hb:{l:'幅木高さ'},leg:{l:'床下空間(脚高)'},slab:{l:'スラブ厚'},
-  ins:{l:'吸音材',o:[[1,'あり'],[0,'なし']]},rc:{l:'RC壁厚'},gap:{l:'空気層'},plen:{l:'天井懐'},
+  ins:{l:'吸音材',o:[[1,'あり'],[0,'なし']]},insT:{l:'吸音材厚'},rc:{l:'RC壁厚'},gap:{l:'空気層'},plen:{l:'天井懐'},
   ct:{l:'天井ボード厚',o:[9.5,12.5]},cn:{l:'天井ボード枚数',o:[1,2]},tileT:{l:'タイル厚'},carpet:{l:'カーペット厚'},
   step:{l:'段差(右側を下げる)'},curbH:{l:'RC立上り高'},upH:{l:'防水立上り高'},opening:{l:'開口寸法',o:[450,600]},lw:{l:'器具開口 W(L)',o:[150,300,450,600]}
 };
@@ -1758,7 +1763,7 @@ const rate=(base,arr)=>{let s=base;const why=[],warn=[];arr.forEach(a=>{if(!a)re
 const REF='公共建築工事標準仕様書(建築工事編)・建築工事標準詳細図(公共建築協会)・各メーカー施工要領';
 const V={};
 const def=(id,cat,title,o)=>{V[id]={id,cat,title,ref:REF,defs:{},...o};};
-const WK=['stud','pbn','bt','ins'];
+const WK=['stud','pbn','bt','ins','insT'];
 
 def('slab_soft','floor_wall','直床 + ソフト幅木(壁先行)',{keys:[...WK,'mortar','hb','slab'],desc:'スラブ上にLGS壁を先行して建て、長尺シート仕上げの床を後施工。ソフト幅木で見切る標準的な納まり。',
  ev:c=>rate(55,[c.use==='office'&&[14,'事務所で最も一般的な直床仕様'],c.use==='shop'&&[10,'店舗の長尺シート・塩ビタイル床に適合'],c.use==='house'&&[-6,'住宅は歩行感・衝撃音面で不利'],c.sound>=1&&[-10,'直床は床衝撃音の低減が限定的'],c.sound>=2&&[-15,'高い遮音要求には不足'],c.fire>=1&&[8,'壁がスラブから連続し防火区画を成立させやすい'],[0,'壁先行のため床の割付自由度が高い']])});
@@ -1791,15 +1796,15 @@ def('slab_direct','floor','直床(モルタル下地+長尺シート)',{keys:['m
 def('dbl_floor','floor','乾式二重床(木質)',{keys:['leg','slab'],defs:{leg:130},desc:'支持脚+パーティクルボード+フローリング。遮音・配管スペースを確保。',ev:c=>rate(50,[c.use==='house'&&[16,'集合住宅の標準的な遮音床'],c.sound>=1&&[16,'床衝撃音の低減に有効'],c.sound>=2&&[8,'高遮音は二重床が基本'],c.use==='shop'&&[-2,'荷重条件の確認が必要']])});
 def('oa_floor','floor','OAフロア(フリーアクセス)',{keys:['leg','slab'],defs:{leg:100},desc:'床下配線用のパネル式床。',ev:c=>rate(38,[c.use==='office'&&[34,'事務所の配線自由度'],c.use==='house'&&[-30,'住宅には不要'],c.sound>=2&&[-8,'重量衝撃音は不利']])});
 
-def('lgs_single','wall','LGS間仕切(ボード一重貼)',{keys:['stud','pbn','bt','ins','wj'],desc:'スタッド@300+ボード一重貼りの標準間仕切。',
+def('lgs_single','wall','LGS間仕切(ボード一重貼)',{keys:['stud','pbn','bt','ins','insT','wj'],desc:'スタッド@300+ボード一重貼りの標準間仕切。',
  ev:c=>rate(52,[c.use==='office'&&[10,'一般間仕切として標準'],c.use==='house'&&[8,'居室間仕切として標準'],c.fire>=1&&[-35,'耐火要求には二重貼り以上が必要'],c.sound>=1&&[-14,'遮音要求には不足'],c.sound>=2&&[-16,'高遮音は二重貼り+吸音材が必要']]),defs:{pbn:1}});
-def('lgs_fire','wall','LGS間仕切(二重貼・耐火/防火)',{keys:['stud','pbn','bt','ins','wj'],defs:{pbn:2},desc:'両面ボード二重貼りの防火区画仕様に近い構成(認定仕様要確認)。',
+def('lgs_fire','wall','LGS間仕切(二重貼・耐火/防火)',{keys:['stud','pbn','bt','ins','insT','wj'],defs:{pbn:2},desc:'両面ボード二重貼りの防火区画仕様に近い構成(認定仕様要確認)。',
  ev:c=>rate(40,[c.fire>=1&&[42,'二重貼りで防火区画の認定仕様に近づく'],c.fire>=2&&[8,'強化ボード21mm厚など認定仕様に合わせる'],c.fire===0&&[-6,'防火要求なし:やや過剰仕様'],c.sound>=1&&[8,'質量増で遮音にも有利']])});
-def('lgs_sound','wall','LGS間仕切(遮音・二重貼+吸音)',{keys:['stud','pbn','bt','ins','wj'],defs:{pbn:2,ins:1},desc:'二重貼り+遮音シート+吸音材で遮音性能を確保。',
+def('lgs_sound','wall','LGS間仕切(遮音・二重貼+吸音)',{keys:['stud','pbn','bt','ins','insT','wj'],defs:{pbn:2,ins:1},desc:'二重貼り+遮音シート+吸音材で遮音性能を確保。',
  ev:c=>rate(38,[c.sound>=1&&[26,'質量+吸音材で遮音性能を向上'],c.sound>=2&&[16,'高遮音(Rr 45〜50相当)の基本構成'],c.fire>=1&&[10,'二重貼りで防火仕様にも転用しやすい'],c.sound===0&&[-8,'遮音要求なし:過剰仕様']])});
 def('rc_gl','wall','RC壁 直張り工法(GL工法)',{keys:['rc','pbn','bt','glg','wj'],desc:'RC壁にせっこう系直張り用接着材でボードを直張りする(建築工事標準詳細図2-03)。ふかしが不要で室内有効寸法を確保しやすい。',
  ev:c=>rate(46,[c.use==='house'&&[14,'集合住宅のRC壁・戸境壁の内装で一般的'],c.use==='office'&&[10,'RC外壁・コア壁の内装'],c.use==='wet'&&[-20,'水がかりには不向き(接着材が吸水)'],[0,'仕上り厚:断熱材打込み(11〜13)・現場発泡(18〜23)+ボード']])});
-def('rc_furring','wall','RC壁 + LGSふかし(内装壁)',{keys:['rc','gap','stud','pbn','bt','ins'],defs:{stud:65,gap:25},desc:'RC壁に空気層を設けLGS下地+ボードで仕上げる内装壁。',
+def('rc_furring','wall','RC壁 + LGSふかし(内装壁)',{keys:['rc','gap','stud','pbn','bt','ins','insT'],defs:{stud:65,gap:25},desc:'RC壁に空気層を設けLGS下地+ボードで仕上げる内装壁。',
  ev:c=>rate(40,[c.use==='house'&&[8,'外壁・戸境壁の内装で一般的'],c.use==='office'&&[6,'外壁の断熱・結露対策を兼ねやすい'],[0,'結露対策は断熱材仕様を別途検討']])});
 
 def('pb_ceiling','ceiling','PB天井(軽量鉄骨天井下地)',{keys:['plen','ct','cn','cext'],desc:'吊りボルト+野縁受+野縁にボード貼り。',
@@ -1964,7 +1969,7 @@ const TERM_ALIAS=[[/水切りとい/g,'水切り樋'],[/縦どい/g,'縦樋'],[/
 let _knownRe=null;
 function knownRe(){
   if(_knownRe)return _knownRe;
-  const w=new Set(['パラペット','180度開き','戸先','ラッチ','防火戸','常時開放','90度開き','吊元','コーナーガード','目透し','目地無し','水切り樋','縦樋','浴室','水下','水上','ジョイナー','水切りとい','二重窓','内窓','下枠','み込み','込み','高さ','奥行','ライニング','便所','のみ込み','手すり','階段','段鼻','2段','シャッター','ガイドレール','防火','防煙','防火戸','ヒンジクローザー','出入口','敷居','鴨居','ふすま','床高','畳寄せ','畳寄','ルーフドレン','ドレン','縦どい','くつふき','マット','泥だまり','保護防水','外部用','外部','簡易気密','気密','玄関扉','勝手口','断熱材','打込','土間','寒地','標準地','暖地','屋根スラブ','防湿','照明','ダウンライト','器具','開口','吹出口','笠木','屋上','屋根','防水','立上り','立ち上がり','防煙','垂れ壁','かまち','框','建具','扉','ドア','枠','下がり壁','天井','床','壁','取り合い','巾木','野縁','ボード','スタッド','ランナ','モルタル','ガラス','見切','目地','玄関','和室','洋室','窓','断熱','サッシ','くつずり','防水','笠木','階段','手すり','便所','浴室','ALC','ブラインド','カーテン','水まわり','水回り','間仕切']);
+  const w=new Set(['パラペット','グラスウール','ロックウール','吸音材','180度開き','戸先','ラッチ','防火戸','常時開放','90度開き','吊元','コーナーガード','目透し','目地無し','水切り樋','縦樋','浴室','水下','水上','ジョイナー','水切りとい','二重窓','内窓','下枠','み込み','込み','高さ','奥行','ライニング','便所','のみ込み','手すり','階段','段鼻','2段','シャッター','ガイドレール','防火','防煙','防火戸','ヒンジクローザー','出入口','敷居','鴨居','ふすま','床高','畳寄せ','畳寄','ルーフドレン','ドレン','縦どい','くつふき','マット','泥だまり','保護防水','外部用','外部','簡易気密','気密','玄関扉','勝手口','断熱材','打込','土間','寒地','標準地','暖地','屋根スラブ','防湿','照明','ダウンライト','器具','開口','吹出口','笠木','屋上','屋根','防水','立上り','立ち上がり','防煙','垂れ壁','かまち','框','建具','扉','ドア','枠','下がり壁','天井','床','壁','取り合い','巾木','野縁','ボード','スタッド','ランナ','モルタル','ガラス','見切','目地','玄関','和室','洋室','窓','断熱','サッシ','くつずり','防水','笠木','階段','手すり','便所','浴室','ALC','ブラインド','カーテン','水まわり','水回り','間仕切']);
   (typeof GLOSSARY!=='undefined'?GLOSSARY:[]).forEach(([,list])=>list.forEach(([t])=>t.split(/[\/・()(（）]/).forEach(x=>{x=x.trim();if(x.length>=2)w.add(x);})));
   _knownRe=new RegExp([...w].sort((a,b)=>b.length-a.length).map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'));
   return _knownRe;
@@ -2092,6 +2097,7 @@ function parsePrompt(raw){
   if(R.w.gl)P.gl=1;
   if(/外部|屋外|軒天|外天井/.test(t))P.cext=1;
   if(sound)P.snd=1;
+  { const im=t.match(/(?:吸音材|グラスウール|ロックウール|GW|RW)\s*(?:t\s*=?\s*)?(\d{2,3})/i); if(im){ P.insT=+im[1]; P.ins=1; } }
   if(R.plen)P.plen=R.plen;if(R.ct)P.ct=R.ct;if(R.cn)P.cn=R.cn;if(R.opening)P.opening=R.opening;
   const items=[],wallTxt=R.w.gl?`RC壁 直張り工法(せっこう系直張り用接着材)+ ${pbTxt(P)}`:R.w.rc?'RC壁':`LGS ${P.stud}形(W${P.stud+2}) + ${pbTxt(P)} 両面(片面${WT(P)}mm)${P.ins?' / 吸音材あり':''}`;
   let variant,title,keys=null;
@@ -2111,7 +2117,7 @@ function parsePrompt(raw){
       items.push(['壁',wallTxt+(R.w.fin?' / '+R.w.fin:'')]);
       if(R.sys!=='rc'&&!R.w.rc)items.push(['施工順',R.first?'床先行':'壁先行']);
       variant='fw_custom';title=`床×壁 取り合い(${fn}・${bb==='none'?'巾木なし':B0.name})`;
-      keys=R.w.rc?(R.w.gl?['rc','pbn','bt','glg','ft','fbt','hb','bbt','slab']:['rc','ft','fbt','hb','bbt','slab']):['stud','pbn','bt','ins','ft','fbt','hb','bbt','slab'];
+      keys=R.w.rc?(R.w.gl?['rc','pbn','bt','glg','ft','fbt','hb','bbt','slab']:['rc','ft','fbt','hb','bbt','slab']):['stud','pbn','bt','ins','insT','ft','fbt','hb','bbt','slab'];
     }else{variant='fl_custom';title=`床 断面(${fn})`;keys=['ft','fbt','slab'];}
     if(R.sys!=='rc'){keys=keys.filter(k=>k!=='fbt');keys.push('leg');}
     if(R.w.rc)P.rc=DEF.rc;
@@ -2219,7 +2225,7 @@ function parsePrompt(raw){
   if(P.wl&&!keys)keys=V[variant].keys.filter(k=>k!=='pbn'&&k!=='bt');
   return {ok:true,cat,variant,params:P,title,keys,items,unk};
 }
-def('fw_custom','prompt','床×壁 取り合い(言葉で作図)',{keys:['stud','pbn','bt','ins','ft','fbt','hb','bbt','slab'],desc:'',ev:()=>rate(0,[])});
+def('fw_custom','prompt','床×壁 取り合い(言葉で作図)',{keys:['stud','pbn','bt','ins','insT','ft','fbt','hb','bbt','slab'],desc:'',ev:()=>rate(0,[])});
 def('fl_custom','prompt','床 断面(言葉で作図)',{keys:['ft','fbt','slab'],desc:'',ev:()=>rate(0,[])});
 
 /* ───────── 条件→寸法 ───────── */
@@ -2242,7 +2248,7 @@ function condParams(c,v){
 
 /* ───────── シート構成 ───────── */
 /* 生成ロジックの版。作図ルールを変えたら上げる(古い版の詳細を検出して再生成を促す) */
-const GENVER=35;
+const GENVER=42;
 const staleDetails=()=>st.details.filter(r=>r.variant&&r.variant!=='legend'&&r.ver!==GENVER);
 function regenStale(){
   const list=staleDetails();if(!list.length)return;
@@ -2643,7 +2649,72 @@ function sheetSvg(px){
 }
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
 const fname=ext=>(st.meta.title||'納まり詳細図').replace(/[\\/:*?"<>|]/g,'_')+'_'+today().replace(/\./g,'')+'.'+ext;
+/* ───────── PDF出力(ベクター) ─────────
+   描画プリミティブ(explode)を直接PDFの描画命令に変換。線データなので拡大しても劣化せず、文字は検索・選択できる。
+   日本語は非埋め込みのCIDフォント(Adobe-Japan1 / UniJIS-UTF16-H)。閲覧側の日本語フォントで表示される。
+   図面は白黒(st.meta.pdfColor==='color' で寸法緑・中心線赤等の画面色) */
+async function deflate(u8){
+  if(typeof CompressionStream!=='function') return null;
+  try{ const cs=new CompressionStream('deflate'); const w=cs.writable.getWriter(); w.write(u8); w.close();
+       return new Uint8Array(await new Response(cs.readable).arrayBuffer()); }catch(e){ return null; }
+}
+const pdfHex=s=>{let h='';for(const c of String(s)){let n=c.codePointAt(0);if(n>0xFFFF){n-=0x10000;h+=(0xD800+(n>>10)).toString(16).padStart(4,'0')+(0xDC00+(n&0x3FF)).toString(16).padStart(4,'0');}else h+=n.toString(16).padStart(4,'0');}return '<'+h.toUpperCase()+'>';};
+function pdfColor(hex){ if(!hex||hex==='none') return null; const m=/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex); if(!m) return [0,0,0];
+  let h=m[1]; if(h.length===3) h=h.split('').map(c=>c+c).join(''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)/255); }
+function pdfContent(){
+  const [W,H]=SHEETS[st.sheet],S=st.scale,k=72/25.4/S,color=st.meta.pdfColor==='color';
+  const f=v=>(Math.round(v*k*1000)/1000).toString(), fw=v=>(Math.round(v*k*1000)/1000||0.05).toString();
+  const rgb=(c,op)=>{const a=pdfColor(c)||[0,0,0];return a.map(v=>(Math.round(v*1000)/1000)).join(' ')+' '+op;};
+  const out=['1 J 1 j'];   /* 丸端・丸結合 */
+  const col=p=>color?(LCOL[p.ly]||'#111'):'#000';
+  const circ=(cx,cy,r)=>{const c=.5523*r;return `${f(cx+r)} ${f(cy)} m ${f(cx+r)} ${f(cy+c)} ${f(cx+c)} ${f(cy+r)} ${f(cx)} ${f(cy+r)} c ${f(cx-c)} ${f(cy+r)} ${f(cx-r)} ${f(cy+c)} ${f(cx-r)} ${f(cy)} c ${f(cx-r)} ${f(cy-c)} ${f(cx-c)} ${f(cy-r)} ${f(cx)} ${f(cy-r)} c ${f(cx+c)} ${f(cy-r)} ${f(cx+r)} ${f(cy-c)} ${f(cx+r)} ${f(cy)} c h`;};
+  const prims=[];[...sysEnts(),...st.ents].forEach(e=>explode(e,S).forEach(q=>prims.push(q)));
+  prims.forEach(q=>{
+    const sc=col(q);
+    if(q.k==='line'){
+      out.push(`${rgb(sc,'RG')} ${fw(q.w)} w ${q.dash?'['+q.dash.map(f).join(' ')+'] 0 d':'[] 0 d'} ${f(q.a[0])} ${f(q.a[1])} m ${f(q.b[0])} ${f(q.b[1])} l S`);
+    }else if(q.k==='poly'){
+      const path=q.pts.map((v,i)=>`${f(v[0])} ${f(v[1])} ${i?'l':'m'}`).join(' ')+(q.closed!==0?' h':'');
+      const fill=q.solid?'#000':(q.fill&&q.fill!=='none'?(color?q.fill:(q.fill==='#fff'?'#fff':'#000')):null);
+      out.push(`[] 0 d ${rgb(sc,'RG')} ${fw(q.w)} w ${fill?rgb(fill,'rg')+' ':''}${path} ${fill?'B':'S'}`);
+    }else if(q.k==='circ'){
+      const fill=q.fill&&q.fill!=='none'?(color?q.fill:(q.fill==='#fff'?'#fff':'#000')):null;
+      out.push(`[] 0 d ${rgb(sc,'RG')} ${fw(q.w)} w ${fill?rgb(fill,'rg')+' ':''}${circ(q.c[0],q.c[1],q.r)} ${fill?'B':'S'}`);
+    }else if(q.k==='text'){
+      const h=q.h,a=(q.a||0)*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a);
+      let x=q.p[0],y=q.p[1]; if(q.al==='c'){const w=tw(q.s,h);x-=ca*w/2;y-=sa*w/2;}
+      out.push(`BT ${rgb(sc,'rg')} /F1 ${f(h)} Tf ${ca.toFixed(5)} ${sa.toFixed(5)} ${(-sa).toFixed(5)} ${ca.toFixed(5)} ${f(x)} ${f(y)} Tm ${pdfHex(q.s)} Tj ET`);
+    }
+  });
+  return out.join('\n');
+}
 async function exportPDF(){
+  if(st.meta.pdfMode==='img') return exportPDFRaster();
+  const [W,H]=SHEETS[st.sheet],ptW=(W/25.4*72).toFixed(2),ptH=(H/25.4*72).toFixed(2);
+  const enc=new TextEncoder(),raw=enc.encode(pdfContent()),z=await deflate(raw);
+  const parts=[],offs=[];let pos=0;
+  const add=b=>{const u=typeof b==='string'?enc.encode(b):b;parts.push(u);pos+=u.length;};
+  const obj=(n,body)=>{offs[n]=pos;add(`${n} 0 obj\n${body}\nendobj\n`);};
+  const FN='KozGoPr6N-Medium';
+  add('%PDF-1.6\n%\xE2\xE3\xCF\xD3\n');
+  obj(1,'<</Type/Catalog/Pages 2 0 R>>');
+  obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+  obj(3,`<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${ptW} ${ptH}]/Resources<</Font<</F1 5 0 R>>/ProcSet[/PDF/Text]>>/Contents 4 0 R>>`);
+  offs[4]=pos; const body=z||raw;
+  add(`4 0 obj\n<</Length ${body.length}${z?'/Filter/FlateDecode':''}>>\nstream\n`); add(body); add('\nendstream\nendobj\n');
+  obj(5,`<</Type/Font/Subtype/Type0/BaseFont/${FN}/Encoding/UniJIS-UTF16-H/DescendantFonts[6 0 R]/ToUnicode 9 0 R>>`);
+  obj(6,`<</Type/Font/Subtype/CIDFontType0/BaseFont/${FN}/CIDSystemInfo<</Registry(Adobe)/Ordering(Japan1)/Supplement 6>>/FontDescriptor 7 0 R/DW 1000/W[1 95 500 231 632 500]>>`);
+  obj(7,`<</Type/FontDescriptor/FontName/${FN}/Flags 4/FontBBox[-149 -374 1199 1176]/ItalicAngle 0/Ascent 1137/Descent -349/CapHeight 742/StemV 80>>`);
+  obj(8,`<</Title ${pdfHex('\uFEFF'+(st.meta.title||'納まり詳細図'))}/Creator(ADG)/Producer(ADG Architectural Detail Generator)>>`);
+  { const cm='/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo<</Registry(Adobe)/Ordering(UCS)/Supplement 0>> def /CMapName/Adobe-Identity-UCS def /CMapType 2 def 1 begincodespacerange <0000><FFFF> endcodespacerange 1 beginbfrange <0000><FFFF><0000> endbfrange endcmap CMapName currentdict /CMap defineresource pop end end';
+    obj(9,`<</Length ${cm.length}>>\nstream\n${cm}\nendstream`); }   /* ToUnicode:文字の検索・コピー用 */
+  const xr=pos;let x='xref\n0 10\n0000000000 65535 f \n';
+  for(let i=1;i<=9;i++)x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  add(x+`trailer\n<</Size 10/Root 1 0 R/Info 8 0 R>>\nstartxref\n${xr}\n%%EOF`);
+  dl(new Blob(parts,{type:'application/pdf'}),fname('pdf'));
+}
+/* 画像PDF(従来方式・閲覧環境に日本語フォントが無い場合の予備) */
+async function exportPDFRaster(){
   const [W,H]=SHEETS[st.sheet],dpi=200,pw=Math.round(W/25.4*dpi),ph=Math.round(H/25.4*dpi);
   const svgStr=sheetSvg([pw,ph]);
   const img=new Image();
@@ -2669,15 +2740,43 @@ async function exportPDF(){
   add(x+`trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n${xr}\n%%EOF`);
   dl(new Blob(parts,{type:'application/pdf'}),fname('pdf'));
 }
-function dxfStr(s){return [...String(s)].map(c=>{const n=c.codePointAt(0);return n>126?(n>0xFFFF?'?':'\\U+'+n.toString(16).toUpperCase().padStart(4,'0')):c;}).join('');}
-function exportDXF(){
-  const S=st.scale,prims=[];
+/* DXFの文字は Shift_JIS(ANSI_932)で直接書き出す(Jw_cad等でも読める)。Shift_JISに無い文字のみ \U+XXXX 表記 */
+function dxfStr(s){return String(s);}
+let SJIS_MAP=null;
+function sjisMap(){
+  if(SJIS_MAP) return SJIS_MAP;
+  const m=new Map(),dec=new TextDecoder('shift_jis');
+  for(let a=0xA1;a<=0xDF;a++){ const c=dec.decode(new Uint8Array([a])); if(c&&c!=='\uFFFD'&&!m.has(c)) m.set(c,[a]); }
+  for(let a=0x81;a<=0xFC;a++){ if(a>0x9F&&a<0xE0) continue;
+    for(let b=0x40;b<=0xFC;b++){ if(b===0x7F) continue; const c=dec.decode(new Uint8Array([a,b])); if(c.length===1&&c!=='\uFFFD'&&!m.has(c)) m.set(c,[a,b]); } }
+  return SJIS_MAP=m;
+}
+const SJIS_ALIAS={'\u301C':'\uFF5E','\u2212':'\uFF0D','\u2016':'\u2225','\u2014':'\u2015','\u00A2':'\uFFE0','\u00A3':'\uFFE1','\u00AC':'\uFFE2','\uFF5E':'\u301C','\uFF0D':'\u2212'};   /* 波ダッシュ等の表記揺れ */
+function sjisEncode(str){
+  const m=sjisMap(),out=[];
+  for(const c of str){ const n=c.codePointAt(0);
+    if(n<0x80){ out.push(n); continue; }
+    const b=m.get(c)||m.get(SJIS_ALIAS[c]); if(b){ out.push(...b); continue; }
+    for(const ch of '\\U+'+(n>0xFFFF?'003F':n.toString(16).toUpperCase().padStart(4,'0'))) out.push(ch.charCodeAt(0)); }
+  return new Uint8Array(out);
+}
+/* DXF(R12/AC1009):寸法は DIMENSION エンティティ(図形は匿名ブロック *Dn)で出力し、CADで寸法として扱えるようにする。
+   寸法スタイル STANDARD は縮尺に合わせた DIMSCALE、文字高2.5・玉止め相当。図面範囲 $EXTMIN/$EXTMAX、$DIMSCALE を記録 */
+function exportDXF(){ return st.meta.dxfVer==='r12'?exportDXF12():exportDXF2000(); }
+function exportDXF12(){
+  const S=st.scale,prims=[],dims=[];
   sysEnts().forEach(e=>explode(e,S).forEach(p=>{if(p.k==='line')p.ly='DT-FRAME';prims.push(p);}));
-  st.ents.forEach(e=>explode(e,S).forEach(p=>prims.push(p)));
+  st.ents.forEach(e=>{ if(e.t==='dim'){ const P=explode(e,S); if(P.length) dims.push({e,P}); P.forEach(p=>prims.push({...p,_dimOnly:1})); } else explode(e,S).forEach(p=>prims.push(p)); });
   const used=new Set(['0']);prims.forEach(p=>used.add(p.ly));
   const o=[],g=(c,v)=>{o.push(String(c),String(v));};
   const n=v=>(Math.round(v*1000)/1000).toString();
-  g(0,'SECTION');g(2,'HEADER');g(9,'$ACADVER');g(1,'AC1009');g(9,'$LTSCALE');g(40,n(S));g(9,'$DWGCODEPAGE');g(3,'ANSI_932');g(0,'ENDSEC');
+  const [SW,SH]=SHEETS[st.sheet];
+  g(0,'SECTION');g(2,'HEADER');g(9,'$ACADVER');g(1,'AC1009');g(9,'$INSBASE');g(10,0);g(20,0);g(30,0);
+  g(9,'$EXTMIN');g(10,0);g(20,0);g(30,0);g(9,'$EXTMAX');g(10,n(SW*S));g(20,n(SH*S));g(30,0);
+  g(9,'$LIMMIN');g(10,0);g(20,0);g(9,'$LIMMAX');g(10,n(SW*S));g(20,n(SH*S));
+  g(9,'$LTSCALE');g(40,n(S));g(9,'$DIMSCALE');g(40,n(S));g(9,'$TEXTSIZE');g(40,n(2.5*S));g(9,'$TEXTSTYLE');g(7,'JP');g(9,'$DIMTXT');g(40,2.5);g(9,'$DIMASZ');g(40,1);
+  g(9,'$DIMEXO');g(40,1);g(9,'$DIMEXE');g(40,0);g(9,'$DIMGAP');g(40,0.9);g(9,'$DIMTAD');g(70,1);g(9,'$DIMTIH');g(70,0);g(9,'$DIMTOH');g(70,0);
+  g(9,'$DWGCODEPAGE');g(3,'ANSI_932');g(0,'ENDSEC');
   g(0,'SECTION');g(2,'TABLES');
   g(0,'TABLE');g(2,'LTYPE');g(70,3);
   g(0,'LTYPE');g(2,'CONTINUOUS');g(70,0);g(3,'Solid line');g(72,65);g(73,0);g(40,0);
@@ -2690,9 +2789,14 @@ function exportDXF(){
   g(0,'TABLE');g(2,'STYLE');g(70,2);
   [['STANDARD','txt'],['JP','msgothic.ttc']].forEach(([s,f])=>{g(0,'STYLE');g(2,s);g(70,0);g(40,0);g(41,1);g(50,0);g(71,0);g(42,2.5);g(3,f);g(4,'');});
   g(0,'ENDTAB');
+  g(0,'TABLE');g(2,'DIMSTYLE');g(70,1);
+  g(0,'DIMSTYLE');g(2,'STANDARD');g(70,0);g(3,'');g(4,'');g(5,'');g(6,'');g(7,'');
+  g(40,n(S));g(41,1);g(42,1);g(43,0);g(44,0);g(45,0);g(46,0);g(47,0);g(48,0);g(140,2.5);g(141,0);g(142,0);g(143,1);g(144,1);g(145,0);g(146,1);g(147,0.9);
+  g(71,0);g(72,0);g(73,0);g(74,0);g(75,0);g(76,0);g(77,1);g(78,0);g(170,0);g(171,2);g(172,0);g(173,0);g(174,0);g(175,0);g(176,3);g(177,3);g(178,3);
+  g(0,'ENDTAB');
   g(0,'ENDSEC');
-  g(0,'SECTION');g(2,'ENTITIES');
-  prims.forEach(p=>{
+  /* ブロック:寸法ごとの匿名ブロック *Dn(図形は図面座標のまま) */
+  const ent=p=>{
     if(p.k==='line'){g(0,'LINE');g(8,p.ly);g(10,n(p.a[0]));g(20,n(p.a[1]));g(30,0);g(11,n(p.b[0]));g(21,n(p.b[1]));g(31,0);}
     else if(p.k==='poly'){
       g(0,'POLYLINE');g(8,p.ly);g(66,1);g(10,0);g(20,0);g(30,0);g(70,p.closed?1:0);
@@ -2711,9 +2815,175 @@ function exportDXF(){
       g(0,'TEXT');g(8,p.ly);g(10,n(p.p[0]));g(20,n(p.p[1]));g(30,0);g(40,n(p.h));g(1,dxfStr(p.s));if(p.a)g(50,n(p.a));g(7,'JP');
       if(p.al==='c'){g(72,1);g(11,n(p.p[0]));g(21,n(p.p[1]));g(31,0);}
     }
+  };
+  g(0,'SECTION');g(2,'BLOCKS');
+  dims.forEach((d,i)=>{ g(0,'BLOCK');g(8,'0');g(2,'*D'+(i+1));g(70,1);g(10,0);g(20,0);g(30,0);g(3,'*D'+(i+1));
+    d.P.forEach(p=>ent({...p,ly:p.ly==='DT-DIM'?'0':p.ly})); g(0,'ENDBLK');g(8,'0'); });
+  g(0,'ENDSEC');
+  g(0,'SECTION');g(2,'ENTITIES');
+  prims.forEach(p=>{ if(!p._dimOnly) ent(p); });
+  dims.forEach((d,i)=>{
+    const e=d.e,dx=e.x2-e.x1,dy=e.y2-e.y1,L=Math.hypot(dx,dy); if(L<1e-6) return;
+    const ux=dx/L,uy=dy/L,nx=-uy,ny=ux,o=e.off;
+    const a=[e.x1+nx*o,e.y1+ny*o],b=[e.x2+nx*o,e.y2+ny*o],tp=d.P.find(p=>p.k==='text');
+    const ang=Math.atan2(dy,dx)*180/Math.PI, hv=Math.abs(ux)<1e-9||Math.abs(uy)<1e-9;
+    g(0,'DIMENSION');g(8,'DT-DIM');g(2,'*D'+(i+1));g(3,'STANDARD');
+    g(10,n(b[0]));g(20,n(b[1]));g(30,0);
+    if(tp){g(11,n(tp.p[0]));g(21,n(tp.p[1]));g(31,0);}
+    g(70,hv?0:1); g(1,dxfStr(e.txt||'<>'));
+    g(13,n(e.x1));g(23,n(e.y1));g(33,0);g(14,n(e.x2));g(24,n(e.y2));g(34,0);
+    if(hv) g(50,n(((ang%180)+180)%180));
   });
   g(0,'ENDSEC');g(0,'EOF');
-  dl(new Blob([o.join('\r\n')+'\r\n'],{type:'application/dxf'}),fname('dxf'));
+  dl(new Blob([sjisEncode(o.join('\r\n')+'\r\n')],{type:'application/dxf'}),fname('dxf'));
+}
+
+/* ───────── DXF(R2000/AC1015) ─────────
+   ・ハッチは HATCH(材料ごとのパターン定義を埋め込み)。パターン化できない材料(保温材の波形・構造材の×等)は線分のまま
+   ・塗りつぶし(薄い鋼材・防水層・シーリング)は SOLID の HATCH
+   ・寸法は DIMENSION(図形は匿名ブロック *Dn)、画層に線の太さ(0.35/0.13/0.09/0.5)
+   ・文字は Shift_JIS(ANSI_932) */
+const DXF_LW={'DT-OUT':35,'DT-THIN':13,'DT-HATCH':9,'DT-DIM':13,'DT-TEXT':13,'DT-CENTER':13,'DT-HIDDEN':13,'DT-FRAME':50};
+function hatchPattern(m,S,bx){         /* MAT → HATCHパターン線 [{ang,bx,by,ox,oy,d:[...]}] (WCS)。bx:矩形(波形用) */
+  const R=Math.SQRT2;
+  if(m.h==='cross'){ const P=m.pitch*S*R; return [{ang:45,bx:0,by:0,ox:P,oy:0,d:[]},{ang:315,bx:0,by:0,ox:P,oy:0,d:[]}]; }
+  if(m.h==='zig'){                      /* 保温材:両面に接する波形(hatchSegs と同じ山谷)。山の線と谷の線の2系列 */
+    if(!bx) return null;
+    const {x,y,w,h}=bx,mn=Math.min(w,h); if(mn<1.2*S) return null;
+    const st2=Math.max(mn*.6,1.2*S),hz=w>=h,L=hz?w:h,nn=Math.max(1,Math.round(L/st2)),d=L/nn,Ld=Math.hypot(d,mn);
+    if(hz){ const a=Math.atan2(mn,d)*180/Math.PI;
+      return [{ang:a,bx:x,by:y,ox:2*d,oy:0,d:[Ld,-Ld]},{ang:360-a,bx:x+d,by:y+mn,ox:2*d,oy:0,d:[Ld,-Ld]}]; }
+    const b=Math.atan2(d,mn)*180/Math.PI;
+    return [{ang:b,bx:x,by:y,ox:0,oy:2*d,d:[Ld,-Ld]},{ang:180-b,bx:x+mn,by:y+d,ox:0,oy:2*d,d:[Ld,-Ld]}];
+  }
+  if(m.h==='g'){ const P=m.pitch*S*R; return [...Array(m.lines)].map((_,i)=>({ang:45,bx:i*m.gap*S*R,by:0,ox:P,oy:0,d:[]})); }
+  if(m.h==='diag'){ const P=m.pitch*S*R; return [{ang:45,bx:0,by:0,ox:P,oy:0,d:[]}]; }
+  if(m.h==='stn'){ const P=m.pitch*S*R; return [{ang:45,bx:0,by:0,ox:2*P,oy:0,d:[]},{ang:45,bx:P,by:0,ox:2*P,oy:0,d:[1.2*S,-.7*S]}]; }
+  if(m.h==='dot'){ const sp=m.sp*S; return [{ang:0,bx:0,by:0,ox:0,oy:sp,d:[.25*S,-(sp-.25*S)]}]; }
+  return null;
+}
+function exportDXF2000(){
+  const S=st.scale,[SW,SH]=SHEETS[st.sheet];
+  const o=[],g=(c,v)=>{o.push(String(c),String(v));},n=v=>(Math.round(v*1000)/1000).toString();
+  let HN=0x40; const nh=()=>(HN++).toString(16).toUpperCase();
+  /* 図形を集める */
+  const prims=[],hatches=[],dims=[];
+  sysEnts().forEach(e=>explode(e,S).forEach(p=>{if(p.k==='line')p.ly='DT-FRAME';prims.push(p);}));
+  st.ents.forEach(e=>{
+    if(e.t==='dim'){ const P=explode(e,S); if(P.length) dims.push({e,P}); return; }
+    const m=(e.t==='rect'||e.t==='pg')?MAT[e.m]:null;
+    const pat=m&&m.h?hatchPattern(m,S,e.t==='rect'?{x:e.x,y:e.y,w:e.w,h:e.h}:null):null;
+    const pts=e.t==='rect'?[[e.x,e.y],[e.x+e.w,e.y],[e.x+e.w,e.y+e.h],[e.x,e.y+e.h]]:e.t==='pg'?e.pts:null;
+    const thin=e.t==='rect'&&isThinSteel(e,S);
+    const P=explode(e,S);
+    if(pts&&(thin||m&&m.solid)){ hatches.push({pts,solid:1,ly:m.ly}); P.forEach(p=>{ if(!(p.ly==='DT-HATCH')) prims.push({...p,solid:0}); }); return; }
+    if(pts&&pat&&P.some(p=>p.ly==='DT-HATCH')){ hatches.push({pts,pat,name:'ADG_'+e.m.toUpperCase()}); P.forEach(p=>{ if(p.ly!=='DT-HATCH') prims.push(p); }); return; }
+    P.forEach(p=>prims.push(p));
+  });
+  const layers=new Set(['0','DT-DIM','DT-HATCH']); prims.forEach(p=>layers.add(p.ly)); hatches.forEach(h=>layers.add(h.solid?h.ly:'DT-HATCH')); dims.forEach(d=>d.P.forEach(p=>layers.add(p.ly)));
+  /* ハンドル割当て */
+  const hT={vport:nh(),ltype:nh(),layer:nh(),style:nh(),view:nh(),ucs:nh(),appid:nh(),dimstyle:nh(),brec:nh()};
+  const hRoot=nh(),hGroup=nh(),hLayD=nh(),hPSN=nh(),hPH=nh(),hLayM=nh(),hLayP=nh();
+  const hBRm=nh(),hBRp=nh(),hBm=nh(),hEm=nh(),hBp=nh(),hEp=nh();
+  const dimB=dims.map(()=>({br:nh(),b:nh(),e:nh()}));
+  /* エンティティ書き出し */
+  const ent=(p,own)=>{
+    const head=(t,ly)=>{g(0,t);g(5,nh());g(330,own);g(100,'AcDbEntity');g(8,ly);};
+    if(p.k==='line'){head('LINE',p.ly);g(100,'AcDbLine');g(10,n(p.a[0]));g(20,n(p.a[1]));g(30,0);g(11,n(p.b[0]));g(21,n(p.b[1]));g(31,0);}
+    else if(p.k==='poly'){head('LWPOLYLINE',p.ly);g(100,'AcDbPolyline');g(90,p.pts.length);g(70,p.closed===0?0:1);g(43,0);p.pts.forEach(q=>{g(10,n(q[0]));g(20,n(q[1]));});}
+    else if(p.k==='circ'&&p.fill==='#000'){const r=p.r;head('LWPOLYLINE',p.ly);g(100,'AcDbPolyline');g(90,2);g(70,1);g(43,n(r));[[p.c[0]-r/2,p.c[1]],[p.c[0]+r/2,p.c[1]]].forEach(q=>{g(10,n(q[0]));g(20,n(q[1]));g(42,1);});}
+    else if(p.k==='circ'){head('CIRCLE',p.ly);g(100,'AcDbCircle');g(10,n(p.c[0]));g(20,n(p.c[1]));g(30,0);g(40,n(p.r));}
+    else if(p.k==='text'){head('TEXT',p.ly);g(100,'AcDbText');g(10,n(p.p[0]));g(20,n(p.p[1]));g(30,0);g(40,n(p.h));g(1,p.s);if(p.a)g(50,n(p.a));g(7,'JP');
+      if(p.al==='c'){g(72,1);g(11,n(p.p[0]));g(21,n(p.p[1]));g(31,0);} g(100,'AcDbText');}
+  };
+  const hatch=(h,own)=>{
+    g(0,'HATCH');g(5,nh());g(330,own);g(100,'AcDbEntity');g(8,h.solid?h.ly:'DT-HATCH');g(100,'AcDbHatch');
+    g(10,0);g(20,0);g(30,0);g(210,0);g(220,0);g(230,1);g(2,h.solid?'SOLID':h.name);g(70,h.solid?1:0);g(71,0);
+    g(91,1);g(92,3);g(72,0);g(73,1);g(93,h.pts.length);h.pts.forEach(q=>{g(10,n(q[0]));g(20,n(q[1]));});g(97,0);
+    g(75,0);g(76,h.solid?1:2);
+    if(!h.solid){ g(52,0);g(41,1);g(77,0);g(78,h.pat.length);
+      h.pat.forEach(l=>{g(53,n(l.ang));g(43,n(l.bx));g(44,n(l.by));g(45,n(l.ox));g(46,n(l.oy));g(79,l.d.length);l.d.forEach(v=>g(49,n(v)));}); }
+    g(98,0);
+  };
+  /* HEADER */
+  g(0,'SECTION');g(2,'HEADER');
+  g(9,'$ACADVER');g(1,'AC1015');g(9,'$ACADMAINTVER');g(70,6);g(9,'$DWGCODEPAGE');g(3,'ANSI_932');
+  g(9,'$INSBASE');g(10,0);g(20,0);g(30,0);g(9,'$EXTMIN');g(10,0);g(20,0);g(30,0);g(9,'$EXTMAX');g(10,n(SW*S));g(20,n(SH*S));g(30,0);
+  g(9,'$LIMMIN');g(10,0);g(20,0);g(9,'$LIMMAX');g(10,n(SW*S));g(20,n(SH*S));
+  g(9,'$LTSCALE');g(40,n(S));g(9,'$TEXTSIZE');g(40,n(2.5*S));g(9,'$TEXTSTYLE');g(7,'JP');g(9,'$CLAYER');g(8,'0');
+  g(9,'$DIMSCALE');g(40,n(S));g(9,'$DIMSTYLE');g(2,'Standard');g(9,'$DIMTXT');g(40,2.5);g(9,'$DIMASZ');g(40,1);g(9,'$DIMEXO');g(40,1);g(9,'$DIMEXE');g(40,0);g(9,'$DIMGAP');g(40,0.9);g(9,'$DIMTAD');g(70,1);
+  g(9,'$INSUNITS');g(70,4);g(9,'$MEASUREMENT');g(70,1);g(9,'$LWDISPLAY');g(290,1);g(9,'$HANDSEED');const seedAt=o.length;g(5,'FFFF');
+  g(0,'ENDSEC');
+  g(0,'SECTION');g(2,'CLASSES');g(0,'ENDSEC');
+  /* TABLES */
+  g(0,'SECTION');g(2,'TABLES');
+  const tbl=(name,h,cnt,extra)=>{g(0,'TABLE');g(2,name);g(5,h);g(330,0);g(100,'AcDbSymbolTable');g(70,cnt);if(extra)extra();};
+  const rec=(type,h,owner,sub)=>{g(0,type);g(5,h);g(330,owner);g(100,'AcDbSymbolTableRecord');g(100,sub);};
+  tbl('VPORT',hT.vport,1); rec('VPORT',nh(),hT.vport,'AcDbViewportTableRecord'); g(2,'*Active');g(70,0);
+  [[10,0],[20,0],[11,1],[21,1],[12,n(SW*S/2)],[22,n(SH*S/2)],[13,0],[23,0],[14,n(10*S)],[24,n(10*S)],[15,n(10*S)],[25,n(10*S)],[16,0],[26,0],[36,1],[17,0],[27,0],[37,0],[40,n(SH*S*1.05)],[41,n(SW/SH)],[42,50],[43,0],[44,0],[50,0],[51,0],[71,0],[72,1000],[73,1],[74,3],[75,0],[76,0],[77,0],[78,0]].forEach(([c,v])=>g(c,v));
+  g(0,'ENDTAB');
+  tbl('LTYPE',hT.ltype,5);
+  [['ByBlock',''],['ByLayer',''],['Continuous','Solid line']].forEach(([nm,d])=>{rec('LTYPE',nh(),hT.ltype,'AcDbLinetypeTableRecord');g(2,nm);g(70,0);g(3,d);g(72,65);g(73,0);g(40,0);});
+  rec('LTYPE',nh(),hT.ltype,'AcDbLinetypeTableRecord');g(2,'DASHED');g(70,0);g(3,'Dashed __ __ __');g(72,65);g(73,2);g(40,9);g(49,6);g(74,0);g(49,-3);g(74,0);
+  rec('LTYPE',nh(),hT.ltype,'AcDbLinetypeTableRecord');g(2,'CENTER');g(70,0);g(3,'Center ____ _ ____');g(72,65);g(73,4);g(40,16);g(49,10);g(74,0);g(49,-2);g(74,0);g(49,2);g(74,0);g(49,-2);g(74,0);
+  g(0,'ENDTAB');
+  tbl('LAYER',hT.layer,layers.size);
+  layers.forEach(l=>{rec('LAYER',nh(),hT.layer,'AcDbLayerTableRecord');g(2,l);g(70,0);g(62,LAYERCOL[l]||7);g(6,l==='DT-CENTER'?'CENTER':l==='DT-HIDDEN'?'DASHED':'Continuous');g(370,DXF_LW[l]||(l==='0'?-3:35));g(390,hPH);});
+  g(0,'ENDTAB');
+  tbl('STYLE',hT.style,2);
+  [['Standard','txt'],['JP','msgothic.ttc']].forEach(([nm,f])=>{rec('STYLE',nh(),hT.style,'AcDbTextStyleTableRecord');g(2,nm);g(70,0);g(40,0);g(41,1);g(50,0);g(71,0);g(42,2.5);g(3,f);g(4,'');});
+  g(0,'ENDTAB');
+  tbl('VIEW',hT.view,0);g(0,'ENDTAB');
+  tbl('UCS',hT.ucs,0);g(0,'ENDTAB');
+  tbl('APPID',hT.appid,1);rec('APPID',nh(),hT.appid,'AcDbRegAppTableRecord');g(2,'ACAD');g(70,0);g(0,'ENDTAB');
+  tbl('DIMSTYLE',hT.dimstyle,1,()=>g(100,'AcDbDimStyleTable'));
+  g(0,'DIMSTYLE');g(105,nh());g(330,hT.dimstyle);g(100,'AcDbSymbolTableRecord');g(100,'AcDbDimStyleTableRecord');g(2,'Standard');g(70,0);g(3,'');g(4,'');
+  [[40,n(S)],[41,1],[42,1],[43,0],[44,0],[45,0],[46,0],[47,0],[48,0],[140,2.5],[141,0],[142,0],[143,1],[144,1],[145,0],[146,1],[147,0.9],[71,0],[72,0],[73,0],[74,0],[75,0],[76,0],[77,1],[78,8],[170,0],[171,2],[172,0],[173,0],[174,0],[175,0],[176,3],[177,3],[178,3],[271,0],[272,0],[273,2],[274,2],[275,0],[276,2],[277,2],[278,46],[279,0],[280,0],[281,0],[282,0],[283,1],[284,0],[285,0],[286,0],[288,0],[371,-2],[372,-2]].forEach(([c,v])=>g(c,v));
+  g(0,'ENDTAB');
+  tbl('BLOCK_RECORD',hT.brec,2+dims.length);
+  rec('BLOCK_RECORD',hBRm,hT.brec,'AcDbBlockTableRecord');g(2,'*Model_Space');g(340,hLayM);
+  rec('BLOCK_RECORD',hBRp,hT.brec,'AcDbBlockTableRecord');g(2,'*Paper_Space');g(340,hLayP);
+  dimB.forEach((d,i)=>{rec('BLOCK_RECORD',d.br,hT.brec,'AcDbBlockTableRecord');g(2,'*D'+(i+1));});
+  g(0,'ENDTAB');
+  g(0,'ENDSEC');
+  /* BLOCKS */
+  g(0,'SECTION');g(2,'BLOCKS');
+  const blk=(nm,hb,he,br,flag,body)=>{g(0,'BLOCK');g(5,hb);g(330,br);g(100,'AcDbEntity');g(8,'0');g(100,'AcDbBlockBegin');g(2,nm);g(70,flag);g(10,0);g(20,0);g(30,0);g(3,nm);g(1,'');
+    if(body)body(); g(0,'ENDBLK');g(5,he);g(330,br);g(100,'AcDbEntity');g(8,'0');g(100,'AcDbBlockEnd');};
+  blk('*Model_Space',hBm,hEm,hBRm,0); blk('*Paper_Space',hBp,hEp,hBRp,0);
+  dims.forEach((d,i)=>blk('*D'+(i+1),dimB[i].b,dimB[i].e,dimB[i].br,1,()=>d.P.forEach(p=>ent({...p,ly:p.ly==='DT-DIM'?'0':p.ly},dimB[i].br))));
+  g(0,'ENDSEC');
+  /* ENTITIES */
+  g(0,'SECTION');g(2,'ENTITIES');
+  hatches.forEach(h=>hatch(h,hBRm));
+  prims.forEach(p=>ent(p,hBRm));
+  dims.forEach((d,i)=>{
+    const e=d.e,dx=e.x2-e.x1,dy=e.y2-e.y1,L=Math.hypot(dx,dy); if(L<1e-6) return;
+    const ux=dx/L,uy=dy/L,nx=-uy,ny=ux,of=e.off,b=[e.x2+nx*of,e.y2+ny*of],tp=d.P.find(p=>p.k==='text');
+    const ang=Math.atan2(dy,dx)*180/Math.PI,hv=Math.abs(ux)<1e-9||Math.abs(uy)<1e-9;
+    g(0,'DIMENSION');g(5,nh());g(330,hBRm);g(100,'AcDbEntity');g(8,'DT-DIM');g(100,'AcDbDimension');g(2,'*D'+(i+1));
+    g(10,n(b[0]));g(20,n(b[1]));g(30,0); if(tp){g(11,n(tp.p[0]));g(21,n(tp.p[1]));g(31,0);}
+    g(70,hv?32:33);g(1,e.txt||'<>');g(3,'Standard');
+    g(100,'AcDbAlignedDimension');g(13,n(e.x1));g(23,n(e.y1));g(33,0);g(14,n(e.x2));g(24,n(e.y2));g(34,0);
+    if(hv){g(50,n(((ang%180)+180)%180));g(100,'AcDbRotatedDimension');}
+  });
+  g(0,'ENDSEC');
+  /* OBJECTS:ルート辞書・グループ・レイアウト・印刷スタイル名 */
+  g(0,'SECTION');g(2,'OBJECTS');
+  g(0,'DICTIONARY');g(5,hRoot);g(330,0);g(100,'AcDbDictionary');g(281,1);g(3,'ACAD_GROUP');g(350,hGroup);g(3,'ACAD_LAYOUT');g(350,hLayD);g(3,'ACAD_PLOTSTYLENAME');g(350,hPSN);
+  g(0,'DICTIONARY');g(5,hGroup);g(330,hRoot);g(100,'AcDbDictionary');g(281,1);
+  g(0,'DICTIONARY');g(5,hLayD);g(330,hRoot);g(100,'AcDbDictionary');g(281,1);g(3,'Model');g(350,hLayM);g(3,'Layout1');g(350,hLayP);
+  g(0,'ACDBDICTIONARYWDFLT');g(5,hPSN);g(330,hRoot);g(100,'AcDbDictionary');g(281,1);g(3,'Normal');g(350,hPH);g(100,'AcDbDictionaryWithDefault');g(340,hPH);
+  g(0,'ACDBPLACEHOLDER');g(5,hPH);g(330,hPSN);
+  [[hLayM,'Model',0,hBRm,1024],[hLayP,'Layout1',1,hBRp,0]].forEach(([h,nm,tab,br,flag])=>{
+    g(0,'LAYOUT');g(5,h);g(330,hLayD);g(100,'AcDbPlotSettings');g(1,'');g(4,st.sheet);g(6,'');
+    [[40,7.5],[41,20],[42,7.5],[43,20],[44,SW],[45,SH],[46,0],[47,0],[48,0],[49,0],[140,0],[141,0],[142,1],[143,1],[70,flag],[72,1],[73,0],[74,5]].forEach(([c,v])=>g(c,v));
+    g(7,'');[[75,16],[76,0],[77,2],[78,300],[147,1],[148,0],[149,0]].forEach(([c,v])=>g(c,v));
+    g(100,'AcDbLayout');g(1,nm);g(70,1);g(71,tab);g(10,0);g(20,0);g(11,n(SW*S));g(21,n(SH*S));g(12,0);g(22,0);g(32,0);
+    g(14,1e20);g(24,1e20);g(34,1e20);g(15,-1e20);g(25,-1e20);g(35,-1e20);g(146,0);g(13,0);g(23,0);g(33,0);g(16,1);g(26,0);g(36,0);g(17,0);g(27,1);g(37,0);g(76,1);g(330,br);});
+  g(0,'ENDSEC');g(0,'EOF');
+  o[seedAt+1]=HN.toString(16).toUpperCase();
+  dl(new Blob([sjisEncode(o.join('\r\n')+'\r\n')],{type:'application/dxf'}),fname('dxf'));
 }
 
 /* ───────── 左パネル ───────── */
@@ -3050,6 +3320,11 @@ function renderSheetPane(){
   <div class="row"><label>図面名</label><input data-mk="title" value="${esc(m.title)}"></div>
   <div class="row"><label>作成者</label><input data-mk="by" value="${esc(m.by)}"></div>
   <div class="row"><label>日付</label><input data-mk="date" value="${esc(m.date)}"></div>
+  <h3>出力</h3>
+  <div class="row"><label>PDF形式</label><select data-mk="pdfMode">${opt([['vec','ベクター(線データ・推奨)'],['img','画像(従来方式)']],m.pdfMode||'vec')}</select></div>
+  <div class="row"><label>DXF形式</label><select data-mk="dxfVer">${opt([['2000','R2000(ハッチング・線の太さ付き・推奨)'],['r12','R12(互換重視・ハッチは線分)']],m.dxfVer||'2000')}</select></div>
+  <div class="row"><label>PDFの色</label><select data-mk="pdfColor">${opt([['mono','白黒(図面標準)'],['color','画面の色']],m.pdfColor||'mono')}</select></div>
+  <div class="mut">ベクターPDFは拡大しても劣化せず、文字を検索・選択できます。日本語は閲覧側のフォントで表示します(表示できない環境では画像形式を選んでください)。DXFの寸法はCADで寸法として編集できます。R2000はハッチをハッチングとして出力します(DT-HATCH 画層)。</div>
   <h3>引出線</h3>
   <div class="row"><label>既定の角度</label><select data-mk="leadAng">${opt([[45,'45°'],[60,'60°(標準)'],[75,'75°'],[90,'90°(垂直)']],m.leadAng||60)}</select></div>
   <div class="mut">全ての引出線に適用されます。個別の角度は図形を選択してプロパティで変更できます。文字位置が近い場合は自動で角度を立てます。</div>
