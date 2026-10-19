@@ -72,7 +72,28 @@ h3{font-size:13px;margin:12px 0 4px;color:#33475b}
 footer{font-size:11px;color:var(--mut);padding:3px 10px;background:var(--pn);border-top:1px solid var(--bd)}
 html,body{overscroll-behavior:none}
 #svg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* 右のプロパティを隠す */
+body.noright main{grid-template-columns:370px 1fr 0}
+body.noright #right{display:none}
+#right .rhd{display:flex;align-items:center;gap:6px}
+#right .rhd button{margin-left:auto;padding:1px 8px;font-size:12px}
+/* 言葉で作図の候補 */
+.sug{margin:6px 0}
+.sug .sh{font-size:11.5px;color:var(--mut);margin:8px 0 3px;font-weight:600}
+.sug .si{display:flex;gap:6px;align-items:center;border:1px solid var(--bd);border-radius:6px;padding:5px 8px;margin:3px 0;background:#fbfcfe;cursor:pointer}
+.sug .si:hover{border-color:var(--ac);background:#f2f7fd}
+.sug .si .t{flex:1;min-width:0}
+.sug .si .t b{font-size:12.5px;display:block}
+.sug .si .t span{font-size:11px;color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sug .si.hit{border-color:var(--ac);box-shadow:0 0 0 2px #d9eaff}
+.sug .si button{flex:none;padding:2px 10px;font-size:12px}
+.sug .chips{display:flex;flex-wrap:wrap;gap:4px}
+.sug .chip{font-size:11.5px;border:1px solid var(--bd);border-radius:12px;padding:2px 9px;background:#fff;cursor:pointer}
+.sug .chip:hover,.sug .chip.on{border-color:var(--ac);color:var(--ac);background:#f2f7fd}
+details.fold{margin:8px 0;border-top:1px solid var(--bd);padding-top:6px}
+details.fold>summary{cursor:pointer;font-weight:600;font-size:12.5px;color:#33475b}
 @media(max-width:1000px){main{grid-template-columns:300px 1fr}
+  body.noright main{grid-template-columns:300px 1fr}
   #right{display:none;position:fixed;right:8px;bottom:8px;width:270px;max-height:55vh;overflow:auto;z-index:20;border:1px solid var(--bd);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
   body.hassel #right{display:block}}
 @media(max-width:760px){main{grid-template-columns:1fr;grid-template-rows:40vh 1fr}#left{border-right:0;border-bottom:1px solid var(--bd)}#cv{min-height:300px}}
@@ -108,7 +129,7 @@ html,body{overscroll-behavior:none}
   <div id="tb"></div>
   <div id="cv"><svg id="svg" xmlns="http://www.w3.org/2000/svg"><g id="world"></g></svg><div id="stat"></div></div>
 </section>
-<aside id="right"><b>プロパティ</b><div id="props" class="mut" style="margin-top:6px">図形を選択すると編集できます。<br><br>・空き地をドラッグで範囲選択<br>　左→右:完全に囲んだ図形<br>　右→左:掛かった図形<br>・Shift+クリック/範囲で追加選択<br>・ドラッグで移動<br>・Alt+ドラッグで詳細ごと移動<br>・四隅/端点の■をドラッグで変形<br>・Del 削除 / Ctrl+D 複写<br>・矢印キーで微動(Shift=大)<br>・ホイールで拡大縮小<br>・パン:右/中ボタンドラッグ、Space+ドラッグ<br>・「✕ 消去」中は範囲ドラッグで一括消去</div></aside>
+<aside id="right"><div class="rhd"><b>プロパティ</b><button id="bHideR" title="プロパティを隠して作図エリアを広げる">隠す »</button></div><div id="props" class="mut" style="margin-top:6px">図形を選択すると編集できます。<br><br>・空き地をドラッグで範囲選択<br>　左→右:完全に囲んだ図形<br>　右→左:掛かった図形<br>・Shift+クリック/範囲で追加選択<br>・ドラッグで移動<br>・Alt+ドラッグで詳細ごと移動<br>・四隅/端点の■をドラッグで変形<br>・Del 削除 / Ctrl+D 複写<br>・矢印キーで微動(Shift=大)<br>・ホイールで拡大縮小<br>・パン:右/中ボタンドラッグ、Space+ドラッグ<br>・「✕ 消去」中は範囲ドラッグで一括消去</div></aside>
 </main>
 <footer>※提案は一般的な納まり例を条件ルールで組み合わせたものです。実施設計では 公共建築工事標準仕様書・建築工事標準詳細図・各メーカー施工要領・大臣認定(耐火/遮音)仕様を必ず確認してください。</footer>
 
@@ -2703,13 +2724,13 @@ function renderProposePane(){
   p.innerHTML=`
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">✎ 言葉で作図</h3><button id="micBtn" data-act="mic" style="flex:none;margin-left:auto">🎤 音声入力</button></div>
   <div id="micSt" class="mut" style="font-size:11.5px;text-align:right;margin:2px 0 4px">話し終えたら「作図して」で作図します</div>
-  <textarea id="pText" rows="3" placeholder="例)壁床の取り合い、床はRC下地に石貼り、石巾木H100、壁はt12.5ボード2枚貼り" style="width:100%;font:inherit;padding:6px;border:1px solid var(--bd);border-radius:6px;resize:vertical">${esc(promptText)}</textarea>
-  <div style="display:flex;flex-wrap:wrap;gap:4px;margin:4px 0">${PROMPT_EX.map(x=>`<button class="tag" style="border:0;cursor:pointer" data-ex="${esc(x)}">${esc(x.length>18?x.slice(0,18)+'…':x)}</button>`).join('')}</div>
+  <textarea id="pText" rows="3" placeholder="例)防火戸 90度開き / 壁床の取り合い、床はRC下地に石貼り、壁はt12.5ボード2枚貼り" style="width:100%;font:inherit;padding:6px;border:1px solid var(--bd);border-radius:6px;resize:vertical">${esc(promptText)}</textarea>
   <div id="pRes"></div>
-  <details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600;font-size:12.5px">📖 用語集(建築工事標準詳細図の用語)— 言葉で作図に使えます</summary>
+  <div id="pSug" class="sug"></div>
+  <details class="fold"><summary>📖 用語集(建築工事標準詳細図の用語)</summary>
     <div style="max-height:260px;overflow:auto;font-size:11.5px;line-height:1.55;margin-top:4px">${GLOSSARY.map(([g,list])=>`<div style="font-weight:700;margin-top:6px">${g}</div>`+list.map(([w,d])=>`<div><b>${esc(w)}</b>:${esc(d)}</div>`).join('')).join('')}</div>
   </details>
-  <hr style="border:0;border-top:1px solid var(--bd);margin:12px 0">
+  <details class="fold" id="condFold"${condOpen?' open':''}><summary>部位・条件から選ぶ(おすすめ順の提案)</summary>
   <h3>1. 取り合い部位</h3>
   <div class="row"><label>部位</label><select id="cCat">${opt(CATS.map(c=>[c.id,c.name]),cond.cat)}</select></div>
   <h3>2. 条件</h3>
@@ -2719,7 +2740,7 @@ function renderProposePane(){
   <div class="row"><label>天井高(mm)</label><input id="cH" type="number" value="${cond.ceilH}" step="100"></div>
   <div class="mut">スタッドは65形(W67)が標準です。天井高4.0m超は90形、4.5m超は100形に自動で上げます。</div>
   <h3>3. 提案(おすすめ順)</h3>
-  <div id="cards"></div>`;
+  <div id="cards"></div></details>`;
   drawCards();drawPrompt();
 }
 let promptText='';
@@ -2900,11 +2921,39 @@ function micToggle(){
   srecBase=promptText.trim()?promptText.replace(/[、。\s]*$/,'')+'、':''; srecRestarts=0; srecWant=true;
   try{ voiceStart(); }catch(err){ voiceStopUI('音声入力を開始できませんでした'); }
 }
+/* 言葉に応じた候補:文字の2-gram一致で 詳細図・作図例・用語 を並べる。解釈できた詳細図は先頭 */
+let condOpen=false,sugCat='',sugTimer=null;
+const bigr=t=>{const a=new Set();t=normJP(String(t)).replace(/[\s、。,・\/()（）]/g,'');for(let i=0;i<t.length-1;i++)a.add(t.slice(i,i+2));if(t.length===1)a.add(t);return a;};
+function sugScore(q,c){ if(!q.size) return 0; let n=0; const cb=bigr(c); q.forEach(g=>{ if(cb.has(g)) n++; }); return n/Math.sqrt(q.size)+n/Math.sqrt(cb.size+1)*.5; }
+const SUG_TOP=['防火戸 90度開き','壁床の取り合い 床 直均し ビニル床シート ビニル巾木','壁と天井の取り合い 廻り縁 天井懐500','鋼製建具 縦枠 LGS壁 PB12.5 2枚','屋上パラペット コンクリート笠木 立上り400','和室 床 畳 壁PB12.5'];
+function drawSug(){
+  const box=$('#pSug'); if(!box) return;
+  const t=promptText.trim(), vs=Object.values(V).filter(v=>v.cat!=='prompt'&&v.id!=='legend');
+  const item=(cls,attrs,title,sub,btn)=>`<div class="si ${cls}" ${attrs}><div class="t"><b>${esc(title)}</b>${sub?`<span>${esc(sub)}</span>`:''}</div>${btn||''}</div>`;
+  if(!t){
+    const cats=CATS.filter(c=>vs.some(v=>v.cat===c.id));
+    let h=`<div class="sh">よく使う例</div><div class="chips">${SUG_TOP.map(x=>`<span class="chip" data-ex="${esc(x)}">${esc(x.length>16?x.slice(0,16)+'…':x)}</span>`).join('')}</div>
+      <div class="sh">部位から探す</div><div class="chips">${cats.map(c=>`<span class="chip${sugCat===c.id?' on':''}" data-scat="${c.id}">${esc(c.name.replace(/\(.*?\)/g,''))}</span>`).join('')}</div>`;
+    if(sugCat){ h+=`<div class="sh">${esc((CATS.find(c=>c.id===sugCat)||{}).name||'')}</div>`+vs.filter(v=>v.cat===sugCat).map(v=>item('','',v.title,v.desc,`<button class="pri" data-act="place" data-v="${v.id}">配置</button>`)).join(''); }
+    box.innerHTML=h; return;
+  }
+  const q=bigr(t), r=parsePrompt(t);
+  const vv=vs.map(v=>({v,s:sugScore(q,v.title+' '+v.title+' '+(v.desc||''))+(r.ok&&r.variant===v.id?100:0)})).filter(x=>x.s>.35).sort((a,b)=>b.s-a.s).slice(0,5);
+  const ex=PROMPT_EX.map(x=>({x,s:sugScore(q,x)})).filter(o=>o.s>.4&&o.x!==t).sort((a,b)=>b.s-a.s).slice(0,4);
+  const gl=[];GLOSSARY.forEach(([g,list])=>list.forEach(([w,d])=>{const sc=sugScore(q,w)*2+sugScore(q,d)*.3;if(sc>.6)gl.push({w,d,sc});}));gl.sort((a,b)=>b.sc-a.sc);
+  let h='';
+  if(vv.length) h+=`<div class="sh">該当する詳細図</div>`+vv.map(({v})=>item(r.ok&&r.variant===v.id?'hit':'','',(r.ok&&r.variant===v.id?'★ ':'')+v.title,v.desc,r.ok&&r.variant===v.id?'':`<button data-act="place" data-v="${v.id}">配置</button>`)).join('');
+  if(ex.length) h+=`<div class="sh">作図例(タップで入力)</div><div class="chips">${ex.map(o=>`<span class="chip" data-ex="${esc(o.x)}">${esc(o.x)}</span>`).join('')}</div>`;
+  if(gl.length) h+=`<div class="sh">関連する用語(タップで追加)</div>`+gl.slice(0,4).map(o=>item('',`data-addw="${esc(o.w.split(/[\/・(（]/)[0])}"`,o.w,o.d)).join('');
+  if(!h) h='<div class="mut">候補が見つかりません。部位名(床、壁、天井、建具、防水 など)を入れてみてください。</div>';
+  box.innerHTML=h;
+}
 function drawPrompt(){
+  clearTimeout(sugTimer); sugTimer=setTimeout(drawSug,120);
   const box=$('#pRes');if(!box)return;
-  if(!promptText.trim()){box.innerHTML='<div class="mut">部位・材料・寸法を自由に書いてください。読点や空白で区切ると確実です。</div>';return;}
+  if(!promptText.trim()){box.innerHTML='<div class="mut">部位・材料・寸法を自由に書いてください。入力に合わせて下に候補が出ます。</div>';return;}
   const r=parsePrompt(promptText);
-  if(!r.ok){box.innerHTML=`<div class="warnbox">${esc(r.msg)}${r.unk.length?'<br>未解釈:'+r.unk.map(esc).join(' / '):''}</div>`;return;}
+  if(!r.ok){box.innerHTML=`<div class="mut" style="margin:4px 0">${esc(r.msg)}${r.unk.length?' 未解釈:'+r.unk.map(esc).join(' / '):''}</div>`;return;}
   box.innerHTML=`<div class="card best"><h4>解釈結果</h4>
     <table style="width:100%;font-size:12px;border-collapse:collapse">${r.items.map(([k,v])=>`<tr><td style="color:var(--mut);width:56px;vertical-align:top;padding:2px 0">${esc(k)}</td><td style="padding:2px 0">${esc(v)}</td></tr>`).join('')}</table>
     ${r.unk.length?`<div class="mut" style="color:var(--warn)">未解釈:${r.unk.map(esc).join(' / ')}</div>`:''}
@@ -3051,6 +3100,10 @@ $('#pane-p').addEventListener('click',ev=>{
   if(ev.target.closest('[data-act="mic"]')){micToggle();return;}
   const ex=ev.target.closest('[data-ex]');
   if(ex){promptText=ex.dataset.ex;$('#pText').value=promptText;drawPrompt();return;}
+  const sc=ev.target.closest('[data-scat]');
+  if(sc){sugCat=sugCat===sc.dataset.scat?'':sc.dataset.scat;drawSug();return;}
+  const aw=ev.target.closest('[data-addw]');
+  if(aw){promptText=(promptText.trim()?promptText.replace(/[、\s]*$/,'')+' ':'')+aw.dataset.addw;$('#pText').value=promptText;drawPrompt();$('#pText').focus();return;}
   if(ev.target.closest('[data-act="pplace"]')){
     const r=parsePrompt(promptText);if(!r.ok)return;
     const rec=addDetail(r.variant,r.params,{title:r.title,keys:r.keys,prompt:promptText});
@@ -3058,6 +3111,8 @@ $('#pane-p').addEventListener('click',ev=>{
   }
   const b=ev.target.closest('[data-act="place"]');if(!b)return;
   const v=V[b.dataset.v];
+  const r0=parsePrompt(promptText);
+  if(r0.ok&&r0.variant===v.id){const rec=addDetail(r0.variant,r0.params,{title:r0.title,keys:r0.keys,prompt:promptText});showTab('d');fitBox(rec.box.x0,rec.box.y0,rec.box.x1,rec.box.y1,.8);return;}
   const rec=addDetail(v.id,condParams(cond,v));
   showTab('d');
   const r=rec.box;fitBox(r.x0,r.y0,r.x1,r.y1,.8);
@@ -3201,7 +3256,7 @@ $('#props').addEventListener('click',ev=>{
   $('#tb').innerHTML=tools.map(([k,l])=>k==='rect'?`<span style="display:inline-flex;align-items:stretch;white-space:nowrap"><button data-tool="${k}" style="border-top-right-radius:0;border-bottom-right-radius:0">${l}</button>${matSelHtml}</span>`:`<button data-tool="${k}"${k==='sel'?' class="on"':''}>${l}</button>`).join('')+
    `<label style="font-size:12px"><input type="checkbox" id="tSnap" checked> スナップ</label>
     <span class="sp"></span>
-    <button id="tZout">－</button><button id="tZin">＋</button><button id="tFit">全体表示</button>`;
+    <button id="tZout">－</button><button id="tZin">＋</button><button id="tFit">全体表示</button><button id="tShowR" class="on" title="右のプロパティ欄の表示/非表示">プロパティ</button>`;
   $('#tb').addEventListener('click',ev=>{const b=ev.target.closest('[data-tool]');if(b)setTool(b.dataset.tool);});
   $('#tMat').onchange=e=>{matSel=e.target.value;setTool('rect');};
   $('#tSnap').onchange=e=>{snapOn=e.target.checked;};
@@ -3209,6 +3264,7 @@ $('#props').addEventListener('click',ev=>{
   $("#tZout").onclick=()=>zoomAt(...c(),1/1.3);
   $("#tZin").onclick=()=>zoomAt(...c(),1.3);
   $('#tFit').onclick=fitSheet;
+  $('#tShowR').onclick=()=>setRight(!document.body.classList.contains('noright'));
 })();
 
 /* ヘッダ */
@@ -3223,6 +3279,12 @@ $('#fLoad').onchange=async ev=>{
   ev.target.value='';
 };
 window.addEventListener('resize',render);
+/* プロパティ欄の表示/非表示(状態は保存) */
+function setRight(hide){ document.body.classList.toggle('noright',hide); try{localStorage.setItem('detailApp.noright',hide?'1':'');}catch(e){}
+  const t=$('#tShowR'); if(t) t.classList.toggle('on',!hide); setTimeout(render,0); }
+$('#bHideR').onclick=()=>setRight(true);
+try{ if(localStorage.getItem('detailApp.noright')==='1') setRight(true); }catch(e){}
+$('#pane-p').addEventListener('toggle',ev=>{ if(ev.target.id==='condFold') condOpen=ev.target.open; },true);
 
 /* 初期化 */
 (function init(){
