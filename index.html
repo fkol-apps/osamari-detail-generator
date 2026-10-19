@@ -3042,7 +3042,7 @@ function renderSheetPane(){
   <div class="mut">シートで使っている材料の記号一覧を作ります。詳細を追加した後に押すと内容が更新されます。</div>
   <div class="row"><button data-act="best">全詳細が収まる最大縮尺にする</button></div>
   <div class="row"><button data-act="reflow">詳細を自動整列(手動移動をリセット)</button></div>
-  <div class="row"><button data-act="clearall" class="dng">全て消去</button></div>`;
+`;
 }
 function renderTpl(){
   $('#pane-t').innerHTML=`
@@ -3229,7 +3229,6 @@ $('#pane-s').addEventListener('click',ev=>{
   if(b.dataset.act==='reflow'){reflow();commit();}
   else if(b.dataset.act==='legend'){const r=addLegend();showTab('d');fitBox(r.box.x0,r.box.y0,r.box.x1,r.box.y1,.8);}
   else if(b.dataset.act==='best'){if(!st.details.length)return;const S=bestScale();if(S===st.scale)alert('現在の縮尺 1/'+S+' が最適です');else changeScale(S);}
-  else if(b.dataset.act==='clearall'&&confirm('シート上の全ての図形を消去します。よろしいですか?')){st.ents=[];st.details=[];sel=null;commit();}
 });
 function readMv(){const a=$('#mvDX'),b=$('#mvDY'),g=$('#mvGrp');mvDX=a?parseFloat(a.value)||0:0;mvDY=b?parseFloat(b.value)||0:0;mvGrp=!!(g&&g.checked);}
 $('#props').addEventListener('keydown',ev=>{if(ev.key==='Enter'&&(ev.target.id==='mvDX'||ev.target.id==='mvDY')){ev.preventDefault();readMv();moveSelBy(mvDX,mvDY,false,mvGrp);}});
@@ -3254,7 +3253,8 @@ $('#props').addEventListener('click',ev=>{
   const tools=[['sel','▶ 選択'],['line','／ 線'],['rect','▭ 材料追加'],['circ','◯ 円'],['text','A 文字'],['dim','↔ 寸法'],['note','↗ 引出'],['del','✕ 消去']];
   const matSelHtml=`<select id="tMat" title="追加する材料(選ぶと材料追加ツールになります。2点クリックで範囲指定)" style="margin-left:-3px;border-top-left-radius:0;border-bottom-left-radius:0">${opt(Object.keys(MAT).map(k=>[k,MAT[k].n]),matSel)}</select>`;
   $('#tb').innerHTML=tools.map(([k,l])=>k==='rect'?`<span style="display:inline-flex;align-items:stretch;white-space:nowrap"><button data-tool="${k}" style="border-top-right-radius:0;border-bottom-right-radius:0">${l}</button>${matSelHtml}</span>`:`<button data-tool="${k}"${k==='sel'?' class="on"':''}>${l}</button>`).join('')+
-   `<label style="font-size:12px"><input type="checkbox" id="tSnap" checked> スナップ</label>
+   `<button id="tClear" class="dng" title="シート上の全ての図形と詳細を消去(元に戻すで復元できます)">🗑 全て消去</button>
+    <label style="font-size:12px"><input type="checkbox" id="tSnap" checked> スナップ</label>
     <span class="sp"></span>
     <button id="tZout">－</button><button id="tZin">＋</button><button id="tFit">全体表示</button><button id="tShowR" class="on" title="右のプロパティ欄の表示/非表示">プロパティ</button>`;
   $('#tb').addEventListener('click',ev=>{const b=ev.target.closest('[data-tool]');if(b)setTool(b.dataset.tool);});
@@ -3264,6 +3264,7 @@ $('#props').addEventListener('click',ev=>{
   $("#tZout").onclick=()=>zoomAt(...c(),1/1.3);
   $("#tZin").onclick=()=>zoomAt(...c(),1.3);
   $('#tFit').onclick=fitSheet;
+  $('#tClear').onclick=()=>{ if(!st.ents.length&&!st.details.length) return; if(confirm('シート上の全ての図形を消去します。よろしいですか?\n(「元に戻す」で復元できます)')){st.ents=[];st.details=[];sel=null;msel.clear();commit();render();if(typeof renderDetailPane==='function')renderDetailPane();} };
   $('#tShowR').onclick=()=>setRight(!document.body.classList.contains('noright'));
 })();
 
