@@ -2858,7 +2858,15 @@ const PROMPT_EX=['防火戸 90度開き','コーナーガード 目透し','浴�
 /* ───────── 音声入力(Web Speech API) ───────── */
 let SRec=window.SpeechRecognition||window.webkitSpeechRecognition;
 let srec=null,srecOn=false,srecBase='';
-const VOICE_GO=/[、。\s]*(作図して(?:ください)?|作図|描いて(?:ください)?|書いて(?:ください)?)[。\s]*$/;
+/* 作図の合図:iPad(Safari)は「さくずして」「作図 して」「作図をして」等の表記揺れで返すため広く受ける。
+   「以上」は寸法(300以上)と紛らわしいので使わない */
+const VOICE_GO=(()=>{
+  const sp=w=>w.split('').map(c=>c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s*');
+  const head=['作図','さくず','サクズ','作ず','作頭','錯図','策図','作成','図面化'].map(sp).join('|');
+  const tail=['してください','して下さい','してくれ','して','しで','します','する','しよう'].map(sp).join('|');
+  const solo=['描いてください','書いてください','かいてください','描いて','書いて','かいて','描画して','完了','実行','決定','オッケー','OK'].map(sp).join('|');
+  return new RegExp('[、。,\\s]*(?:(?:'+head+')\\s*(?:を\\s*)?(?:'+tail+')?|(?:'+solo+'))[。.!！\\s]*$','i');
+})();
 function setPromptText(t){promptText=t;const ta=$('#pText');if(ta)ta.value=t;drawPrompt();}
 function micUI(msg){
   const b=$('#micBtn'),m=$('#micSt');if(!b)return;
@@ -2888,6 +2896,7 @@ function voiceStopUI(msg){ srecWant=false; srecOn=false; clearTimeout(srecKill);
 function voiceStart(){
   srec=new SRec(); srec.lang='ja-JP'; srec.interimResults=true; srec.continuous=!IS_IOS; srecSess='';
   srec.onresult=e=>{
+    if(!srecWant) return;                                                /* 合図で作図した後に届く結果は無視(二重配置防止) */
     srecSess=voiceText(e.results);
     const full=(srecBase+srecSess).replace(/^、+/,'');
     if(VOICE_GO.test(full)){
@@ -2899,12 +2908,19 @@ function voiceStart(){
       return;
     }
     voiceShow(full,false);
+    const m=$('#micSt'); if(m){ const tail=full.slice(-18); m.textContent='聞き取り中…「'+tail+'」 話し終えたら「作図して」'; }
   };
   srec.onerror=e=>{
     if(e.error==='no-speech'&&srecWant&&IS_IOS) return;                  /* iOS:無音は再開で続行 */
     voiceStopUI(e.error==='not-allowed'||e.error==='service-not-allowed'?'マイクの使用が許可されていません(設定でSafariのマイクを許可してください)':e.error==='no-speech'?'音声が聞き取れませんでした':e.error==='aborted'?'':'音声入力エラー: '+e.error);
   };
   srec.onend=()=>{
+    const fullE=(srecBase+srecSess).replace(/^、+/,'');
+    if(srecWant&&VOICE_GO.test(fullE)){                                   /* 区切りの瞬間に届いた合図も拾う */
+      const t=fullE.replace(VOICE_GO,'').replace(/、+$/,''); srecBase=t; srecSess=''; voiceShow(t,true); voiceStopUI();
+      const r=parsePrompt(promptText); if(r.ok){const b=$('[data-act="pplace"]');if(b)b.click();}else micUI('部位が読み取れませんでした。言い直してください');
+      return;
+    }
     if(srecSess){ srecBase=(srecBase+srecSess).replace(/^、+/,'')+'、'; srecSess=''; }
     if(srecWant&&srecRestarts<30){ srecRestarts++; setTimeout(()=>{ if(!srecWant) return; try{voiceStart();}catch(_){voiceStopUI('音声入力を再開できませんでした');} },250); return; }
     voiceShow(srecBase.replace(/、+$/,''),true); voiceStopUI();
