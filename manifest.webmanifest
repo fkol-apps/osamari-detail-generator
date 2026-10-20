@@ -1,6 +1,6 @@
 {
-  "name": "ADG 建築詳細ジェネレーター",
-  "short_name": "ADG",
+  "name": "DeMaker 建築詳細ジェネレーター",
+  "short_name": "DeMaker",
   "description": "床・壁・天井の取り合い詳細を提案・作図し、PDF/DXFで出力",
   "start_url": "./",
   "display": "standalone",
