@@ -3028,7 +3028,8 @@ function renderProposePane(){
   p.innerHTML=`
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">✎ 言葉で作図</h3><button id="micBtn" data-act="mic" style="flex:none;margin-left:auto">🎤 音声入力</button></div>
   <div id="micSt" class="mut" style="font-size:11.5px;text-align:right;margin:2px 0 4px">話し終えたら「作図して」で作図します</div>
-  <textarea id="pText" rows="3" placeholder="例)防火戸 90度開き / 壁床の取り合い、床はRC下地に石貼り、壁はt12.5ボード2枚貼り" style="width:100%;font:inherit;padding:6px;border:1px solid var(--bd);border-radius:6px;resize:vertical">${esc(promptText)}</textarea>
+  <div style="position:relative"><textarea id="pText" rows="3" placeholder="例)防火戸 90度開き / 壁床の取り合い、床はRC下地に石貼り、壁はt12.5ボード2枚貼り" style="width:100%;font:inherit;padding:6px 34px 6px 6px;border:1px solid var(--bd);border-radius:6px;resize:vertical">${esc(promptText)}</textarea>
+  <button id="pClr" data-act="pclr" title="入力を全て消去" aria-label="入力を全て消去" style="position:absolute;top:5px;right:5px;width:26px;height:26px;padding:0;border-radius:50%;font-size:15px;line-height:1;display:${promptText?'block':'none'}">×</button></div>
   <div id="pRes"></div>
   <div id="pSug" class="sug"></div>
   <details class="fold"><summary>📖 用語集(建築工事標準詳細図の用語)</summary>
@@ -3173,6 +3174,7 @@ const VOICE_GO=(()=>{
   return new RegExp('[、。,\\s]*(?:(?:'+head+')\\s*(?:を\\s*)?(?:'+tail+')?|(?:'+solo+'))[。.!！\\s]*$','i');
 })();
 function setPromptText(t){promptText=t;const ta=$('#pText');if(ta)ta.value=t;drawPrompt();}
+function syncClr(){const c=$('#pClr');if(c)c.style.display=promptText?'block':'none';}
 function micUI(msg){
   const b=$('#micBtn'),m=$('#micSt');if(!b)return;
   b.classList.toggle('pri',srecOn);b.textContent=srecOn?'■ 停止':'🎤 音声入力';
@@ -3269,7 +3271,7 @@ function drawSug(){
   if(!h) h='<div class="mut">候補が見つかりません。部位名(床、壁、天井、建具、防水 など)を入れてみてください。</div>';
   box.innerHTML=h;
 }
-function drawPrompt(){
+function drawPrompt(){syncClr();
   clearTimeout(sugTimer); sugTimer=setTimeout(drawSug,120);
   const box=$('#pRes');if(!box)return;
   if(!promptText.trim()){box.innerHTML='<div class="mut">部位・材料・寸法を自由に書いてください。入力に合わせて下に候補が出ます。</div>';return;}
@@ -3421,9 +3423,11 @@ $('#pane-p').addEventListener('change',ev=>{
   drawCards();
 });
 $('#pane-p').addEventListener('input',ev=>{if(ev.target.id==='pText'){promptText=ev.target.value;drawPrompt();}});
+/* 入力欄の×:タップで全文を消去(iPadのキーボードの削除キーは長押しでも一語ずつしか消えないため) */
 $('#pane-p').addEventListener('keydown',ev=>{if(ev.target.id==='pText'&&ev.key==='Enter'&&(ev.ctrlKey||ev.metaKey)){ev.preventDefault();const b=$('[data-act="pplace"]');if(b)b.click();}});
 $('#pane-p').addEventListener('click',ev=>{
   if(ev.target.closest('[data-act="mic"]')){micToggle();return;}
+  if(ev.target.closest('[data-act="pclr"]')){promptText='';const ta=$('#pText');ta.value='';drawPrompt();ta.focus();return;}
   const ex=ev.target.closest('[data-ex]');
   if(ex){promptText=ex.dataset.ex;$('#pText').value=promptText;drawPrompt();return;}
   const sc=ev.target.closest('[data-scat]');
