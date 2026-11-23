@@ -7245,19 +7245,22 @@ const genWaBoardPS=(b,P,k)=>{
    天井取合いは廻り縁(天井面から30下がり・柱面から10出し、下端の小穴にボードを差し込む)、内法は内法材 45×55+見切縁 25×40(見付け35、内法高さHは特記)、
    床取合いは 一般=和室側 畳寄せ 25×105/2・隣室側 見切 36×45(フローリングの端を載せる)、幅木=和室側 27×105・隣室側 36×105(床から40、フローリングを小穴にのみ込む)。
    図は天井・内法・床の3か所を破断でつないで高さを縮める(H の寸法は文字で「H(特記)」)。断面の部材寸法は引出線=ひき立て寸法で、図は柱面〜下地面(22.5)で描く(標準図と同じ)。
-   S<5 は 1/5 で描く(k=S/5)ので、A3 に収まる */
-const genWaWood=(b,P,hb)=>{
+   S<5 は 1/5 で描く(k=S/5)ので、A3 に収まる。
+   ps=1 は 6-44-1(ポリスチレンフォーム床下地材の場合)。上部・内法は同じで、床は 畳 t55+床下地材 t30/40/50+空練りモルタル(畳面〜スラブ115)。
+   壁の下は土台 90×90/2(作図 90×45)をスラブにアンカーボルトで留め、畳寄せ・幅木の下にかい木(作図 15)。隣室はフローリング t12 で床面を畳面より18低く描く(6-44-3 と同じ実測)。
+   隣室側 一般=見切 36×45(上部でフローリングの小口を受け、下は空隙)、幅木=36×105(畳面+40、下端の前にフローリングを5のみ込む) */
+const genWaWood=(b,P,hb,ps)=>{
   const S=b.S,Ss=Math.max(5,S),k=S/Ss,z=signZ(b,k); if(Ss!==S) b.dispS=Ss;
-  const c=22.5,f=45,bt=9.5,w=c+bt,L=260,Hy=270,CH=500,SB=590,yb=-100,
+  const c=22.5,f=45,bt=9.5,w=c+bt,L=260,Hy=270,CH=500,SB=590,yb=ps?-70:-100,pst=[30,40,50].includes(+P.wpst)?+P.wpst:40,ys=-115,mt=60-pst,
         sg=[[yb,140],[215,345],[425,SB]];   /* 床・内法・天井の区間(すき間は破断) */
   /* 柱の見え掛り・下地の面(各区間) */
   sg.forEach(([a,e],i)=>{ [-f,f].forEach(x=>z.l(x,a,x,i===2?CH:e,'thin')); [-c,c].forEach(x=>z.l(x,a,x,i===2?SB-45:e,'thin')); });
   z.l(-f,CH+bt,-f,SB-45,'thin'); z.l(f,CH+bt,f,SB-45,'thin');
   [[140,215],[345,425]].forEach(([a,e])=>{ z.brkH(-f-12,f+12,a); z.brkH(-f-12,f+12,e); });
-  z.brkH(-f-12,f+12,yb);
+  if(!ps) z.brkH(-f-12,f+12,yb);
   /* ボード(区間ごと。床は畳寄せ・幅木の小穴、内法は見切縁の小穴、天井は廻り縁の小穴に差し込む) */
   const bb=hb?33:-8;
-  [[bb,140],[215,Hy+6],[Hy+29,345],[425,CH-22]].forEach(([a,e])=>{ z.r(-w,a,bt,e-a,'pb'); z.r(c,a,bt,e-a,'pb'); });
+  [[bb,140],[215,Hy+6],[Hy+29,345],[425,CH-22]].forEach(([a,e],i)=>{ z.r(-w,a,bt,e-a,'pb'); const a2=i===0&&ps&&!hb?-24:a; z.r(c,a2,bt,e-a2,'pb'); });
   /* ── 天井・上部 ── */
   [-1,1].forEach(d=>z.pg([[d*(f+10),CH-30],[d*w,CH-30],[d*w,CH-22],[d*c,CH-22],[d*c,CH],[d*(f+10),CH]].map(([x,y])=>[x,y]),'woodf'));   /* 廻り縁 */
   z.r(-L,CH,L-f+8,bt,'pb'); z.r(f-8,CH,L-f+8,bt,'pb');                                   /* 天井ボード(廻り縁に載せる) */
@@ -7271,6 +7274,29 @@ const genWaWood=(b,P,hb)=>{
   [-1,1].forEach(d=>z.pg([[d*f,Hy],[d*w,Hy],[d*w,Hy+6],[d*c,Hy+6],[d*c,Hy+29],[d*w,Hy+29],[d*w,Hy+35],[d*f,Hy+35]],'woodf'));   /* 見切縁 25×40 */
   z.r(-c,Hy-10,2*c,55,'wood');                                                            /* 内法材 45×55 */
   /* ── 床 ── */
+  if(ps){
+    const yp=ys+mt;
+    z.r(-L,-55,L-f,55,'finish'); z.r(-L,yp,L-f,pst,'ins'); z.r(-L,ys,L-f,mt,'mortar');   /* 畳・ポリスチレンフォーム床下地材・空練りモルタル */
+    z.r(-f,ys,2*f,45,'wood');                                                             /* 土台 90×90/2 */
+    z.r(-L,ys-60,2*L,60,'rc'); z.brkH(-L,L,ys-60); z.brkV(-L,ys-65,2); z.brkV(L,ys-65,2);
+    [-4,4].forEach(x=>z.l(x,ys-45,x,-62,'dash')); z.r(-12,-70,24,3,'air'); z.r(-7,-67,14,8,'air');   /* アンカーボルト・座金・ナット */
+    z.r(-f,-70,c,15,'air');                                                               /* かい木(和室側) */
+    if(!hb){
+      z.pg([[-f,-55],[-c,-55],[-c,-8],[-w,-8],[-w,0],[-f,0]],'woodf');                    /* 畳寄せ 25×105/2 */
+      z.pg([[w,-18],[f,-18],[f,-30],[62,-30],[62,-54],[w,-54]],'woodf');                 /* 見切 36×45 */
+      z.r(w,-70,f-w,16,'air');                                                            /* かい木(隣室側) */
+      z.r(f,-30,L-f,12,'woodf'); z.r(62,yp,L-62,-30-yp,'ins'); z.r(f,yp,62-f,-54-yp,'air');   /* フローリング・床下地材・見切の下の空隙 */
+      z.r(-c,-35,2*c,55,'wood');                                                          /* 横材 */
+    }else{
+      z.pg([[-f,-55],[-c,-55],[-c,33],[-w,33],[-w,40],[-f,40]],'woodf');                  /* 幅木 27×105 */
+      z.pg([[c,-55],[f,-55],[f,-30],[f-5,-30],[f-5,-18],[f,-18],[f,40],[w,40],[w,33],[c,33]],'woodf');   /* 幅木 36×105 */
+      z.r(c,-70,c,15,'air');
+      z.r(f-5,-30,L-f+5,12,'woodf'); z.r(f,yp,L-f,-30-yp,'ins');
+      z.r(-c,15,2*c,55,'wood');
+      z.dim(-f,0,-f,40,6,'40');   /* 40 は畳面から(隣室側は床面が18低いので寸法を入れない) */
+    }
+    z.r(f,ys,L-f,mt,'mortar');
+  }else{
   z.r(-L,-55,L-f,55,'finish'); z.r(-L,-67,L-c,12,'ply');                                  /* 畳 t55・畳下床板 */
   if(!hb){
     z.pg([[-f,-52.5],[-c,-52.5],[-c,-8],[-w,-8],[-w,0],[-f,0]],'woodf');                 /* 畳寄せ 25×105/2 */
@@ -7285,6 +7311,7 @@ const genWaWood=(b,P,hb)=>{
     z.dim(-f,0,-f,40,6,'40'); z.dim(f,0,f,40,-6,'40');
   }
   z.brkV(-L,-75,8); z.brkV(L,-20,8);
+  }
   /* 寸法 */
   z.dim(-f-10,CH-30,-f-10,CH,6,'30'); z.dim(f,CH-30,f+10,CH-30,-5,'10');
   z.dim(f,Hy,f,Hy+35,-6,'35');
@@ -7295,13 +7322,16 @@ const genWaWood=(b,P,hb)=>{
   nq(f+3,CH-12,'廻り縁(天井面から30下がり・柱面から10出し)');
   nq(15,330,'間柱 45×40-@300(柱 90×90 は見え掛り)'); nq(27,320,'ボード(例 t9.5)+仕上(特記)');
   nq(42,Hy+17,'見切縁 25×40(見付け35)');
-  if(!hb){ nq(38,-3,'見切 36×45'); nq(200,-7,'フローリング(種別・厚さ・床組は特記)'); }
+  if(ps){ if(!hb) nq(34,-19,'見切 36×45'); else nq(28.5,15,'幅木 36×105'); nq(60,-21,'フローリング t12(種別は特記)・床面は畳面より18低い(例)'); nq(4,ys-40,'土台 90×90/2・アンカーボルト(径・間隔は特記)'); }
+  else if(!hb){ nq(38,-3,'見切 36×45'); nq(200,-7,'フローリング(種別・厚さ・床組は特記)'); }
   else { nq(28.5,15,'幅木 36×105'); nq(200,-7,'フローリング(種別・厚さ・床組は特記)'); }
   nq(-150,CH+bt+40,'天井 野縁・野縁受+ボード(天井下地は特記)',{side:'L'});
   nq(-12,Hy+33,'内法材 45×55',{side:'L'});
   if(!hb){ nq(-10,-10,'横材',{side:'L'}); nq(-40,-20,'畳寄せ 25×105/2',{side:'L'}); }
   else { nq(-10,50,'横材',{side:'L'}); nq(-38,10,'幅木 27×105(畳面から40)',{side:'L'}); }
-  nq(-150,-30,'畳 t55',{side:'L'}); nq(-200,-61,'畳下床板 合板 t12',{side:'L'});
+  nq(-150,-30,'畳 t55',{side:'L'});
+  if(ps){ nq(-200,-55-pst/2,'ポリスチレンフォーム床下地材 t'+pst+'(製造所の仕様)',{side:'L'}); nq(-230,ys+mt/2,'空練りモルタル',{side:'L'}); }
+  else nq(-200,-61,'畳下床板 合板 t12',{side:'L'});
   stackN(z,NQ,Ss,y=>y<0?(hb?40:0)+3.5*Ss:-1e9);
 };
 /* 注記の段を下から積んで固定する(指す点の y の高い順に並べ、ty=max(点+7Ss, 下限, 下の段+5.6Ss))。下向きの引出線を出さない */
@@ -7347,7 +7377,7 @@ const genWaWoodT=(b,P,rc)=>{
   stackN(b,NQ,b.S,()=>-1e9);
 };
 GEN.wa_wall=(b,P)=>{
-  const v=+P.wwv||0; if(v===13||v===14) return genWaWood(b,P,v===14); if(v===15||v===16) return genWaWoodT(b,P,v===16); if(v>=11) return genWaBoardPS(b,P,v-11); if(v===4) return genWaWallT(b,P); if(v>=8) return genWaFloor2(b,P,v-8); if(v>=5) return genWaBoard(b,P,v-5); if(v>=2) return genWaWallFloor(b,P,v===3);
+  const v=+P.wwv||0; if(v===13||v===14) return genWaWood(b,P,v===14); if(v===17||v===18) return genWaWood(b,P,v===18,1); if(v===15||v===16) return genWaWoodT(b,P,v===16); if(v>=11) return genWaBoardPS(b,P,v-11); if(v===4) return genWaWallT(b,P); if(v>=8) return genWaFloor2(b,P,v-8); if(v>=5) return genWaBoard(b,P,v-5); if(v>=2) return genWaWallFloor(b,P,v===3);
   const lgs=v===1,yb=-150,yT=190,t0=5,t1=30;
   let to=12.5,xW;
   if(!lgs){
@@ -16935,8 +16965,104 @@ GEN.fcu_cover=(b,P)=>{
    仕上げ板の裏の破線(標準図どおり)。W1(ハイカウンターの先端〜ローカウンターの先端)は補助線を出す部材がないので寸法にしない(W2で示す)。
    cnk=1 -2 コーナーカウンターの断面。軽量鉄骨壁(指定仕上材)に堅木集成材 t=(40)・奥行(450)・FL+(700)を突き付け(上下の取合いはパテ処理)、
    支持金物 FB-60×6×600 曲げ加工をボードの裏に立ち下げて、スタッド間の補強金物 C-60×30×10×2.3 に留める */
+/* 木製カウンター 8-11 の立面・立図・平面(標準図 1/20。用紙の縮尺の4倍以上で、幅が紙面205mm以内になる縮尺で描く)。
+   v=1:-1 立面(事務室側と待合側を中心線で振り分けた姿)/-2 立図、v=2:-2 平面。
+   -1 立面: x=0 が事務室側の端部、FL y=0。端部側板(ハイカウンターと同材、作図40)・ハイカウンター(30)・ローカウンター(30、上端 H-300)・
+   側板(t=35、端部から L=@1,200〜2,000)。ローカウンターの下は開放(×の破線)で、奥に壁の仕上げ板(メラミン化粧貼)と幅木が見える。
+   壁の目透しは中心線から455・以後@910(作図上の例)。待合側は仕上げ板 天然木練付+幅木 H=(60)。事務室側は L+35+600 で中心線、待合側は中心線から1,300(標準図も両端の近くで長さを省略している)。
+   -2 立図: x=0 がカウンターの先端(半円)、右の壁(入隅の壁、断面)の仕上げ面 x=Lc。支持金物 FB-60×6×600 曲げ加工は Lc/2±300(平面の(600))。
+   支持金物の立下り部・スタッド・補強金物 C-60×30×10×2.3(2段、断面と同じ高さ)は壁の中なので破線。幅木(60)は奥の壁。
+   -2 平面: 奥の壁の仕上げ面 y=0、カウンターは -y 側へ奥行(450)、先端の角(R20)。支持金物は壁の中から 300 出す(断面の水平部の長さ) */
+const cntViews=(b,P,k1,v)=>{
+  const S=b.S,fm=x=>String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  const H=k1?Math.max(600,Math.min(1200,+P.cnh||700)):Math.max(700,Math.min(1200,+P.cnh||1000));
+  const L=Math.max(1200,Math.min(2000,+P.cnl||1500)),Lc=Math.max(900,Math.min(2400,+P.cnc||1200));
+  const e=40,tp=35,B2=600,xs=e+L,xc=xs+tp+B2,xR=xc+1300,Wm=k1?Lc+300:xR;
+  const Ss=[10,20,30,50].find(q=>q>=4*S&&Wm/q<=205)||50,k=S/Ss,z=signZ(b,k);
+  b.dispS=Ss; z.tx=(x,y,s,h,al)=>b.tx(x*k-(al==='r'?tw(s,(h||2.5)*S):0),y*k,s,h||2.5,al==='c'?'c':'l');
+  const fx=o=>Object.assign(b.e[b.e.length-1],{fixed:true,...(o||{})});
+  const box=(x0,y0,x1,y1,m)=>[[x0,y0,x1,y0],[x1,y0,x1,y1],[x1,y1,x0,y1],[x0,y1,x0,y0]].forEach(q=>z.l(...q,m||'out'));
+  const arc=(cx,cy,r,a0,a1,m)=>{ let p=null; for(let i=0;i<=10;i++){ const a=(a0+(a1-a0)*i/10)*Math.PI/180,q=[cx+r*Math.cos(a),cy+r*Math.sin(a)]; if(p) z.l(p[0],p[1],q[0],q[1],m||'out'); p=q; } };
+  if(!k1){
+    const hl=H-300,h=hl-30,mT=H+12*Ss,nR=(x,y,t)=>z.note(x,y,t,{minTy:mT}),nL=(x,y,t)=>z.note(x,y,t,{side:'L',minTy:mT});
+    z.l(-150,0,xR+150,0,'out');                                                     /* FL */
+    box(0,H-30,xR,H); box(0,0,e,H-30); box(xR-e,0,xR,H-30);                        /* ハイカウンター・端部側板(同材) */
+    box(e,h,xc,hl);                                                                 /* ローカウンター(事務室側) */
+    box(xs,0,xs+tp,h);                                                              /* 側板 t=35 */
+    /* ローカウンターの下は開放(×の破線)。2つ目の区画は中心線で切る */
+    z.l(e,0,xs,h,'dash'); z.l(e,h,xs,0,'dash');
+    const x0=xs+tp,f=(xc-x0)/L; z.l(x0,h,xc,h*(1-f),'dash'); z.l(x0,0,xc,h*f,'dash');
+    /* 壁の仕上げ板の目透し・幅木 */
+    [[e,xs],[xs+tp,xc],[xc,xR-e]].forEach(([a,c])=>z.l(a,60,c,60,'out'));
+    for(let x=xc-455;x>e+60;x-=910){ if(x>xs-60&&x<xs+tp+60) continue; z.l(x,60,x,h,'out'); z.l(x,hl,x,H-30,'out'); }
+    for(let x=xc+455;x<xR-e-60;x+=910) z.l(x,60,x,H-30,'out');
+    z.l(xc,-60,xc,H+80,'center');
+    z.tx(xc-40,-20*Ss,'(事務室側)←',3,'r'); z.tx(xc+40,-20*Ss,'→(待合側)',3,'l');
+    /* 寸法 */
+    z.dim(0,0,0,hl,10,'('+fm(hl)+')'); fx(); z.dim(0,hl,0,H,10,'(300)'); fx(); z.dim(0,0,0,H,18,'('+fm(H)+')'); fx();
+    z.dim(xR-e,0,xR-e,60,8,'(60)'); fx();   /* 全体の高さは左だけ(右の端部側板の注記の引出線と重ねない) */
+    z.dim(e,0,xs,0,-10,'L=('+fm(L)+')'); fx(); z.dim(xs,0,xs+tp,0,-10,'(35)'); fx({tsh:6*S});
+    /* 注記(右の列は低い点ほど右、左の列は低い点ほど左) */
+    nR(300,H-15,'ハイカウンター 堅木集成材');
+    nR(xc-655,H-100,'仕上げ板 メラミン化粧貼');
+    nR(xs+200,hl-15,'ローカウンター メラミンポストフォーム');
+    nR(xc+200,Math.min(hl-160,350),'仕上げ板 天然木練付');
+    nR(xc+455,Math.min(hl-220,300),'目透し');
+    nR(xc+800,30,'幅木 堅木');
+    nL(xs+17,hl-100,'側板 メラミン化粧合板貼(t=35 フラッシュ)・見付 堅木(35×10)');
+    nR(xR-20,15,'端部側板 ハイカウンターと同材');
+    z.tx(0,-30*Ss,'注 仕上げ板は普通合板 t=5.5又はケイ酸カルシウム板 t=6の上(断面と同じ)。側板間寸法 L・W1・W2・樹種・木部の塗装は特記。目透しの割付けは例',2.5,'l');
+    return;
+  }
+  const t=40,yb=H-t,xb=[Lc/2-300,Lc/2+300],wt=WT(P),rw=RW(P),W=2*wt+rw;
+  if(v===1){
+    const mT=H+16*Ss,nR=(x,y,s)=>z.note(x,y,s,{minTy:mT});
+    z.l(-150,0,Lc,0,'out'); z.l(-150,60,Lc,60,'thin');                             /* FL・奥の壁の幅木 */
+    /* 右の壁(入隅の壁、断面) */
+    let q=0; WL(P).forEach(l=>{ z.r(Lc+q,0,l.t,H+100,l.m); z.r(Lc+W-q-l.t,0,l.t,H+100,l.m); q+=l.t; });   /* 上は H+100 で破断(注記の引出線を壁に掛けない) */
+    z.l(Lc+wt+1,0,Lc+wt+1,H+100,'thin'); z.l(Lc+wt+rw-1,0,Lc+wt+rw-1,H+100,'thin');
+    z.brkH(Lc-20,Lc+W+20,H+100);
+    /* カウンター 堅木集成材 t=(40)(先端は半円) */
+    arc(t/2,H-t/2,t/2,90,270); z.l(t/2,H,Lc,H,'out'); z.l(t/2,yb,Lc,yb,'out');
+    /* 支持金物(水平部・立下り部)・スタッド・補強金物(壁の中、破線) */
+    xb.forEach(x=>{ box(x-30,yb-6,x+30,yb,'dash'); box(x-30,yb-300,x+30,yb-6,'dash'); z.l(x-22.5,0,x-22.5,yb-6,'dash'); z.l(x+22.5,0,x+22.5,yb-6,'dash'); });
+    [yb-46,yb-286].forEach(y=>box(xb[0]+22.5,y,xb[1]-22.5,y+30,'dash'));
+    z.tx(-140,75,'▽FL');
+    z.dim(0,H,Lc,H,10,'('+fm(Lc)+')'); fx();
+    z.dim(0,yb,0,H,8,'('+t+')'); z.dim(0,0,0,H,16,'('+fm(H)+')'); fx();
+    nR(150,H-5,'堅木集成材');
+    nR(Lc/2,yb-31,'補強金物 C-60×30×10×2.3 L=(500)');
+    nR(xb[1],yb-200,'支持金物 FB-60×6×600 曲げ加工');
+    nR(Lc+wt/2,100,pbTxt(P)+' 軽量鉄骨壁');
+    z.tx(-150,-14*Ss,'注 カウンターの長さ・樹種・木部の塗装・指定仕上材は特記',2.5,'l');
+    return;
+  }
+  const D=450,Dw=D+350,mT=W+18*Ss,nR=(x,y,s)=>z.note(x,y,s,{minTy:mT});
+  /* 壁(奥の壁と右の壁の入隅、断面) */
+  let q=0; WL(P).forEach(l=>{
+    z.r(-300,q,Lc+q+l.t+300,l.t,l.m); z.r(Lc+q,-Dw,l.t,Dw+q,l.m);                    /* 室内側 */
+    z.r(-300,W-q-l.t,Lc+W-q+300,l.t,l.m); z.r(Lc+W-q-l.t,-Dw,l.t,Dw+W-q-l.t,l.m);    /* 反対側 */
+    q+=l.t; });
+  const cB=x=>{ const y0=wt+1,y1=wt+rw-1; [[x+22.5,y0+10,x+22.5,y0],[x+22.5,y0,x-22.5,y0],[x-22.5,y0,x-22.5,y1],[x-22.5,y1,x+22.5,y1],[x+22.5,y1,x+22.5,y1-10]].forEach(p=>z.l(...p,'thin')); };
+  const cR=y=>{ const x0=Lc+wt+1,x1=Lc+wt+rw-1; [[x0+10,y-22.5,x0,y-22.5],[x0,y-22.5,x0,y+22.5],[x0,y+22.5,x1,y+22.5],[x1,y+22.5,x1,y-22.5],[x1,y-22.5,x1-10,y-22.5]].forEach(p=>z.l(...p,'thin')); };
+  xb.forEach(cB); if(xb[0]-455>-250) cB(xb[0]-455); [-150,-605].forEach(cR);           /* スタッド */
+  box(xb[0]+22.5,wt+6,xb[1]-22.5,wt+66,'dash');                                       /* 補強金物 C-60×30×10×2.3(壁の中) */
+  xb.forEach(x=>box(x-30,-300,x+30,wt+6,'dash'));                                    /* 支持金物 FB-60×6×600(カウンターの下) */
+  /* カウンター 堅木集成材(奥行(450)、先端の角 R20) */
+  z.l(0,0,0,-D+20,'out'); arc(20,-D+20,20,180,270); z.l(20,-D,Lc,-D,'out');
+  z.brkV(-300,-20,W+20); z.brkH(Lc-20,Lc+W+20,-Dw);
+  z.dim(xb[0],wt+6,xb[1],wt+6,10,'(600)'); fx();
+  z.dim((xb[1]+30+Lc)/2,-D,(xb[1]+30+Lc)/2,0,0,'(450)'); fx({tsh:-150*k});   /* 支持金物と右の壁の間。寸法値は支持金物の先端より下へ */
+  z.dim(0,-D,Lc,-D,-10,'('+fm(Lc)+')'); fx();
+  nR(-150,W-1,pbTxt(P)+' 軽量鉄骨壁');
+  nR(Lc/2-150,wt+36,'補強金物 C-60×30×10×2.3');
+  nR(Lc/2+40,-60,'堅木集成材');
+  nR(xb[1],-150,'支持金物 FB-60×6×600 曲げ加工');
+  z.note(6,-D+6,'(R20)',{side:'L'});
+  z.tx(0,-D-22*Ss,'注 支持金物の間隔(600)・スタッドの位置は例。カウンターの長さ・樹種・木部の塗装は特記',2.5,'l');
+};
 GEN.counter=(b,P)=>{
-  const k=+P.cnk===1?1:0,S=b.S;
+  const k=+P.cnk===1?1:0,S=b.S,cv=Math.max(0,Math.min(2,Math.round(+P.cnv||0))); if(cv) return cntViews(b,P,k,k?cv:1);
   const bar=(x0,x1,y0,t,rl,rr,m)=>{ const r=t/2,p=[],n=8;                       /* 板(端部を半円で丸める) */
     if(rl){ for(let i=0;i<=n;i++){const a=Math.PI/2+Math.PI*i/n;p.push([x0+r+r*Math.cos(a),y0+r+r*Math.sin(a)]);} } else p.push([x0,y0+t],[x0,y0]);
     if(rr){ for(let i=0;i<=n;i++){const a=-Math.PI/2+Math.PI*i/n;p.push([x1-r+r*Math.cos(a),y0+r+r*Math.sin(a)]);} } else p.push([x1,y0],[x1,y0+t]);
@@ -17030,6 +17156,201 @@ GEN.counter=(b,P)=>{
    skv=1 -4(棚を設ける場合):1.0FK t=12 をステンレス SUS304 t=(0.6)で包んだ棚(RC面から(185)、先端は(40)立ち下げ)を、
    支持金物 PL-3.2×50@600(立下り150、ねじは上下20・間110)で受ける。棚の奥は壁側へ立ち上げてプラグ留め。y=0 は棚の上面。
    どちらも水切り・棚の上で、ボードの下端(仕上げ面)にシーリング材。流し台の裏の壁は仕上げなし(6-11 仕様4)) */
+/* 湯沸室 フード・吊戸棚(6-11-2・-5、フード詳細 1/10・断面 1/20)・器具配置(6-11-1 展開・平面 1/20):khv 図(0=フード 1/10・1=フード 断面 1/20・2=吊戸棚 断面 1/20・3=器具配置 展開 1/20・4=器具配置 平面 1/20)、khl 流し台の長さ(0=作図1,800)。
+   khw ダクト接続用開口 W(特記、作図200)・khh こんろ上面〜フード下端(800以上1,000以下、0=作図900)・khc 天井高(0=作図2,250・2,250以上)・khd ダクトの接続(0=上部 W×L・1=横引き W×H)。
+   フード 1/10:RC壁の表面 x=0(壁は左)、y=0 はフードの下端。フードはステンレス SUS430 t=1.0。奥行600(壁の仕上げ面〜前面板の外面)。
+     壁側は上下の L-30×30×3 をあと施工アンカー@600 で壁に留め、前面板(天井まで立ち上げ)は上端の L-30×30×3 をつりボルトで吊り、内側を FB-3.0×30@300 で補強、下端の隅に L-30×30×3。
+     下端は高さ50の縁で、その下20が油受け(前面側の幅50)、油抜きはステンレス製又は黄銅製のコック付。上部はダクト接続口(高さ100、上下に L-30×30×3)。
+     フードの上端は天井面(図のとおり)。フードの本体の高さ400・傾斜の始まり(壁から373)・背板の傾き(48→31)は図からの読み取りで、寸法は製造所の仕様(作図上の例)。
+   フード 断面 1/20:壁の仕上げ面 x=0、y=0 は FL。こんろ台(既製品)の上端(640)、こんろ(別途)の上面からフードの下端まで800以上1,000以下、フードの奥行600、前面板は天井まで。
+     流し上部水切り(6-11-3)は流し台の上端+130(図から読み取り)。横引きダクトの場合は背面に W×H の接続口(破線)。
+   吊戸棚 断面 1/20:吊戸棚(既製品)は奥行(350)・下端 FL+(1,600)・高さ(500、展開図の寸法)。上端と天井の間は前面に板 t=20(EP-G 又は SOP)+下地 40×45。
+     壁の中の棚受け木 35×50 は天井際・吊戸棚の中間・下端の3か所(位置は図から読み取り、作図上の例)。水切棚(既製品)は吊戸棚の下(250)、流し台(既製品)の上端(800)、天井高(2,250以上) */
+GEN.kitchen_hood=(b,P)=>{
+  const S=b.S,v=Math.max(0,Math.min(4,Math.round(+P.khv||0))),fm=x=>String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  const W=Math.max(150,Math.min(400,+P.khw||200)),hh=+P.khh?Math.max(800,Math.min(1000,+P.khh)):900,CH=+P.khc?Math.max(2250,Math.min(3000,+P.khc)):2250,side=+P.khd===1;
+  const Ss=v===0?10:20,k=S/Ss,z=signZ(b,k);
+  b.dispS=Ss; z.tx=(x,y,s,h,al)=>b.tx(x*k-(al==='r'?tw(s,(h||2.5)*S):0),y*k,s,h||2.5,al==='c'?'c':'l');
+  const fx=o=>Object.assign(b.e[b.e.length-1],{fixed:true,...(o||{})});
+  const pl=(pts,m)=>pts.reduce((p,c)=>{ z.l(p[0],p[1],c[0],c[1],m||'out'); return c; });
+  const box=(x0,y0,x1,y1,m)=>pl([[x0,y0],[x1,y0],[x1,y1],[x0,y1],[x0,y0]],m);
+  const band=(pts,t,m)=>{ const n=pts.length,L=[],R=[];                         /* 曲げ板:中心線の両側へ t/2 */
+    const nrm=(a,c)=>{const dx=c[0]-a[0],dy=c[1]-a[1],l=Math.hypot(dx,dy);return [-dy/l,dx/l];};
+    for(let i=0;i<n;i++){ let q;
+      if(i===0) q=nrm(pts[0],pts[1]); else if(i===n-1) q=nrm(pts[n-2],pts[n-1]);
+      else { const a=nrm(pts[i-1],pts[i]),c=nrm(pts[i],pts[i+1]),d=1+a[0]*c[0]+a[1]*c[1]; q=[(a[0]+c[0])/d,(a[1]+c[1])/d]; }
+      L.push([pts[i][0]+q[0]*t/2,pts[i][1]+q[1]*t/2]); R.push([pts[i][0]-q[0]*t/2,pts[i][1]-q[1]*t/2]); }
+    z.pg(L.concat(R.reverse()),m); };
+  const ang=(x,y,sx,sy)=>{ z.r(sx>0?x:x-30,sy>0?y:y-3,30,3,'steel'); z.r(sx>0?x:x-3,sy>0?y:y-30,3,30,'steel'); };   /* L-30×30×3:隅(x,y)から sx・sy の向きへ脚 */
+  const anchor=yc=>{ [yc-4,yc+4].forEach(y=>z.l(-45,y,0,y,'dash')); z.l(-45,yc-4,-45,yc+4,'dash'); z.l(0,yc,9,yc,'thin'); z.r(3,yc-6,5,12,'steel'); };
+  if(v===0){
+    const D=600,yT=400,yc=yT,xa=100,xs=373;
+    z.r(-90,-160,90,yc+260,'rc'); z.brkV(-90,-165,yc+105);
+    z.r(0,-160,12,160,'mortar'); z.r(12,-160,12.5,160,'pb'); z.r(24.5,-160,2,160,'finish'); z.brkH(-90,40,-160);   /* フードの下の壁:直張り+指定仕上材 */
+    /* 天井(フードの上端の高さ)と天井下地・つりボルト */
+    z.r(D,yc,300,9.5,'pb'); box(D+12,yc+9.5,D+62,yc+34.5,'out'); z.l(D-40,yc+34.5,D+300,yc+34.5,'thin'); z.l(D-40,yc+72.5,D+300,yc+72.5,'thin');
+    z.brkV(D+300,yc-5,yc+80);
+    z.l(D-19,yc,D-19,yc+250,'out'); z.l(D-11,yc,D-11,yc+250,'out'); z.r(D-24,yc-8,18,8,'steel'); z.brkH(D-40,D+10,yc+250);
+    ang(D-1,yc+3,-1,-1);                                                           /* 前面板の上端 L-30×30×3 */
+    z.r(D-1,0,1,yc+3,'steel');                                                     /* 前面板 SUS430 t=1.0(天井まで) */
+    z.r(D-4,40,3,yc-80,'steel');                                                   /* FB-3.0×30@300 */
+    ang(D-1,0,-1,1);                                                               /* 前面の下端の隅 L-30×30×3 */
+    /* 本体:上板・背板・傾斜板と下端の縁(高さ50)・油受け(20) */
+    z.r(3,yT-1,xs-3,1,'steel');
+    band([[48,yT-1],[31,50],[31,.5],[55,.5],[55,20]],1,'steel');
+    band([[xs,yT-1],[D-30,50],[D-30,.5],[D-50,.5],[D-50,20]],1,'steel');
+    z.l(xs,yT,D-1,yT,'thin'); z.l(31,50,D-30,50,'thin'); z.l(55,20,D-50,20,'thin'); z.l(55,0,D-50,0,'thin');   /* 側板の見え掛り(縁の上端・油受けの上端・下端) */
+    ang(3,yT-1,1,-1); anchor(yT-18);                                               /* 壁側の上下 L-30×30×3・あと施工アンカー@600 */
+    ang(3,0,1,1); anchor(15);
+    z.r(75,-16,10,16,'steel'); z.l(85,-8,105,-8,'out');                            /* 油抜き コック */
+    if(!side){
+      [xa,xa+W].forEach((x,i)=>{ const s=i?1:-1,xo=i?x+1:x-1;
+        z.r(i?x:x-1,yT,1,100,'steel'); ang(xo,yT,s,1); ang(xo,yT+100,s,-1);       /* ダクト接続口(高さ100)・上下の L-30×30×3 */
+        z.l(xo+s*18,yT+90,xo+s*18,yT+112,'thin');
+        z.l(xo,yT+103,xo,yT+200,'dash'); z.l(xo,yT+103,xo+s*30,yT+103,'dash'); });  /* ダクト(別途) */
+      z.dim(xa,yT,xa+W,yT,-8,'W×L'); fx();
+      z.dim(xa+W,yT,xa+W,yT+100,10,'100'); fx();
+    }else{
+      box(-80,yT-160,47,yT-20,'dash'); z.tx(-80,yT-185,'W×H',2.5,'l');
+    }
+    z.dim(330,0,330,50,0,'50'); fx(); z.dim(230,0,230,20,0,'20'); fx();
+    z.dim(0,3,30,3,3.5,'30'); fx(); z.dim(D-50,0,D,0,-6,'50'); fx();
+    /* 注記(右の列は低い点ほど右、左の列は低い点ほど左) */
+    if(!side) z.note(xa+W+1,yT+175,'ダクト(別途)');
+    if(!side) z.note(xa+W+18,yT+98.5,'L-30×30×3(ダクト接続口)');
+    z.note(D-15,yc+80,'つりボルト');
+    z.note(D-22,yc+1.5,'L-30×30×3');
+    z.note(D-.5,260,'ステンレス SUS430 t=1.0');
+    z.note(D-2.5,160,'FB-3.0×30 @300');
+    z.note(D-15,1.5,'L-30×30×3');
+    if(side) z.note(-20,yT-90,'横引きダクトの場合 W×H',{side:'L'});
+    z.note(15,yT-2.5,'L-30×30×3 あと施工アンカー @600',{side:'L'});
+    z.note(80,-12,'油抜き(ステンレス製又は黄銅製コック付)',{side:'L'});
+    z.note(25.5,-110,'せっこうボード 直張り・(指定仕上材)',{side:'L'});
+    ['注 フードはステンレス SUS430 t=1.0(表面仕上げ No.2B)、鉄面は錆止め塗料塗り。','   ダクト接続用開口の W・L(横引きは W・H)・油抜きの有無は特記。','   フードの高さ・傾斜の位置は作図上の例(製造所の仕様による)'].forEach((c,i)=>z.tx(-90,-250-i*5.5*Ss,c,2.5,'l'));
+    return;
+  }
+  /* 湯沸室器具配置(6-11-1)展開 1/20・平面 1/20:左の壁 x=0、こんろ台(既製品)幅(600)・ステンレス製流し台(既製品)長さ khl(作図1,800)、奥行(550)。
+     展開:FL y=0、こんろ台(640)・流し台(800)(断面の寸法)、こんろの上面 820+900 にフード(奥行600・天井まで)、排気筒(ダクト)に直結。
+     吊戸棚(既製品)幅(1,200)・高さ(500)・下端 FL+(1,600)は流し台の右端にそろえ、水切棚(250)はその下、手元灯(別途)。吊戸棚のフード側の面は不燃板(1.0FK t=6 EP)を天井から水切棚の下まで。
+     流し上部水切り(6-11-3)は壁の全長(こんろの後ろも)、こんろの横の壁は側面ステンレス SUS304 t=0.6。扉の割り・取手・台輪100は作図上の例 */
+  if(v>=3){
+    const Lk=+P.khl?Math.max(1200,Math.min(2400,+P.khl)):1800,L=600+Lk,cw=Math.min(1200,Lk),xc=L-cw,Hb=640,Hs=800,yk=820;
+    const cc=(x,y,r)=>b.c(x*k,y*k,r*k,'thin');
+    const dshC=(cx,cy,r)=>{ const on=2.5*Ss,off=1.2*Ss,n=Math.max(4,Math.floor(2*Math.PI*r/(on+off))),a=2*Math.PI/n,f=on/(on+off);
+      for(let i=0;i<n;i++){ const m=6; for(let j=0;j<m;j++){ const t0=a*(i+f*j/m),t1=a*(i+f*(j+1)/m); z.l(cx+r*Math.cos(t0),cy+r*Math.sin(t0),cx+r*Math.cos(t1),cy+r*Math.sin(t1),'thin'); } } };
+    const handle=(x,y)=>box(x,y,x+60,y+8,'thin');
+    if(v===3){
+      const yb=yk+900,yc=1600,yt=yc+500,yr=yc-250,n=Math.max(2,Math.round(Lk/450)),w=Lk/n;
+      z.l(0,0,L+150,0,'out'); z.l(0,0,0,CH,'out'); z.l(0,CH,L+150,CH,'out');                   /* FL・左の壁・天井 */
+      box(0,0,600,Hb); z.l(0,100,600,100,'thin'); z.l(0,Hb-20,600,Hb-20,'thin'); z.l(300,100,300,Hb-20,'thin');   /* こんろ台 */
+      handle(200,Hb-80); handle(340,Hb-80);
+      box(30,Hb+15,570,yk,'dash'); [60,110,490,540].forEach(x=>z.l(x,Hb,x,Hb+15,'dash'));       /* こんろ(別途) */
+      z.tx(300,Hb+65,'こんろ(別途)',2.5,'c');
+      box(600,0,L,Hs); z.l(600,100,L,100,'thin'); z.l(600,Hs-40,L,Hs-40,'thin'); z.l(600,Hs-55,L,Hs-55,'thin');   /* 流し台 */
+      for(let i=1;i<n;i++) z.l(600+i*w,100,600+i*w,Hs-55,'thin');
+      for(let i=0;i<n;i++) handle(i%2?600+i*w+30:600+(i+1)*w-90,Hs-110);
+      z.l(L-w,Hs-200,L,Hs-200,'thin');                                                        /* 引出し */
+      box(0,Hs+80,L,Hs+120); z.l(0,Hs+130,L,Hs+130,'thin'); z.l(0,Hs+160,L,Hs+160,'thin'); z.l(L,Hs+120,L,Hs+160,'out');   /* 流し上部水切り・小口ふた */
+      z.l(6,Hb,6,Hs+80,'thin');                                                               /* 側面ステンレス */
+      box(0,yb,600,CH); z.l(0,yb+50,600,yb+50,'thin'); box(555,yb-15,567,yb,'thin');           /* フード・油抜き */
+      [90,510].forEach(x=>z.l(x,CH,x,CH+150,'dash'));                                         /* 排気筒(ダクト) */
+      box(xc,yc,L,yt); for(let i=1;i<3;i++) z.l(xc+i*cw/3,yc,xc+i*cw/3,yt,'thin');           /* 吊戸棚 */
+      cc(xc+cw/3-50,yc+60,12); cc(xc+2*cw/3-50,yc+60,12); cc(xc+2*cw/3+50,yc+60,12);
+      if(CH-yt>=20) box(xc,yt,L,CH);                                                          /* 天井との間の板 t=20 */
+      box(xc-6,yr-10,xc,CH);                                                                  /* 不燃板 */
+      box(xc+5,yr,xc+15,yc,'thin'); box(L-15,yr,L-5,yc,'thin'); box(xc+5,yr,L-5,yr+12);       /* 水切棚 */
+      box(xc+cw*.25,yc-70,xc+cw*.75,yc-30,'dash'); z.tx(xc+cw/2,yc-150,'手元灯(別途)',2.5,'c');
+      z.dim(0,CH,600,CH,10,'(600)'); fx(); z.dim(xc,CH,L,CH,10,'('+fm(cw)+')'); fx();
+      z.dim(L,yc,L,yt,-8,'(500)'); fx(); z.dim(L-5,yr,L-5,yc,-8.25,'(250)'); fx();
+      z.dim(L,0,L,Hs,-8,'(800)'); fx(); z.dim(L,0,L,yc,-16,'(1,600)'); fx();
+      /* 注記:右の列は低い点ほど右、左の列は低い点ほど左 */
+      z.note(510,CH+100,'排気筒(ダクト)に直結');
+      const tf=Math.abs(CH-(yt+200))<60?CH+60:yt+200;                                      /* 段は天井の線と重ねない */
+      z.note(xc-3,yt-50,'不燃板(1.0FK t=6 EP)',{minTy:tf,maxTy:tf});
+      z.note(xc+150,yt-150,'吊戸棚(既製品)',{minTy:yt+75,maxTy:yt+75});
+      z.note(L-60,yr+6,'ステンレス製水切棚(既製品)',{minTy:yc+120,maxTy:yc+120});
+      z.note(L-80,Hs+100,'流し上部水切り(6-11-3)',{minTy:1150,maxTy:1150});
+      z.note(L-150,450,'ステンレス製流し台(既製品)',{minTy:620,maxTy:620});
+      z.note(300,yb+150,'フード',{side:'L'});
+      z.note(6,760,'側面ステンレス SUS304 t=0.6',{side:'L'});
+      z.note(150,300,'こんろ台(既製品)',{side:'L'});
+      z.tx(0,-8*Ss,'注 設計上の標準的な配置・寸法を示す(作図は例)。流し台・こんろ台・吊戸棚・水切棚の形状・寸法・配置は特記。',2.5,'l');
+      z.tx(0,-8*Ss-5.5*Ss,'   流し台・こんろ台を設置する部分の壁面の隠蔽部分は仕上げなし。高さは断面(6-11-2・-5)による',2.5,'l');
+      return;
+    }
+    const D=550,dp=D-82,cx=L-850;
+    z.l(0,-150,0,D,'out'); z.l(0,D,L+150,D,'out'); z.l(-100,D+100,L+150,D+100,'thin'); z.l(-100,-150,-100,D+100,'thin');   /* 壁 */
+    z.brkV(L+150,D-5,D+105); z.brkH(-105,5,-150);
+    z.l(5,0,5,dp,'thin');                                                                     /* 側面ステンレス */
+    box(0,0,L,D); z.l(0,dp,L,dp,'out');                                                       /* こんろ台・流し台・上部水切り */
+    z.l(600,0,600,dp,'out'); z.l(615,0,615,dp,'thin'); z.l(L-15,0,L-15,dp,'thin');
+    box(25,40,565,dp-30,'dash'); dshC(165,240,65); dshC(425,240,65); z.tx(300,95,'こんろ(別途)',2.5,'c');
+    const rr=40,bw=265,yb0=40,yb1=430,arc=(ox,oy,a0)=>{ const p=[]; for(let i=0;i<=6;i++){ const t=a0+Math.PI/2*i/6; p.push([ox+rr*Math.cos(t),oy+rr*Math.sin(t)]); } return p; };
+    pl([...arc(cx+bw-rr,yb0+rr,-Math.PI/2),...arc(cx+bw-rr,yb1-rr,0),...arc(cx-bw+rr,yb1-rr,Math.PI/2),...arc(cx-bw+rr,yb0+rr,Math.PI),[cx+bw-rr,yb0]],'out');   /* シンク */
+    cc(cx,335,32); cc(cx,335,22);                                                              /* トラップ */
+    z.tx(300,-90,'こんろ台(既製品)',2.5,'c'); z.tx(600+Lk/2,-90,'ステンレス製流し台(既製品)',2.5,'c');
+    z.dim(0,0,600,0,-12,'(600)'); fx(); z.dim(600,0,L,0,-12,'('+fm(Lk)+')'); fx();
+    z.dim(L,0,L,D,-8,'(550)'); fx();
+    z.note(600+Lk*.25,dp+40,'上部水切り(6-11-3)、小口ふた付き');
+    z.note(cx+16,320,'トラップ',{minTy:D+50,maxTy:D+50});
+    z.note(5,D-60,'側面ステンレス SUS304 t=0.6',{side:'L'});
+    z.tx(0,-240-9*Ss,'注 設計上の標準的な配置・寸法を示す(作図は例)。流し台・こんろ台の形状・寸法・配置は特記',2.5,'l');
+    return;
+  }
+  const wallL=(y0,y1)=>{ z.r(-140,y0,105,y1-y0,'rc'); z.r(-35,y0,22.5,y1-y0,'mortar'); z.r(-12.5,y0,12.5,y1-y0,'pb'); };
+  const floor=x1=>{ z.r(-140,-150,x1+140,150,'rc'); z.brkV(x1,-155,5); };
+  const ceil=(x0,x1)=>{ z.r(x0,CH,x1-x0,9.5,'pb'); z.l(x0,CH+34.5,x1,CH+34.5,'thin'); z.brkV(x1,CH-5,CH+40); };
+  const drip=y=>pl([[0,y+30],[0,y],[32,y],[82,y-10],[82,y-50],[67,y-50]]);   /* 流し上部水切り(6-11-3) */
+  const base=(Hc,D)=>{ pl([[0,Hc],[D+10,Hc],[D+10,Hc-20],[D-25,Hc-20],[D-25,100],[D-75,100],[D-75,0]]); z.l(0,Hc-20,D-25,Hc-20,'thin'); };
+  if(v===1){
+    const Hb=640,yk=820,yb=yk+hh,hH=Math.max(250,Math.min(400,CH-100-yb)),yT=yb+hH,D=600,xs=373,xa=100;
+    wallL(-150,CH+150); z.brkH(-140,0,CH+150); floor(1000); ceil(D,1000);
+    base(Hb,550); drip(Hb+290);
+    box(40,Hb+10,510,yk,'dash'); [120,190,360,430].forEach(x=>z.l(x,yk,x,yk+15,'dash'));   /* こんろ(別途) */
+    pl([[48,yT],[31,yb+50],[31,yb],[55,yb],[55,yb+20]]); pl([[3,yT],[xs,yT],[D-30,yb+50],[D-30,yb],[D-50,yb],[D-50,yb+20]]);
+    z.l(D,yb,D,CH,'out'); z.l(D-30,yb,D,yb,'out'); z.l(31,yb+50,D-30,yb+50,'thin'); z.l(55,yb,D-50,yb,'thin');
+    z.l(D-15,CH,D-15,CH+150,'out'); z.brkH(D-40,D+10,CH+150);
+    if(!side){ [xa,xa+W].forEach(x=>{ z.l(x,yT,x,yT+100,'out'); z.l(x,yT+100,x,CH+150,'dash'); }); z.dim(xa,yT,xa+W,yT,-6,'W×L'); fx(); }
+    else { box(-140,yT-150,48,yT-20,'dash'); z.tx(-120,yT-125,'W×H',2.5,'l'); }
+    z.dim(0,yb,D,yb,-8,'600'); fx();
+    z.dim(510,yk,510,yb,-9.5,+P.khh?fm(hh):'800以上1,000以下'); fx();
+    z.dim(555,0,555,Hb,-4.5,'('+Hb+')'); fx();
+    if(!side) z.note(xa+W,CH+120,'ダクト(別途)');
+    z.note(D-15,CH+70,'つりボルト');
+    z.note((xs+D-30)/2,(yT+yb+50)/2,'フード ステンレス SUS430 t=1.0');
+    z.note(D,yb+150,'前面板(天井まで)');
+    z.tx(275,Hb+70,'こんろ(別途)',2.5,'c'); z.tx(250,Hb-260,'こんろ台(既製品)',2.5,'c');
+    if(side) z.note(-60,yT-60,'横引きダクトの場合 W×H',{side:'L'});
+    z.note(0,Hb+500,'(指定仕上材)',{side:'L'});
+    z.note(40,Hb+272,'流し上部水切り(6-11-3)',{side:'L'});
+    z.tx(-140,-150-12*Ss,'注 こんろ台・こんろ・フードの形状・寸法は特記(作図は例)。こんろ台を設置する部分の壁の隠蔽部分は仕上げなし',2.5,'l');
+    return;
+  }
+  const Hs=800,yc=1600,hc=500,yt=yc+hc,Dc=350,yr=yc-250;
+  wallL(-150,CH+150); z.brkH(-140,0,CH+150); floor(900); ceil(0,900);
+  [CH-50,yc+150,yc].forEach(y=>z.r(-35,y,35,50,'wood'));                        /* 棚受け木 35×50 */
+  box(0,yc,Dc,yt); box(15,yc+15,Dc-15,yt-15,'thin'); z.l(15,yc+hc/2,Dc-15,yc+hc/2,'thin'); z.l(Dc,yc+25,Dc+6,yc+25,'out'); z.l(Dc+6,yc+25,Dc+6,yc+60,'out');   /* 吊戸棚(既製品) */
+  if(CH-yt>=60){ z.r(Dc-20,yt,20,CH-yt,'wood'); z.r(Dc-60,CH-45,40,45,'wood'); }   /* 板 t=20・下地 40×45 */
+  [40,280].forEach(x=>z.l(x,yr,x,yc,'out')); z.r(25,yr-5,270,5,'steel');          /* 水切棚(既製品) */
+  base(Hs,560); drip(Hs+130);
+  z.dim(0,yc+hc/2,Dc,yc+hc/2,0,'('+Dc+')'); fx({tsh:-40*k});
+  z.dim(295,yr,295,yc,-6.5,'(250)'); fx();
+  z.dim(570,0,570,Hs,-3.5,'(800)'); fx();
+  z.dim(Dc,0,Dc,yc,-18.5,'(1,600)'); fx();
+  z.dim(800,0,800,CH,0,'天井高 ('+fm(CH)+(+P.khc?')':'以上)')); fx();
+  if(CH-yt>=60) z.note(Dc-40,CH-22,'40×45');
+  if(CH-yt>=60) z.note(Dc-10,yt+(CH-yt)*.35,'板 t=20(EP-G又はSOP)');
+  z.note(Dc-15,yt-60,'吊戸棚(既製品)',{minTy:CH+60});
+  z.tx(260,Hs-300,'流し台(既製品)',2.5,'c');
+  z.note(-17,CH-25,'棚受け木 35×50',{side:'L'});
+  z.note(-17,yc+175,'棚受け木 35×50',{side:'L'});
+  z.note(-17,yc+25,'棚受け木 35×50',{side:'L'});
+  z.note(40,yr+60,'ステンレス製水切棚(既製品)',{side:'L'});
+  z.note(0,Hs+330,'(指定仕上材)',{side:'L'});
+  z.note(40,Hs+102,'流し上部水切り(6-11-3)',{side:'L'});
+  z.tx(-140,-150-12*Ss,'注 吊戸棚・水切棚・流し台の形状・寸法・配置は特記(作図は例)。棚受け木の位置は例',2.5,'l');
+};
 GEN.sink_drip=(b,P)=>{
   const k=+P.skv===1?1:0,g=+P.glg||12,xb=g+12.5,xf=xb+3,S=b.S;
   const band=(pts,t,m)=>{ const n=pts.length,L=[],R=[];                         /* 曲げ板:中心線の両側へ t/2 */
@@ -18109,10 +18430,124 @@ GEN.tarap=(b,P)=>{
    奥の壁にブラシ掛け ステンレス製SUS304 フック6φと水栓、露出配管(別途)。捨コンクリート50の下は再生クラッシャラン等(100)、
    寒地は断熱材(25)+凍上抑制層(GLから深さH、特記)。配筋は外側に1段 D13(隅)・D10-@200、グレーチングの枠はアンカー D10-@500。
    用紙(A3・1/5)に収めるため、奥の壁の中間(200〜600)と凍上抑制層を破断して短く描く。水栓の高さは標準図に寸法がないので目安 */
+/* 階段(手すり腰壁のある場合)の断面・最上階部分(7-13-1、1/10):kcv=1 断面(踊場と段・腰壁の内面の見え掛り)、kcv=2 最上階部分(腰壁の断面)。
+   断面:踊場の床仕上げ面 y=0・最上段の段鼻 x=0。段は左へ下がる(踏面 T・蹴上げ R、蹴込み(20)、モルタル 踏面30・蹴込み20、階段滑り止め)。
+         腰壁の天端(H1、特記)・手すり 上段750〜850・下段(600〜650)は段鼻を結ぶ線から測り、段鼻の位置で水平に折れて踊場へ段鼻から450以上延ばす。
+         ブラケット FB-12×25 @900程度(手すりの心から(100)下で壁に留める)。幅木の上端は段鼻の線と平行(高さは例)。注意喚起用床材は段鼻から(300)離して幅(300)。
+   最上階部分:腰壁の左の面 x=0・床仕上げ面 y=0。腰壁 RC(120)の天端は床から(1,200以上)。手すりは階段側で破線(上段 床から850・下段650 は図から実測)、
+         端部は壁際で曲げ下ろし(H2、特記。作図は心から70)。向こう側の段・注意喚起用床材は破線、向こう側の腰壁の天端は見え掛り */
+const ksView=(b,P,v)=>{
+  const S=b.S,k=[1,2].includes(+P.kct)?+P.kct:0,w=Math.max(100,Math.min(200,+P.kcw||120));
+  const T=Math.max(250,Math.min(350,+P.kcT||300)),R=Math.max(140,Math.min(200,+P.kcR||160)),m=R/T,cs=Math.sqrt(1+m*m);
+  const fm=x=>String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  const Ss=[10,20,30,50].find(q=>q>=2*S)||50,kk=S/Ss,z=signZ(b,kk); b.dispS=Ss;
+  z.tx=(x,y,s,h,al)=>b.tx(x*kk,y*kk,s,h||2.5,al||'l');
+  const fx=o=>Object.assign(b.e[b.e.length-1],{fixed:true,...(o||{})});
+  const pl=(pts,q)=>pts.reduce((p,c)=>{ z.l(p[0],p[1],c[0],c[1],q); return c; });
+  const cH=k===0?80:k===1?37:0;                                                      /* 天端の材の高さ(RCの天端から上端まで) */
+  const hu=850,hl=650,dr=35,rr=dr/2;                                                 /* 手すりの上端(図から実測)・集成材35φ */
+  const capTxt=['天端 集成材(120×60 CL)・モルタル詰(20)','天端 SUS304 t=1.5 HL 笠木(25)・シーリング材','天端 コンクリート打放し 面取り15'][k];
+  if(v===1){
+    const H1=+P.kch>0?Math.max(900,Math.min(1500,+P.kch)):1100,n=3,xL=-(n-0.5)*T,xe=450,xR=780,yLc=-30,yLb=-180,tW=150;
+    const yN=i=>-i*R,xN=i=>-i*T;
+    /* 仕上げ面(段鼻→蹴込み(20)→下の踏面)とコンクリートの面(踏面-30・蹴込み面は仕上げ面から20) */
+    const fin=[[xR,0]],con=[[xR,yLc]];
+    for(let i=0;i<n;i++){
+      fin.push([xN(i),yN(i)],[xN(i)+20,yN(i+1)]);
+      const rx=y=>xN(i)+20+20*(yN(i)-y)/R;
+      con.push([rx(yN(i)+yLc),yN(i)+yLc],[rx(yN(i+1)+yLc),yN(i+1)+yLc]);
+    }
+    fin.push([xL,yN(n)]); con.push([xL,yN(n)+yLc]);
+    const [cx0,cy0]=con[2],ys=x=>cy0+m*(x-cx0)-tW*cs,xI=cx0+(yLb-cy0+tW*cs)/m;           /* 段裏(コンクリートの入隅から垂直150) */
+    z.pg([...con,[xL,ys(xL)],[xI,yLb],[xR,yLb]],'rc');
+    z.pg([...fin,...con.slice().reverse()],'mortar');
+    z.pg([[xL,ys(xL)],[xI,yLb],[xR,yLb],[xR,yLb-5],[xI-5*m/cs,yLb-5],[xL,ys(xL)-5*cs]],'finish');   /* 段裏・踊場の下面 (指定仕上材) */
+    for(let i=0;i<n;i++){ const x=xN(i),y=yN(i); z.pg([[x,y],[x+45,y],[x+45,y-3],[x+6,y-3],[x+6.6,y-22],[x+2.8,y-22]],'steel'); }   /* 階段滑り止め */
+    z.r(300,0,300,3,'finish');                                                       /* 注意喚起用床材(段鼻から(300)・幅(300)) */
+    /* 腰壁(内面の見え掛り):天端は段鼻の線から H1、段鼻の位置で水平に折れる */
+    const f=(h,x)=>x<0?h+m*x:h, fl=(h,q)=>pl([[xL,f(h,xL)],[0,h],[xR,h]],q);
+    if(k===2){ fl(H1,'out'); fl(H1-15,'thin'); }
+    else{ fl(H1,'out'); fl(H1-cH+(k===0?20:12),'out'); fl(H1-cH,'out'); }
+    /* 幅木:上端は段鼻の線から50(踊場は高さ120、例) */
+    const xj=(120-50)/m; pl([[xL,50+m*xL],[xj,120],[xR,120]],'out');
+    /* 手すり(集成材35φ):上端が段鼻の線から hu・hl、段鼻から450延ばして端部を丸める */
+    const rail=h=>{
+      const xb=dr*(cs-1)/m;
+      pl([[xL,h+m*xL],[0,h],[xe,h]],'out'); pl([[xL,h+m*xL-dr*cs],[xb,h-dr],[xe,h-dr]],'out');
+      let p=null; for(let j=0;j<=8;j++){ const a=Math.PI/2-Math.PI*j/8,q=[xe+rr*Math.cos(a),h-rr+rr*Math.sin(a)]; if(p) z.l(p[0],p[1],q[0],q[1],'out'); p=q; }
+      [-2*T,250].forEach(x=>{ const yc=x<0?h+m*x-rr*cs:h-rr; z.r(x-12.5,yc-100,25,100-rr*(x<0?cs:1),'air'); });   /* ブラケット FB-12×25(手すりの心から(100)下) */
+    };
+    rail(hu); rail(hl);
+    z.r(xe-170,hu-12,100,12,'air');                                                  /* 点字表示位置 */
+    z.brkV(xL,ys(xL)-40,H1+40); z.brkV(xR,yLb-40,H1+40);
+    /* 寸法 */
+    z.dim(xN(1),yN(1),0,yN(1),(R+130)/Ss,'T'); fx();
+    z.dim(0,yN(1),0,0,(0.45*T)/Ss,'R'); fx();
+    z.dim(0,H1,xe,H1,6,'段鼻から450以上'); fx();
+    z.dim(xe,0,xe,hl,-5,'(600〜650)'); fx();
+    z.dim(xe,0,xe,hu,-10,'750〜850'); fx();
+    z.dim(xe,0,xe,H1,-15,+P.kch>0?'H1='+fm(H1):'H1'); fx();
+    /* 注記:段の側(左下がり)は左の列(低い点ほど左)、踊場の側は右の列(低い点ほど右) */
+    [[-0.5*T,f(H1,-0.5*T)-(k===2?8:cH/2),capTxt],[-1.3*T,f(H1-cH,-1.3*T)-60,'RC手すり腰壁('+w+')(指定仕上材)'],
+      [-2*T-60,f(hu,-2*T-60)-rr*cs,'集成材(35φ CL)'],[-2*T+12.5,f(hl,-2*T)-rr*cs-60,'FB-12×25(EP-G又はSOP)@900程度'],
+      [xN(2)+4,yN(2)-1.5,'階段滑り止め'],[xN(2)+11,yN(2)-90,'蹴込み(20)']].forEach(([x,y,s])=>z.note(x,y,s,{side:'L'}));
+    [[xe-120,hu-6,'点字表示位置'],[300,hl-rr,'(下段手すり)'],[xj+60,110,'幅木(高さは例)'],
+      [440,1.5,'注意喚起用床材',{minTy:150}],[xI+60,yLb-4,'(指定仕上材)']].forEach(([x,y,s,o])=>z.note(x,y,s,o));
+    z.tx(xL,ys(xL)-90-6*Ss,'注 T・R・H1・手すりの径・下段手すりの有無と高さ・点字表示は特記。手すり 750〜850・(600〜650)・H1 は段鼻を結ぶ線から測る。',2.5,'l');
+    z.tx(xL,ys(xL)-90-10*Ss,'   幅木の高さ・ブラケットの位置・段の仕上げ厚は例。集成材の手すりは折れ曲がり部で肌分かれのないように処理する',2.5,'l');
+    return;
+  }
+  /* v===2 最上階部分 */
+  const yT=1200,yW=yT-cH,xL2=-420,xn=w+580,xR2=xn+2*T,H2=70,g=12;
+  if(k===2) z.pg([[xL2,-30],[0,-30],[0,yW-15],[15,yW],[w-15,yW],[w,yW-15],[w,-150],[xL2,-150]],'rc');
+  else z.pg([[xL2,-30],[0,-30],[0,yW],[w,yW],[w,-150],[xL2,-150]],'rc');
+  z.r(xL2,0-30,-xL2,30,'mortar'); z.r(-5,0,5,75,'finish');                          /* 床モルタル・幅木 */
+  z.brkV(xL2,-190,40);
+  if(k===0){
+    z.r(3,yW,w-6,20,'mortar'); z.pg([[0,yW+20],[w,yW+20],[w,yT-10],[w-10,yT],[10,yT],[0,yT-10]],'woodf');
+    [w/2-5,w/2+5].forEach(x=>z.l(x,yW-70,x,yW+45,'dash')); z.l(w/2-5,yW-70,w/2+5,yW-70,'dash');
+  }else if(k===1){
+    const xl=14;
+    z.r(0,yW,10,12,'seal'); z.r(w-10,yW,10,12,'seal');
+    z.pg([[xl,yW],[w-xl,yW],[w-xl,yW+30],[w-xl-2.3,yW+30],[w-xl-2.3,yW+2.3],[xl+2.3,yW+2.3],[xl+2.3,yW+30],[xl,yW+30]],'steel');
+    z.pg([[0,yW+12],[0,yT],[w,yT],[w,yW+12],[w-1.5,yW+12],[w-1.5,yT-1.5],[1.5,yT-1.5],[1.5,yW+12]],'steel');
+    [w/2-5,w/2+5].forEach(x=>z.l(x,yW-70,x,yW,'dash')); z.l(w/2-5,yW-70,w/2+5,yW-70,'dash');
+  }
+  /* 向こう側:床(段鼻 xn から下へ2段)・注意喚起用床材・段裏・向こう側の腰壁の天端 */
+  pl([[w,0],[xn,0],[xn,-R],[xn+T,-R],[xn+T,-2*R],[xR2,-2*R]],'dash');
+  const a0=Math.max(w,xn-600); pl([[a0,0],[a0,4],[xn-300,4],[xn-300,0]],'dash');
+  const xs2=xn+T/2,yB2=Math.min(-150-m*(xs2-w-90),-2*R)-60; pl([[w,-150],[w+90,-150],[xs2,-150-m*(xs2-w-90)]],'thin');
+  const fc=h=>pl([[w,h],[xn,h],[xR2,h-m*(xR2-xn)]],'out');
+  fc(yT); if(k!==2){ fc(yW+(k===0?20:12)); fc(yW); }
+  /* 手すり(破線):壁際で曲げ下ろし H2、段鼻 xn で階段の勾配に折れる */
+  const rail2=h=>{
+    const x0=w+g,x1=x0+dr,yc=h-rr,ye=yc-H2,xb=xn+dr*(cs-1)/m;
+    let p=null; for(let j=0;j<=6;j++){ const a=Math.PI-Math.PI/2*j/6,q=[x1+dr*Math.cos(a),h-dr+dr*Math.sin(a)]; if(p) z.l(p[0],p[1],q[0],q[1],'dash'); p=q; }
+    pl([[x1,h],[xn,h],[xR2,h-m*(xR2-xn)]],'dash'); pl([[x1,h-dr],[xb,h-dr],[xR2,h-m*(xR2-xn)-dr*cs]],'dash');
+    pl([[x0,h-dr],[x0,ye],[x1,ye],[x1,h-dr]],'dash');
+    return {x0,yc,ye};
+  };
+  const r1=rail2(hu); rail2(hl);
+  z.r(w+150,hu-12,100,12,'air');                                                    /* 点字表示位置(破線の手すりの上) */
+  /* 寸法 */
+  z.dim(0,0,0,yT,22,'(1,200以上)'); fx();
+  if(k===0){ z.dim(0,yT-60,0,yT,8,'(60)'); fx(); }
+  z.dim(0,yT,w,yT,6,'('+w+')'); fx();
+  z.dim(0,400,w,400,4,'('+w+')'); fx();
+  z.dim(r1.x0,r1.ye,r1.x0,r1.yc,(g+w+40)/Ss,'H2'); fx();
+  /* 注記(右の列:低い点ほど右) */
+  const nt=[[w/2,yT-25,capTxt],[w+150+50,hu-6,'点字表示位置'],[w+260,hu-dr,'手すり 集成材(35φ CL)(破線)'],[w+330,hl-dr,'(下段手すり)'],
+    [(a0+xn-300)/2,4,'注意喚起用床材'],[w+90+60,-150-m*60,'(段裏)']];
+  nt.forEach(([x,y,s])=>z.note(x,y,s));
+  z.note(-5,350,'(指定仕上材)',{side:'L'}); z.note(40,150,'RC手すり腰壁('+w+')',{side:'L'});
+  z.tx(xL2,yB2-6*Ss,'注 腰壁の天端は床から(1,200以上)。手すりの高さ(上段850・下段650)は図からの読み、H2(端部の曲げ下ろし)は特記で作図は70。',2.5,'l');
+  z.tx(xL2,yB2-10*Ss,'   破線の手すり・段は向こう側。手すりの端部は段鼻から450以上延ばす(断面と同じ)',2.5,'l');
+};
 /* 階段 手すり腰壁の天端(7-13):RC腰壁(120)の天端。腰壁の中心 x=0、RCの天端 y=0。
    kct=0 木製:集成材(120×60 CL)、下にモルタル詰(20)。kct=1 金属製:SUS304 t=1.5 HL の笠木(25)を、亜鉛めっき鋼板t=2.3 の通し材に
    ステンレスビス止め、通し材はあと施工アンカーM10@600、笠木の下端と天端のすき間(12)は両側シーリング材。kct=2 コンクリート打放し:両角を面取り15 */
 GEN.koshi_cap=(b,P)=>{
+  if(+P.kcv===1||+P.kcv===2) return ksView(b,P,+P.kcv);
   const k=[1,2].includes(+P.kct)?+P.kct:0,w=+P.kcw||120,h=w/2,S=b.S,yb=-240;
   if(k===2){
     b.pg([[-h,yb],[h,yb],[h,-15],[h-15,0],[-h+15,0],[-h,-15]],'rc'); b.brkH(-h-10,h+10,yb);
@@ -18142,6 +18577,138 @@ GEN.koshi_cap=(b,P)=>{
     b.note(0,-40,'あと施工アンカーM10 @600'); b.note(h-5,6,'(シーリング材)');
   }
   b.note(h,-160,'RC手すり腰壁(指定仕上材)');
+};
+/* 階段 平面・断面(7-11、1/50):折返し階段。ydv=0 平面/1 断面、ydk=0 -1 手すり子のある場合/1 -2 手すり腰壁の場合。
+   下の階段は x0 から右へ上って踊場(段鼻 xl)へ、上の階段は踊場から左へ上る。上の階段の段は下の階段より1段左にずれ(標準図の平面)、
+   最上段の段鼻は x0u=x0-T。このため上下の手すりは踊場の段鼻 xl の真上で同じ高さになる(標準図の断面)。
+   W1 は手すりの内側の幅(1,400以上)、上下の階段の手すりの間は100以上、W2 は踊場の手すりの端部(段鼻から450)から壁まで(1,400以上)。
+   手すりは段鼻を結ぶ線から 750〜850・下段(600〜650)、端部は段鼻から450以上延ばして点字表示。注意喚起用床材は段鼻から(300)離して幅(300) */
+GEN.stair_plan=(b,P)=>{
+  const S=b.S,v=+P.ydv===1?1:0,k=+P.ydk===1?1:0,cl=(a,lo,hi)=>Math.max(lo,Math.min(hi,a));
+  const T=cl(+P.ydT||280,240,350),F=cl(+P.ydF||3500,2400,5000),n=Math.max(5,Math.min(14,Math.round(F/2/cl(+P.ydR||175,140,200)))),R=F/(2*n),m=R/T,cs=Math.sqrt(1+m*m);
+  const W1=cl(+P.ydW||1400,1200,2400),W2=cl(+P.ydL||1400,1200,2400),H1=+P.ydH>0?cl(+P.ydH,1000,1300):1100;
+  const fm=x=>String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g,','),f1=x=>String(Math.round(x*10)/10);
+  const Ss=[50,100,200].find(q=>q>=5*S)||200,kk=S/Ss,z=signZ(b,kk); b.dispS=Ss;
+  z.tx=(x,y,s,h,al)=>b.tx(x*kk,y*kk,s,h||2.5,al||'l');
+  const fx=o=>Object.assign(b.e[b.e.length-1],{fixed:true,...(o||{})});
+  const pl=(pts,q)=>pts.reduce((p,c)=>{ z.l(p[0],p[1],c[0],c[1],q); return c; });
+  const x0=0,xl=(n-1)*T,x0u=x0-T,xw=xl+450+W2,tw=200,hu=850,hl=650,dr=35;
+  const w1t=W1===1400?'W1≧1,400':'W1='+fm(W1),w2t=W2===1400?'W2≧1,400':'W2='+fm(W2),h1t=+P.ydH>0?'H1='+fm(H1):'H1';
+  if(v===0){
+    /* 平面:下の壁の内面 y=0。下の階段 75〜yA(W1)、手すりの帯 bw、すき間100以上、上の階段 yD〜yE(W1) */
+    const bw=k?200:175,yA=75+W1,yB=yA+bw,yC=yB+100,yD=yC+bw,yE=yD+W1,Y=yE+75,xL=x0u-1150,xa=x0u-450,xb=xl+450;
+    z.r(xL,-tw,xw+tw-xL,tw,'rc'); z.r(xL,Y,xw+tw-xL,tw,'rc'); z.r(xw,0,tw,Y,'rc');
+    z.brkV(xL,-tw-60,Y+tw+60);
+    for(let i=0;i<n;i++) z.l(x0+i*T,0,x0+i*T,yA,'out');                                   /* 下の階段の段鼻 */
+    for(let j=1;j<=n;j++) z.l(xl-j*T,yD,xl-j*T,Y,'out');                                  /* 上の階段の段鼻 */
+    /* 壁付き手すり(壁から40〜75):踊場を回って上下の階段へ続く */
+    [40,75].forEach(o=>pl([[x0-450,o],[xw-o,o],[xw-o,Y-o],[xa,Y-o]],'out'));
+    z.l(x0-450,40,x0-450,75,'out'); z.l(xa,Y-75,xa,Y-40,'out');
+    /* 吹抜け側の手すりの帯(手すり 35、すき間、-1 笠木・側端部/-2 RC手すり腰壁(120))。上下の階段の帯のすき間は100以上 */
+    z.r(xa,yA,xb-xa,yD-yA,'air'); z.r(xa+dr,yA+dr,xb-xa-2*dr,yD-yA-2*dr,'air');
+    if(k){ z.r(xa+80,yA+80,xb-xa-160,120,'rc'); z.r(xa+80,yC,xb-xa-160,120,'rc'); z.r(xa+80,yB,120,yC-yB,'rc'); z.r(xb-200,yB,120,yC-yB,'rc'); }
+    else{ z.r(xa+80,yA+80,xb-xa-160,yD-yA-160,'air'); z.r(xa+125,yA+125,xb-xa-250,yD-yA-250,'air'); z.r(xa+175,yB,xb-xa-350,yC-yB,'air'); }
+    /* 点字表示位置(手すりの端部) */
+    const br=(x,y)=>z.r(x,y,60,dr,'msolid');
+    br(x0-450+30,40); br(xa+30,Y-75); br(xa+30,yA); br(xa+30,yD-dr); br(xb-90,40); br(xb-90,Y-75);
+    /* 注意喚起用床材:上の階の床(上の階段の最上段の段鼻から(300))と踊場(下の階段の段鼻から(300)) */
+    z.r(x0u-600,yD,300,W1,'tile'); z.r(xl+300,75,300,W1,'tile');
+    /* 切断線(上の階段)・上り方向の矢印 */
+    const xm=(x0u+xl)/2,ym=(yD+Y)/2; pl([[xm-260,yC+30],[xm-25,ym-90],[xm+45,ym-30],[xm-15,ym+30],[xm+60,ym+90],[xm+260,Y]],'thin');
+    const yl=75+W1*0.55,yu=yD+W1*0.55,xt=xl+450+W2*0.55;
+    pl([[x0,yl],[xt,yl],[xt,yu],[x0u,yu]],'thin'); z.l(x0u,yu,x0u+110,yu+40,'thin'); z.l(x0u,yu,x0u+110,yu-40,'thin');
+    b.c(x0*kk,yl*kk,0.6*S,'msolid');
+    /* 寸法 */
+    const yt1=75+W1*0.25,yt2=yD+W1*0.25;
+    for(let i=1;i<=3;i++){ z.dim(x0+i*T,yt1,x0+(i+1)*T,yt1,0,'T'); fx(); }
+    for(let j=2;j<=3;j++){ z.dim(xl-(j+1)*T,yt2,xl-j*T,yt2,0,'T'); fx(); }
+    const oL=7;
+    z.dim(x0-450,75,x0-450,yA,oL+T/Ss,w1t); fx();
+    z.dim(xa,yB,xa,yC,oL,'≧100'); fx();
+    z.dim(xa,yD,xa,yE,oL,w1t); fx();
+    z.dim(xb,yD,xw,yD,W1*0.7/Ss,w2t); fx();
+    z.dim(x0u-300,yE,x0u,yE,(75+tw)/Ss+5,'(300)'); fx();
+    z.dim(xl,75,xl+300,75,-((75+tw)/Ss+5),'(300)'); fx();
+    /* 注記(右の列:低い点ほど右) */
+    z.note(x0u-330,yD+400,'注意喚起用床材',{minTy:Y+tw+300});
+    z.note(xa+85,yD-17,'点字表示位置(手すりの端部)',{minTy:Y+tw+300});
+    z.note(xb-60,57,'点字表示位置',{minTy:Y+tw+300});
+    z.note(xb-110,yA+(k?140:100),k?'RC手すり腰壁(120)':'手すり子(笠木・側端部)',{minTy:Y+tw+300});
+    z.note(xl+450,75+W1*0.2,'注意喚起用床材',{minTy:Y+tw+300});
+    const yN=-tw-14*Ss;
+    z.tx(xL,yN,'注 W1 は手すりの内側の幅、上下の階段の手すりの間は100以上、W2 は踊場の手すりの端部から壁まで。注意喚起用床材は段鼻から(300)離して幅(300)。',2.5,'l');
+    z.tx(xL,yN-4*Ss,'   T・R・W1・W2・階高・点字表示の有無と位置は特記。'+n+'段×2(R='+f1(R)+')で作図。上下の階段の段は1段ずらす(断面で上下の手すりが踊場の段鼻の真上でそろう)',2.5,'l');
+    return;
+  }
+  /* 断面:下の階の床 y=0、踊場 yL、上の階の床 F。下の階段(手前・切断)と上の階段(向こう側・見え掛り) */
+  const yL=n*R,ts=150,t=150,nl=x=>(x-x0)*m+R,nu=x=>yL+(xl-x)*m;
+  const xe=x0u-450-(k?165:30),xL=xe-650,xR=xw+tw,yT=F+Math.max(1200,H1);
+  const lowH=(x,h)=>x<x0?R+h:x>xl?yL+h:nl(x)+h, upH=(x,h)=>x<x0u?F+h:x>xl?yL+h:nu(x)+h;
+  /* 躯体(切断):下の階の床・下の階段と踊場・上の階の床・右の壁 */
+  z.r(xL,-ts,xw-xL,ts,'rc');
+  const lp=[[x0,0]]; for(let i=1;i<=n;i++){ const x=x0+(i-1)*T; lp.push([x,i*R]); if(i<n) lp.push([x+T,i*R]); }
+  const xb=x0+(yL-ts+t*cs)/m,xa0=x0+t*cs/m;
+  lp.push([xw,yL],[xw,yL-ts],[xb,yL-ts],[xa0,0]); z.pg(lp,'rc');
+  z.r(xL,F-ts,(k?xe+120:xe)-xL,ts,'rc');
+  z.r(xw,-ts-250,tw,yT+100+ts+250,'rc');
+  z.brkV(xL,-ts-60,60); z.brkV(xL,F-ts-60,F+60); z.brkH(xw-60,xR+60,-ts-250); z.brkH(xw-60,xR+60,yT+100);
+  /* 上の階段(向こう側):段裏の線・上の階の床の端・踊場の下端 */
+  const su=x=>nu(x)-R-t*cs,xs1=xl-(F-ts-yL+R+t*cs)/m,xs2=xl-(R+t*cs-ts)/m;
+  z.l(k?xe+120:xe,F-ts,xs1,F-ts,'thin'); z.l(xs1,su(xs1),xs2,su(xs2),'thin'); z.l(xs2,yL-ts,xb,yL-ts,'thin');
+  if(k){ const up=[[xl-T,yL]]; for(let j=1;j<=n;j++){ const x=xl-j*T; up.push([x,yL+j*R]); up.push([j<n?x-T:xe+120,yL+j*R]); } pl(up,'dash'); }
+  else{ pl([[xe,F],[x0u,F]],'thin'); pl([[xe+15,F+50],[x0u,F+50],[xl,yL+50]],'thin'); }
+  /* 注意喚起用床材(踊場:段鼻から(300)・幅(300))と上の階の床(破線は向こう側) */
+  z.r(xl+300,yL,300,12,'finish');
+  /* 手すり:段鼻を結ぶ線から hu・hl、段鼻から450延ばす。端部(下)は曲げ下ろし H2 */
+  const H2=70,rail=(f,xs,xe2,h,q,end)=>{
+    const pts=[[xs,f(xs,h)]]; [x0u,x0,xl].forEach(x=>{ if(x>xs&&x<xe2) pts.push([x,f(x,h)]); }); pts.push([xe2,f(xe2,h)]);
+    pts.sort((a,c)=>a[0]-c[0]); pl(pts,q); pl(pts.map(([x,y])=>[x,y-dr]),q);
+    if(end){ z.l(xs,f(xs,h),xs,f(xs,h)-dr-H2,q); z.l(xs+dr*0.6,f(xs,h)-dr,xs+dr*0.6,f(xs,h)-dr-H2,q); z.l(xs,f(xs,h)-dr-H2,xs+dr*0.6,f(xs,h)-dr-H2,q); }
+  };
+  const hq=k?'dash':'out';
+  rail(lowH,x0-450,xl+450,hu,'out',1); rail(lowH,x0-450,xl+450,hl,'out',1);
+  rail(upH,k?xe+120+45:x0u-450,xl,hu,hq,!k); rail(upH,k?xe+120+45:x0u-450,xl,hl,hq,!k);
+  [hu,hl].forEach(h=>{ const y=yL+h-dr/2; z.l(xl+450,y+dr/2,xl+450+dr/2,y,'out'); z.l(xl+450+dr/2,y,xl+450,y-dr/2,'out'); });
+  z.r(x0u-450+60,F+hu,90,14,'msolid'); z.r(x0-450+60,R+hu,90,14,'msolid'); z.r(xl+300,yL+hu,90,14,'msolid');   /* 点字表示位置 */
+  if(!k){
+    /* -1 手すり子:笠木は段鼻の線から H1、下弦は100。上の階の床の端は 1,200以上 */
+    const top=(f,x)=>f(x,H1),g1=Math.max(1200,H1);
+    pl([[x0+50,R],[x0+50,top(lowH,x0+50)],[xl,yL+H1],[xl+400,yL+H1],[xl+400,yL]],'out');
+    pl([[x0+50,lowH(x0+50,100)],[xl,yL+100],[xl+400,yL+100]],'out');
+    pl([[xl,yL+H1],[x0u,F+H1],[x0u,F+g1],[xe+15,F+g1],[xe+15,F]],'out');
+    pl([[xl,yL+100],[x0u,F+100],[xe+15,F+100]],'out');
+    for(let x=x0+50+T/2;x<xl+400-20;x+=T/2) z.l(x,lowH(x,100),x,top(lowH,x),'thin');
+    for(let x=xl-T/2;x>xe+15+20;x-=T/2) z.l(x,upH(x,100),x,x<x0u?F+g1:top(upH,x),'thin');
+  }else{
+    /* -2 RC手すり腰壁:天端は段鼻の線から H1(見え掛り)、上の階の床の端は RC 腰壁の断面(1,200以上) */
+    pl([[x0-450,0],[x0-450,R+H1],[x0,R+H1],[xl,yL+H1],[xl+450,yL+H1],[xl+450,yL]],'out');
+    pl([[xl,yL+H1],[x0u,F+H1],[x0u,yT],[xe+120,yT]],'out');
+    z.r(xe,F,120,yT-F,'rc');
+  }
+  /* 寸法 */
+  z.dim(xR,0,xR,F,-6,'階高='+fm(F)); fx();   /* 左は注記の列(引出線が横切る)なので右の壁の外に置く */
+  z.dim(x0+3*T,4*R,x0+4*T,4*R,3,'T'); fx();
+  z.dim(x0+4*T,4*R,x0+4*T,5*R,-3,'R'); fx();
+  const xg=k?xe:xe+15; z.dim(xg,F,xg,F+1200,k?10:5,'1,200以上'); fx();
+  if(k){ z.dim(xg,F,xg,F+hu,5,String(hu)); fx(); }
+  z.dim(x0u-450,F+hu,x0u,F+hu,(yT-F-hu)/Ss+4,'段鼻から450以上'); fx();
+  z.dim(x0-450,R+hl-dr,x0,R+hl-dr,-8,'段鼻から450以上'); fx({tsh:-9*S});   /* 下端は手すりの下に置く(上は注記の引出線が補助線を横切る) */
+  z.dim(xl,yL+hu,xl+450,yL+hu,(H1-hu)/Ss+4,'段鼻から450以上'); fx({tsh:-3*S});
+  z.dim(xl+450,yL+hu,xw,yL+hu,(H1-hu)/Ss+4,w2t); fx({tsh:3*S});
+  z.dim(xl+450,yL,xl+450,yL+hl,-5,'(600〜650)'); fx();
+  z.dim(xl+450,yL,xl+450,yL+hu,-10,'750〜850'); fx();
+  z.dim(xl+450,yL,xl+450,yL+H1,-15,h1t); fx();
+  z.dim(x0-450,R+hu-dr-H2,x0-450,R+hu-dr,4,'H2'); fx();
+  /* 注記 */
+  z.note(x0-450+105,R+hu+14,'点字表示位置(■)',{side:'L'});
+  z.note(x0-450+60,R+hl-dr/2,'(下段手すり)',{side:'L'});
+  if(k) z.note(x0-200,R+H1-200,'RC手すり腰壁(指定仕上材)',{side:'L'});
+  else z.note(x0+2.5*T,nl(x0+2.5*T)+H1-150,'手すり子',{side:'L'});
+  if(k) z.note(x0u+1.5*T,upH(x0u+1.5*T,hu),'上の階段の段・手すり(破線)は腰壁の向こう側');
+  const yN=-ts-250-8*Ss;
+  z.tx(xL,yN,'注 T・R・W1・W2・H1・H2・下段手すりの有無と高さ・点字表示の有無と位置・階高は特記。手すり 750〜850・(600〜650)・H1 は段鼻を結ぶ線から測る。',2.5,'l');
+  z.tx(xL,yN-4*Ss,'   '+n+'段×2(T='+fm(T)+'・R='+f1(R)+')で作図。■は点字表示位置、踊場の床の薄い帯は注意喚起用床材(段鼻から(300)・幅(300))。',2.5,'l');
+  z.tx(xL,yN-8*Ss,'   手すりの端部は段鼻から450以上延ばし、下端は曲げ下ろす(H2)。'+(k?'腰壁の天端の材種は 7-13。':'手すり子・側端部の詳細は 7-12。'),2.5,'l');
 };
 GEN.kutsu_arai=(b,P)=>{
   const k=+P.kak===1?1:0,S=b.S,xa=120,xb=720,xc=870,hw=900,ch=20,rd=25,rw=20,dP=k?250:180,cv=40,cw=38;
@@ -18601,7 +19168,7 @@ const CATS=[
   {id:'door',name:'建具取合い(鋼製建具)'},
   {id:'roof',name:'屋上 パラペット・防水'}
 ];
-const DEF={sdw:0,sdh:0,dfk:0,dfd:100,dfm:0,dfi:0,qbk:0,qbf:0,qbe:0,qbt:0,qbm:0,qbs:0,qbr:0,cxk:0,cxv:0,cxb:0,cxg:0,cxj:0,odv:0,odk:0,odq:0,odc:0,odg:0,odb:0,odw:0,odh:0,odl:0,wkr:0,fcr:0,fcx:0,fco:0,frm:0,frt:0,frs:0,ldv:0,ldr:0,ldw:0,ldh:0,ldy:0,ldH:0,ldc:0,ldp:0,lfr:0,hbv:0,hba:0,hbw:0,hbp:0,hbt:0,iev:0,iek:0,iem:0,iet:0,iea:0,ieb:0,prt:0,prg:-1,prm:0,prn:0,bzv:0,bzk:0,bza:0,bzg:200,bzh:250,bzl:6000,bzs:2800,ckk:0,ckv:0,ckd:600,ckt:0,cks:9,ckg:30,ckr:20,ckn:2,qsk:0,qsv:0,qso:0,qsf:0,qsw:30,qst:150,qsd:30,zwk:0,zwv:0,zwa:0,zwr:0,zwt:200,gvk:0,gvv:0,gvt:0,gvh:2,gvw:0,jdk:0,jdv:0,jdw:0,jdh:0,jds:0,tak:0,tav:0,tas:0,tat:0,taf:0,rgk:0,rgv:0,rgb:0,rgr:0,rgd:0,rgs:0,rgt:0,rgq:0,krk:0,krv:0,krw:0,krh:0,kre:150,kra:500,krp:600,krc:0,krs:0,zfk:0,zfv:0,zfc:0,zfm:0,zfw:0,zfh:0,zft:0,mpk:0,mpv:0,mpu:0,mpj:0,mpt:0,mph:0,rzv:0,rzg:0,rzh:0,rzw:1800,rzt:1500,rze:150,rzp:500,awv:0,awg:0,aww:1800,awh:1500,awe:150,awp:500,usv:0,usb:0,usr:0,usg:0,usf:0,mok:0,mov:0,mob:0,mow:0,moh:0,mot:0,mof:0,bnk:0,bnv:0,bnw:0,bnh:0,srv:0,shv:0,shk:0,shm:0,shd:0,sha:0,shw:0,shh:0,gkv:0,gka:0,gkj:0,gkt:0,gks:0,kwv:0,kwa:0,kwt:0,kwj:0,kwp:0,kwk:0,jgv:0,jgs:0,jgc:0,jgt:0,jgo:0,jgw:0,jgh:0,ykv:0,yks:0,ykj:0,ykb:0,ykh:0,fzk:0,fzv:0,fzp:0,fzw:0,fzh:0,fzb:0,fzm:0,fzn:0,isv:0,isk:0,isa:0,ist:0,isw:0,ish:0,ksv:0,ksp:0,ksn:0,ksw:0,ksh:0,kst:0,kss:0,ksb:0,fdv:0,fdc:0,fdk:0,fdf:0,fdw:0,fdh:0,fdt:0,wuv:0,wub:0,wus:0,wut:0,wuh:0,ssv:0,sst:0,ssw:0,sso:0,ssj:0,sss:0,ssh:0,tgv:0,tgm:0,tgw:0,tgh:0,tgt:0,tgj:0,tgr:0,tgp:0,sfv:0,sft:0,sfo:0,sfj:0,sfs:0,sfe:0,sfr:0,sfl:0,sfu:0,tfk:0,tfb:0,tfh:0,tft:0,tfj:0,tfo:0,tfe:0,tfp:0,cya:0,cyb:0,cyc:0,cyx:0,cyw:0,cyo:0,cyn:0,mra:0,mrb:0,mrc:0,mrx:0,mry:0,mrz:0,fra:0,frb:0,frc:0,frd:0,fre:0,gbv:0,gbk:0,gbs:0,gbt:0,gbj:0,gbe:0,gbw:0,gbh:0,gzk:0,gzt:0,gzh:12,gza:0,gzb:0,gzc:0,gzx:1,jkk:0,jkp:0,jkv:0,jkh:0,jkn:0,jkt:0,jkd:0,jke:0,prb:1,prs:1,prv:0,prp:0,prq:0,prx:0,bkk:0,bkv:0,bkt:0,bkh:0,bkp:0,bkd:0,bkj:0,abk:0,abm:0,abd:0,abt:0,abp:0,abv:0,fpk:0,fpv:0,fpt:0,fph:400,fpw:200,fpc:300,fpd:0,kmv:0,kmb:0,kmf:0,kmg:0,lmk:0,lmb:0,lmf:0,spv:0,spw:150,sph:12,spm:0,spe:0,spx:0,nsk:0,nsf:0,nsw:1400,nst:5,nsl:2000,afk:0,aft:100,afw:600,afb:150,afl:500,afu:0,tpk:0,tph:0,tpa:0,mtv:0,mtw:0,mth:0,mdk:0,mdv:0,mdw:0,mdh:0,msv:0,msw:0,msh:0,mgv:0,mgw:0,mgh:0,mgd:0,ifk:0,ifw:0,ifh:0,ifg:0,ifd:0,csv:0,csl:0,csw:0,csh:0,csd:0,cpw:0,cpd:0,cps:0,wkk:0,wkj:0,wkc:0,wkn:0,wkb:0,wku:0,wke:0,pvk:0,pvj:0,pvt:0,pvb:0,pvl:0,pvn:0,tmk:0,tmv:0,tmh:0,tml:0,tms:0,mhk:0,mhh:0,mhd:0,mhs:0,gsk:0,gsh:0,rmk:0,rmc:0,rmh:0,rmn:0,rmf:0,ugk:0,ugn:3,ugm:1,ugh:0,ugb:300,ugf:100,cuk:0,cuy:0,cuw:500,rtv:0,rth:2000,rtl:1600,rtt:200,rtu:400,rtw:150,rtx:250,rtd:400,rtg:1,pnk:0,pnv:0,pnt:0,pnj:15,pnw:600,pnh:3600,pnu:0,pnb:0,cdk:0,cdn:0,cdo:600,cdw:65,xck:9,xcm:0,xcr:0,xcb:0,xcv:0,idk:0,idb:0,idm:0,idw:150,idv:0,ack:0,acw:250,acb:0,acm:30,acv:0,guk:0,gud:100,guo:0,gui:0,guv:0,gum:1,guh:8000,guf:3600,ttk:0,ttm:0,ttt:30,ttj:0,ttw:10,ttd:10,ttp:0,mrf:0,mrm:0,mrt:25,mrh:0,eck:0,ecb:0,eci:0,ecp:250,ect:25,apk:0,apb:0,apv:0,apg:0,apt:25,apw:1000,aph:1000,wvk:0,wvv:0,rsk:1,rsj:0,rsw:20,rsd:10,rsn:25,swv:0,swd:200,pck:0,pcb:0,pcs:0,pcg:0,pcr:0,pcd:0,pco:0,pcq:0,pcu:0,mab:0,plk:0,ftk:15,ftm:0,ftb:0,ftd:0,fte:0,ftx:0,wqk:0,wqs:0,wqy:0,wzk:0,wzs:1,wzt:0,gfk:0,gfn:0,gfw:910,gfh:0,mck:0,mcu:0,mcm:0,mcf:0,mcd:0,mcs:0,mct:0,wgb:2,wgs:0,gjk:0,gjt:12.5,fwk:0,fwv:0,fwm:0,fwt:0,fwu:0,fck:0,fcs:0,fcb:0,fsv:0,fsg:0,fst:2,fcp:0,fpb:0,wsk:0,wcv:0,pjv:0,pji:0,pjw:12000,pjd:9000,wmt:0,wsg:0,wsw:0,wtk:0,wtp:0,wpm:30,wpk:0,wps:0,wpe:0,wpc:80,sjp:0,sjb:-1,sjf:0,sjw:0,sjd:0,cfh:1800,cfl:5400,cfk:0,cfd:300,lfk:0,lfs:0,lfh:3500,lfc:2500,lfw:1000,lfo:2100,lfp:0,sgk:0,sgc:20,sge:40,rpk:0,rph:50,rpw:180,chv:0,chd:300,cht:50,chh:150,chw:150,tqk:0,tqv:0,wfk:0,wfz:0,wfa:0,wfw:0,wfd:0,wmk:0,wmw:0,wmd:0,wck:0,wcw:0,wcd:0,fxk:0,fxv:0,fxu:0,fxn:2,fxp:0,fxe:0,fxh:0,tbk:0,tbf:0,tbw:0,tbd:0,tbo:0,wsh:2,wew:0,weh:0,wer:0,weh2:400,wen:1,wem:0,dek:0,dew:0,deh:2000,deg:0,dgl:0,deo:450,dgt:0,srn:2,srh:1100,hrm:0,skv:0,trk:0,cnk:0,cnh:0,cnw:400,kct:0,kcw:120,fcw:120,fch:990,fcf:100,fcv:0,fcl:1800,fcd:600,fco:0,kak:0,cok:0,cod:100,cins:1,rhk:0,osv:0,wwv:0,wbw:0,wpst:40,stv:0,gtw:500,gtd:400,rjk:0,rjt:25,drk:0,drv:0,sdk:0,sdv:0,bw2:200,tfm:0,odm:0,bdw:0,tdw:200,tdd:150,tdh:240,tim:0,tii:0,vth:200,gav:0,gah:300,poh:300,rbk:0,rbw:0,wrv:0,dab:0,dai:0,rdm:0,cbk:0,ppt:0,pwt:0,dair:0,stm:0,stt:0,cwv:0,cwd:300,ppk:0,ppi:1,dsw:15,dkm:0,tlm:0,tlv:0,cbi:1,kgw:0,jwv:0,kkt:0,kkh:900,kkw:0,wcas:0,wjf:1,wfr:0,insT:50,cgj:0,bcs:0,rfh:1100,dwi:0,lnd:200,lnh:1200,hrw:0,hr2:0,hrh:800,srw:45,pins:0,wfh:180,rdp:0,rdi:0,kfm:0,dext:0,dit:25,dkt:0,kanchi:0,rfins:0,lw:600,wp:0,alct:100,cbt:0,kzw:0,wins:0,zen:0,ph:400,kasa:0,sh:500,ah:180,dwall:0,dtype:0,wj:0,gl:0,glg:12,dh:300,sj:0,snd:0,cext:0,stud:65,pbn:1,bt:12.5,mortar:30,hb:60,leg:130,slab:200,ins:1,rc:180,gap:25,plen:450,ct:9.5,cn:2,tileT:10,carpet:6,step:10,curbH:150,upH:250,opening:600};
+const DEF={khv:0,khw:0,khh:0,khc:0,khd:0,khl:0,ydv:0,ydk:0,ydT:280,ydR:175,ydF:3500,ydW:1400,ydL:1400,ydH:0,kcv:0,kcT:300,kcR:160,kch:0,sdw:0,sdh:0,dfk:0,dfd:100,dfm:0,dfi:0,qbk:0,qbf:0,qbe:0,qbt:0,qbm:0,qbs:0,qbr:0,cxk:0,cxv:0,cxb:0,cxg:0,cxj:0,odv:0,odk:0,odq:0,odc:0,odg:0,odb:0,odw:0,odh:0,odl:0,wkr:0,fcr:0,fcx:0,fco:0,frm:0,frt:0,frs:0,ldv:0,ldr:0,ldw:0,ldh:0,ldy:0,ldH:0,ldc:0,ldp:0,lfr:0,hbv:0,hba:0,hbw:0,hbp:0,hbt:0,iev:0,iek:0,iem:0,iet:0,iea:0,ieb:0,prt:0,prg:-1,prm:0,prn:0,bzv:0,bzk:0,bza:0,bzg:200,bzh:250,bzl:6000,bzs:2800,ckk:0,ckv:0,ckd:600,ckt:0,cks:9,ckg:30,ckr:20,ckn:2,qsk:0,qsv:0,qso:0,qsf:0,qsw:30,qst:150,qsd:30,zwk:0,zwv:0,zwa:0,zwr:0,zwt:200,gvk:0,gvv:0,gvt:0,gvh:2,gvw:0,jdk:0,jdv:0,jdw:0,jdh:0,jds:0,tak:0,tav:0,tas:0,tat:0,taf:0,rgk:0,rgv:0,rgb:0,rgr:0,rgd:0,rgs:0,rgt:0,rgq:0,krk:0,krv:0,krw:0,krh:0,kre:150,kra:500,krp:600,krc:0,krs:0,zfk:0,zfv:0,zfc:0,zfm:0,zfw:0,zfh:0,zft:0,mpk:0,mpv:0,mpu:0,mpj:0,mpt:0,mph:0,rzv:0,rzg:0,rzh:0,rzw:1800,rzt:1500,rze:150,rzp:500,awv:0,awg:0,aww:1800,awh:1500,awe:150,awp:500,usv:0,usb:0,usr:0,usg:0,usf:0,mok:0,mov:0,mob:0,mow:0,moh:0,mot:0,mof:0,bnk:0,bnv:0,bnw:0,bnh:0,srv:0,shv:0,shk:0,shm:0,shd:0,sha:0,shw:0,shh:0,gkv:0,gka:0,gkj:0,gkt:0,gks:0,kwv:0,kwa:0,kwt:0,kwj:0,kwp:0,kwk:0,jgv:0,jgs:0,jgc:0,jgt:0,jgo:0,jgw:0,jgh:0,ykv:0,yks:0,ykj:0,ykb:0,ykh:0,fzk:0,fzv:0,fzp:0,fzw:0,fzh:0,fzb:0,fzm:0,fzn:0,isv:0,isk:0,isa:0,ist:0,isw:0,ish:0,ksv:0,ksp:0,ksn:0,ksw:0,ksh:0,kst:0,kss:0,ksb:0,fdv:0,fdc:0,fdk:0,fdf:0,fdw:0,fdh:0,fdt:0,wuv:0,wub:0,wus:0,wut:0,wuh:0,ssv:0,sst:0,ssw:0,sso:0,ssj:0,sss:0,ssh:0,tgv:0,tgm:0,tgw:0,tgh:0,tgt:0,tgj:0,tgr:0,tgp:0,sfv:0,sft:0,sfo:0,sfj:0,sfs:0,sfe:0,sfr:0,sfl:0,sfu:0,tfk:0,tfb:0,tfh:0,tft:0,tfj:0,tfo:0,tfe:0,tfp:0,cya:0,cyb:0,cyc:0,cyx:0,cyw:0,cyo:0,cyn:0,mra:0,mrb:0,mrc:0,mrx:0,mry:0,mrz:0,fra:0,frb:0,frc:0,frd:0,fre:0,gbv:0,gbk:0,gbs:0,gbt:0,gbj:0,gbe:0,gbw:0,gbh:0,gzk:0,gzt:0,gzh:12,gza:0,gzb:0,gzc:0,gzx:1,jkk:0,jkp:0,jkv:0,jkh:0,jkn:0,jkt:0,jkd:0,jke:0,prb:1,prs:1,prv:0,prp:0,prq:0,prx:0,bkk:0,bkv:0,bkt:0,bkh:0,bkp:0,bkd:0,bkj:0,abk:0,abm:0,abd:0,abt:0,abp:0,abv:0,fpk:0,fpv:0,fpt:0,fph:400,fpw:200,fpc:300,fpd:0,kmv:0,kmb:0,kmf:0,kmg:0,lmk:0,lmb:0,lmf:0,spv:0,spw:150,sph:12,spm:0,spe:0,spx:0,nsk:0,nsf:0,nsw:1400,nst:5,nsl:2000,afk:0,aft:100,afw:600,afb:150,afl:500,afu:0,tpk:0,tph:0,tpa:0,mtv:0,mtw:0,mth:0,mdk:0,mdv:0,mdw:0,mdh:0,msv:0,msw:0,msh:0,mgv:0,mgw:0,mgh:0,mgd:0,ifk:0,ifw:0,ifh:0,ifg:0,ifd:0,csv:0,csl:0,csw:0,csh:0,csd:0,cpw:0,cpd:0,cps:0,wkk:0,wkj:0,wkc:0,wkn:0,wkb:0,wku:0,wke:0,pvk:0,pvj:0,pvt:0,pvb:0,pvl:0,pvn:0,tmk:0,tmv:0,tmh:0,tml:0,tms:0,mhk:0,mhh:0,mhd:0,mhs:0,gsk:0,gsh:0,rmk:0,rmc:0,rmh:0,rmn:0,rmf:0,ugk:0,ugn:3,ugm:1,ugh:0,ugb:300,ugf:100,cuk:0,cuy:0,cuw:500,rtv:0,rth:2000,rtl:1600,rtt:200,rtu:400,rtw:150,rtx:250,rtd:400,rtg:1,pnk:0,pnv:0,pnt:0,pnj:15,pnw:600,pnh:3600,pnu:0,pnb:0,cdk:0,cdn:0,cdo:600,cdw:65,xck:9,xcm:0,xcr:0,xcb:0,xcv:0,idk:0,idb:0,idm:0,idw:150,idv:0,ack:0,acw:250,acb:0,acm:30,acv:0,guk:0,gud:100,guo:0,gui:0,guv:0,gum:1,guh:8000,guf:3600,ttk:0,ttm:0,ttt:30,ttj:0,ttw:10,ttd:10,ttp:0,mrf:0,mrm:0,mrt:25,mrh:0,eck:0,ecb:0,eci:0,ecp:250,ect:25,apk:0,apb:0,apv:0,apg:0,apt:25,apw:1000,aph:1000,wvk:0,wvv:0,rsk:1,rsj:0,rsw:20,rsd:10,rsn:25,swv:0,swd:200,pck:0,pcb:0,pcs:0,pcg:0,pcr:0,pcd:0,pco:0,pcq:0,pcu:0,mab:0,plk:0,ftk:15,ftm:0,ftb:0,ftd:0,fte:0,ftx:0,wqk:0,wqs:0,wqy:0,wzk:0,wzs:1,wzt:0,gfk:0,gfn:0,gfw:910,gfh:0,mck:0,mcu:0,mcm:0,mcf:0,mcd:0,mcs:0,mct:0,wgb:2,wgs:0,gjk:0,gjt:12.5,fwk:0,fwv:0,fwm:0,fwt:0,fwu:0,fck:0,fcs:0,fcb:0,fsv:0,fsg:0,fst:2,fcp:0,fpb:0,wsk:0,wcv:0,pjv:0,pji:0,pjw:12000,pjd:9000,wmt:0,wsg:0,wsw:0,wtk:0,wtp:0,wpm:30,wpk:0,wps:0,wpe:0,wpc:80,sjp:0,sjb:-1,sjf:0,sjw:0,sjd:0,cfh:1800,cfl:5400,cfk:0,cfd:300,lfk:0,lfs:0,lfh:3500,lfc:2500,lfw:1000,lfo:2100,lfp:0,sgk:0,sgc:20,sge:40,rpk:0,rph:50,rpw:180,chv:0,chd:300,cht:50,chh:150,chw:150,tqk:0,tqv:0,wfk:0,wfz:0,wfa:0,wfw:0,wfd:0,wmk:0,wmw:0,wmd:0,wck:0,wcw:0,wcd:0,fxk:0,fxv:0,fxu:0,fxn:2,fxp:0,fxe:0,fxh:0,tbk:0,tbf:0,tbw:0,tbd:0,tbo:0,wsh:2,wew:0,weh:0,wer:0,weh2:400,wen:1,wem:0,dek:0,dew:0,deh:2000,deg:0,dgl:0,deo:450,dgt:0,srn:2,srh:1100,hrm:0,skv:0,trk:0,cnk:0,cnh:0,cnw:400,cnv:0,cnl:1500,cnc:1200,kct:0,kcw:120,fcw:120,fch:990,fcf:100,fcv:0,fcl:1800,fcd:600,fco:0,kak:0,cok:0,cod:100,cins:1,rhk:0,osv:0,wwv:0,wbw:0,wpst:40,stv:0,gtw:500,gtd:400,rjk:0,rjt:25,drk:0,drv:0,sdk:0,sdv:0,bw2:200,tfm:0,odm:0,bdw:0,tdw:200,tdd:150,tdh:240,tim:0,tii:0,vth:200,gav:0,gah:300,poh:300,rbk:0,rbw:0,wrv:0,dab:0,dai:0,rdm:0,cbk:0,ppt:0,pwt:0,dair:0,stm:0,stt:0,cwv:0,cwd:300,ppk:0,ppi:1,dsw:15,dkm:0,tlm:0,tlv:0,cbi:1,kgw:0,jwv:0,kkt:0,kkh:900,kkw:0,wcas:0,wjf:1,wfr:0,insT:50,cgj:0,bcs:0,rfh:1100,dwi:0,lnd:200,lnh:1200,hrw:0,hr2:0,hrh:800,srw:45,pins:0,wfh:180,rdp:0,rdi:0,kfm:0,dext:0,dit:25,dkt:0,kanchi:0,rfins:0,lw:600,wp:0,alct:100,cbt:0,kzw:0,wins:0,zen:0,ph:400,kasa:0,sh:500,ah:180,dwall:0,dtype:0,wj:0,gl:0,glg:12,dh:300,sj:0,snd:0,cext:0,stud:65,pbn:1,bt:12.5,mortar:30,hb:60,leg:130,slab:200,ins:1,rc:180,gap:25,plen:450,ct:9.5,cn:2,tileT:10,carpet:6,step:10,curbH:150,upH:250,opening:600};
 const PSPEC={
   rzv:{l:'図',o:RZV.map((n,i)=>[i,n])},rzg:{l:'種別(表16.3.1 A〜C・表16.3.2 D・E)',o:RZG.map((n,i)=>[i,n])},rzh:{l:'断熱性の等級(表16.3.3)',o:RZH.map((n,i)=>[i,n])},rzw:{l:'W(枠の外法)'},rzt:{l:'H(枠の外法)'},rze:{l:'アンカーの両端の逃げ'},rzp:{l:'アンカー間隔の上限(500以下)'},
   awv:{l:'図',o:AWV.map((n,i)=>[i,n])},awg:{l:'種別(表16.2.1)',o:AWG.map((n,i)=>[i,n])},aww:{l:'W(枠の外法)'},awh:{l:'H(枠の外法)'},awe:{l:'アンカーの両端の逃げ'},awp:{l:'アンカー間隔の上限(500以下)'},
@@ -18711,10 +19278,11 @@ const PSPEC={
   dek:{l:'開き方',o:[[0,'片開き(A-1)'],[1,'親子開き(A-2)'],[2,'両開き(A-3)']]},dew:{l:'枠の有効内のり幅 W',o:[[0,'標準(片900・親子1,200・両1,800)'],600,800,850,900,950,1000,1200,1250,1800,1900]},deh:{l:'枠の有効内のり高さ H',o:[1900,2000,2100,2200,2400]},
   deg:{l:'ガラス',o:[[0,'なし(フラッシュ戸 A形)'],[1,'ガラス窓(B-1〜B-6)'],[2,'縦長スリット(B-7・B-8)']]},dgl:{l:'がらり',o:[[0,'なし'],[1,'あり(A-4〜A-6・B-4〜B-6・B-8)']]},deo:{l:'がらりの高さ',o:[450,700]},dgt:{l:'がらりの形式',o:[[0,'I型(開口率約30%)'],[1,'II型(約35%)'],[2,'III型(約25%)']]},
   skv:{l:'流し上部水切りの種類',o:[[0,'-3 流し上部水切り'],[1,'-4 棚を設ける場合']]},
+  khv:{l:'湯沸室の図(6-11)',o:[[0,'-2 フード 1/10'],[1,'-2 フード 断面 1/20'],[2,'-5 吊戸棚 断面 1/20'],[3,'-1 器具配置 展開 1/20'],[4,'-1 器具配置 平面 1/20']]},khl:{l:'流し台の長さ(器具配置)',o:[[0,'(1,800)'],1200,1500,1800,2100,2400]},khw:{l:'ダクト接続用開口 W(特記)',o:[[0,'作図200'],150,200,250,300,350,400]},khh:{l:'こんろ上面〜フード下端',o:[[0,'800以上1,000以下(作図900)'],800,850,900,950,1000]},khc:{l:'天井高(断面・展開)',o:[[0,'2,250以上(作図2,250)'],2250,2400,2500,2600,2700,3000]},khd:{l:'ダクトの接続',o:[[0,'上部 W×L'],[1,'横引き W×H']]},
   trk:{l:'タラップの種類',o:[[0,'-1 踏子埋込み'],[1,'-2 たて材・歩み板付き'],[2,'-3 安全ガード付']]},
-  cnk:{l:'カウンターの種類',o:[[0,'-1 木製受付カウンター'],[1,'-2 コーナーカウンター(壁付き)']]},cnh:{l:'カウンターの上端(FLから)',o:[[0,'標準(-1 1,000・-2 700)'],700,750,800,900,1000,1100]},cnw:{l:'ローカウンターの奥行 W2(特記)'},
+  cnk:{l:'カウンターの種類',o:[[0,'-1 木製受付カウンター'],[1,'-2 コーナーカウンター(壁付き)']]},cnh:{l:'カウンターの上端(FLから)',o:[[0,'標準(-1 1,000・-2 700)'],700,750,800,900,1000,1100]},cnw:{l:'ローカウンターの奥行 W2(特記)'},cnv:{l:'図',o:[[0,'断面'],[1,'立面(-1)・立図(-2) 1/20'],[2,'平面(-2) 1/20']]},cnl:{l:'側板間寸法 L(-1 立面、@1,200〜2,000)'},cnc:{l:'カウンターの長さ(-2 立図・平面)'},
   fcw:{l:'吹出口の幅 W(特記)'},fch:{l:'FLから甲板の上端まで'},fcf:{l:'フリーアクセスフロアの高さ'},fcv:{l:'図',o:FCV.map((n,i)=>[i,n])},fcl:{l:'割付けの長さ(目地の心々)'},fcd:{l:'奥行(壁の仕上げ面〜甲板の先端)'},fco:{l:'吹出口の長さ L(特記)。0で割付け−300'},
-  kct:{l:'腰壁天端の材種',o:[[0,'木製 集成材(120×60)'],[1,'金属製 SUS304 t=1.5'],[2,'コンクリート打放し(面取り15)']]},kcw:{l:'腰壁の厚さ',o:[120,150,180]},
+  kct:{l:'腰壁天端の材種',o:[[0,'木製 集成材(120×60)'],[1,'金属製 SUS304 t=1.5'],[2,'コンクリート打放し(面取り15)']]},kcw:{l:'腰壁の厚さ',o:[120,150,180]},kcv:{l:'手すり腰壁の図',o:[[0,'天端の断面 1/5'],[1,'断面(段・手すり) 1/10'],[2,'最上階部分 1/10']]},kcT:{l:'階段の踏面 T(断面)',o:[260,280,300,330]},kcR:{l:'階段の蹴上げ R(断面)',o:[150,160,170,180]},kch:{l:'腰壁の天端の高さ H1(断面)',o:[[0,'H1(記号・作図1,100)'],1000,1100,1200]},ydv:{l:'階段の図(7-11)',o:[[0,'平面 1/50'],[1,'断面 1/50']]},ydk:{l:'階段の手すり',o:[[0,'-1 手すり子のある場合'],[1,'-2 手すり腰壁の場合']]},ydT:{l:'階段の踏面 T',o:[250,260,280,300,330]},ydR:{l:'階段の蹴上げ R(目安。階高を等分)',o:[150,160,170,175,180,200]},ydF:{l:'階高',o:[3000,3300,3500,3600,4000,4500]},ydW:{l:'階段の幅 W1(手すりの内側)',o:[1400,1500,1600,1800,2000]},ydL:{l:'踊場 W2(手すりの端部から壁まで)',o:[1400,1500,1600,1800,2000]},ydH:{l:'手すり子・腰壁の高さ H1',o:[[0,'H1(記号・作図1,100)'],1000,1100,1200]},
   kak:{l:'くつ洗い流しの形式',o:[[0,'-1 グレーチング(600)'],[1,'-2 共栓付き(仕切り)']]},
   cok:{l:'掃除口の場合',o:[[0,'下階等のある場合(床下掃除口)'],[1,'下階等のない場合(床上掃除口)']]},cod:{l:'縦どいの管径',o:[[80,'80A'],[100,'100A'],[125,'125A']]},cins:{l:'防露材料',o:[[1,'あり(t20)'],[0,'なし']]},
   cgj:{l:'ボードとの取合い',o:[[0,'目地無し'],[1,'目透し(8)']]},
@@ -18729,7 +19297,7 @@ const PSPEC={
   wfh:{l:'和室の床高',o:[[180,'180(大引直置き)'],[280,'280(束立て)'],[115,'115(ポリスチレンフォーム床下地材 6-42)']]},
   osv:{l:'押入れの部位',o:[[0,'敷居部(床)'],[1,'中段'],[2,'鴨居部(天袋の下)'],[3,'天袋の上部(天井取合い)'],[4,'鴨居部(天袋のない場合)']]},
   wpst:{l:'ポリスチレンフォーム床下地材の厚さ',o:[[30,'30'],[40,'40'],[50,'50']]},
-  wwv:{l:'和室 壁回りの部位',o:[[0,'A部 見切縁・RC壁(-2)'],[1,'A部 見切縁・LGS壁(-3)'],[2,'床取合い 畳寄せ(一般)'],[3,'床取合い 幅木を設ける場合'],[4,'T形取合い 平面・LGS間仕切(6-43-3)'],[5,'板畳 板幅150未満(6-43-2)'],[6,'板畳 板幅150以上900未満 根太30×40'],[7,'板畳 板幅150以上900未満 根太30×60'],[8,'床取合い LGS壁 一般(6-44-3)'],[9,'床取合い LGS壁 幅木(6-44-3)'],[10,'床板張り・幅木 RC壁(6-44-2)'],[11,'板畳 板幅150未満 ポリスチレンフォーム床下地材(6-44-2)'],[12,'板畳 板幅150以上900未満 ポリスチレンフォーム床下地材(6-44-2)'],[13,'木造壁 断面 一般(6-43-1)'],[14,'木造壁 断面 幅木を設ける場合(6-43-1)'],[15,'T形取合い 平面・木造壁(6-43-1)'],[16,'T形取合い 平面・RC壁(6-43-2)']]},
+  wwv:{l:'和室 壁回りの部位',o:[[0,'A部 見切縁・RC壁(-2)'],[1,'A部 見切縁・LGS壁(-3)'],[2,'床取合い 畳寄せ(一般)'],[3,'床取合い 幅木を設ける場合'],[4,'T形取合い 平面・LGS間仕切(6-43-3)'],[5,'板畳 板幅150未満(6-43-2)'],[6,'板畳 板幅150以上900未満 根太30×40'],[7,'板畳 板幅150以上900未満 根太30×60'],[8,'床取合い LGS壁 一般(6-44-3)'],[9,'床取合い LGS壁 幅木(6-44-3)'],[10,'床板張り・幅木 RC壁(6-44-2)'],[11,'板畳 板幅150未満 ポリスチレンフォーム床下地材(6-44-2)'],[12,'板畳 板幅150以上900未満 ポリスチレンフォーム床下地材(6-44-2)'],[13,'木造壁 断面 一般(6-43-1)'],[14,'木造壁 断面 幅木を設ける場合(6-43-1)'],[15,'T形取合い 平面・木造壁(6-43-1)'],[16,'T形取合い 平面・RC壁(6-43-2・6-44-2)'],[17,'木造壁 断面 一般 ポリスチレンフォーム床下地材(6-44-1)'],[18,'木造壁 断面 幅木 ポリスチレンフォーム床下地材(6-44-1)']]},
   wbw:{l:'板畳の板幅(壁の仕上げ面〜畳)',o:[[0,'標準(150未満 120・150以上 450)'],60,90,120,140,150,300,450,600,750,880]},
   rdp:{l:'屋根防水',o:[[0,'露出防水'],[1,'保護防水']]},rdi:{l:'スラブ下断熱',o:[[0,'なし'],[1,'あり(断熱補修材)']]},poh:{l:'管類取出し口 上部の高さ H(特記)'},vth:{l:'換気塔 がらりの高さ h(特記)'},chv:{l:'煙突の図',o:[[0,'屋上取合い(水切カバー・あご)'],[1,'頂部 天板を設ける場合'],[2,'頂部 天板を設けない場合(防鳥網)']]},chd:{l:'煙突 筒身の内径 L2(特記)'},cht:{l:'煙突用成形ライニング材の厚さ t(特記)'},chh:{l:'煙突 あごの上から天端 H3(特記)'},chw:{l:'煙突 曲がり頭部の出 W3(特記)'},rbk:{l:'屋上基礎の形',o:[[0,'-2 頭部張出し(W×L)'],[1,'-3 上部打増し+アルミニウム製水切']]},rbw:{l:'防水工法',o:[[0,'左 保護防水断熱/右 露出防水(標準図)'],[1,'屋根保護防水断熱工法'],[2,'屋根露出防水工法']]},rhk:{l:'屋根防水(横型ドレン)',o:[[0,'断熱防水(断熱材+保護コンクリート)'],[1,'コンクリート押え(断熱なし)']]},rdm:{l:'縦どいの管',o:[[0,'配管用炭素鋼鋼管 白管(5-32)'],[1,'硬質ポリ塩化ビニル管(5-33 屋外用)']]},kfm:{l:'マットの種類',o:[[0,'-1 屋内用'],[1,'-3 泥だまり付き'],[2,'-2 排水付き(A-A断面)']]},
   dext:{l:'内部/外部',o:[[0,'内部用'],[1,'外部用(簡易気密型)']]},
@@ -18914,16 +19482,20 @@ def('trough','floor','床 トラフ ふた受け',{keys:['tfm','slab'],desc:'床
  ev:c=>rate(30,[[10,'機械室・電気室・厨房の床の配管ピット'],[0,'W・H・ふたの仕上材・鉄面の塗装又はめっきの種別は特記']])});
 def('odare','floor_trans','便所 汚垂石(小便器前)',{keys:['odm'],desc:'小便器前の床の汚垂石の断面(建築工事標準詳細図6-29)。-1 石材:踏石 花こう岩 本磨き t=25+モルタル、床は増打ち(40)。-2 大型タイル t=13+接着剤(タイル製造所の指定)。壁仕上げ面から(600)、床仕上げより(10)上がる。',
  ev:c=>rate(35,[c.use==='office'&&[10,'事務所の男子便所'],[0,'汚垂石の材質・厚さ・仕上げは特記']])});
-def('counter','wall','木製カウンター',{keys:['cnk','cnh','cnw','stud','pbn','bt'],desc:'木製カウンターの断面(建築工事標準詳細図8-11)。-1 木製受付カウンター:木造間仕切(柱・土台 90×60、胴縁20×45@250、普通合板t=12+t=5.5又はケイ酸カルシウム板t=6 天然木練付/メラミン化粧貼)の上にハイカウンター 堅木集成材(450)×(30)、事務室側にローカウンター メラミンポストフォーム(FL+700・奥行W2)、支持金物 FB-6×60 曲げ加工、側板 t=35 フラッシュ。-2 コーナーカウンター:軽量鉄骨壁に堅木集成材t=(40)・奥行(450)・FL+(700)、支持金物 FB-60×6×600 曲げ加工+補強金物 C-60×30×10×2.3、取合いはパテ処理。受付 カウンター 甲板 造作。',
+def('counter','wall','木製カウンター',{keys:['cnk','cnv','cnh','cnw','cnl','cnc','stud','pbn','bt'],desc:'木製カウンターの断面・立面・立図・平面(建築工事標準詳細図8-11)。図は断面(1/5)と、-1 の立面・-2 の立図と平面(1/20)。-1 木製受付カウンター:木造間仕切(柱・土台 90×60、胴縁20×45@250、普通合板t=12+t=5.5又はケイ酸カルシウム板t=6 天然木練付/メラミン化粧貼)の上にハイカウンター 堅木集成材(450)×(30)、事務室側にローカウンター メラミンポストフォーム(FL+700・奥行W2)、支持金物 FB-6×60 曲げ加工、側板 t=35 フラッシュ。-2 コーナーカウンター:軽量鉄骨壁に堅木集成材t=(40)・奥行(450)・FL+(700)、支持金物 FB-60×6×600 曲げ加工+補強金物 C-60×30×10×2.3、取合いはパテ処理。受付 カウンター 甲板 造作。',
  ev:c=>rate(35,[c.use==='office'&&[10,'事務所の受付・窓口'],[0,'樹種・木部の塗装・W1・W2・L・指定仕上材は特記']])});
 def('stair_rail','wall','階段 手すり子付き手すり(側端部)',{keys:['srn','srh'],desc:'階段・踊場の側端部の手すり子付き手すりの断面(建築工事標準詳細図7-12-2・-8・A部)。支柱34φ×2.3・手すり子13φ丸棒・27.2φ×2.3、笠木 集成材(45φ CL)+FB-4.5×38、内側に集成材(35φ CL)をブラケット21.7φ×2.3@900程度で(上段750〜850・下段600〜650)。座金ステンレスSUS304 t=2.0、側端部立上り PL-6 を床から(50)、下端にシーリング材。階段2段手すり 手摺子 支柱 側端部立上り。',
  ev:c=>rate(35,[[0,'T・R・H・手すりの径・集成材の樹種と仕上げ寸法・塗装・側端部立上りの材質と寸法は特記']])});
-def('koshi_cap','wall','階段 手すり腰壁の天端',{keys:['kct','kcw'],desc:'階段の手すり腰壁(RC 120)の天端の断面(建築工事標準詳細図7-13)。木製は集成材(120×60 CL)+モルタル詰(20)、金属製はSUS304 t=1.5 HLの笠木(25)を亜鉛めっき鋼板t=2.3の通し材にステンレスビス止め・あと施工アンカーM10@600・両側シーリング材、コンクリート打放しは両角を面取り15。笠木 天端 腰壁 手すり壁。',
+def('koshi_cap','wall','階段 手すり腰壁の天端',{keys:['kcv','kct','kcw','kcT','kcR','kch'],desc:'階段の手すり腰壁(RC 120)の天端の断面(建築工事標準詳細図7-13)。断面 1/10(踊場と段・踏面T・蹴上げR・蹴込み(20)・階段滑り止め・注意喚起用床材・幅木、手すり 750〜850・下段手すり(600〜650)を段鼻から・段鼻から450以上延長・ブラケットFB-12×25@900程度・天端H1)と最上階部分(腰壁の天端は床から1,200以上・手すりの端部の曲げ下ろしH2・点字表示位置)も描ける。木製は集成材(120×60 CL)+モルタル詰(20)、金属製はSUS304 t=1.5 HLの笠木(25)を亜鉛めっき鋼板t=2.3の通し材にステンレスビス止め・あと施工アンカーM10@600・両側シーリング材、コンクリート打放しは両角を面取り15。笠木 天端 腰壁 手すり壁。',
  ev:c=>rate(35,[[0,'天端の材種・集成材の樹種と仕上げ寸法・塗装は特記']])});
+def('stair_plan','wall','階段 平面・断面(1/50)',{keys:['ydv','ydk','ydT','ydR','ydF','ydW','ydL','ydH'],desc:'折返し階段の平面・断面 1/50(建築工事標準詳細図7-11)。-1 手すり子のある場合・-2 手すり腰壁の場合。階段の幅 W1≧1,400(手すりの内側)・上下の階段の手すりの間≧100・踊場 W2≧1,400(手すりの端部から壁まで)・踏面T・蹴上げR・階高、手すり 750〜850・下段手すり(600〜650)を段鼻から、段鼻から450以上延長・端部の曲げ下ろしH2・点字表示位置、注意喚起用床材は段鼻から(300)離して幅(300)、上の階の床の端は1,200以上、手すり子・腰壁の高さH1。階段 全体 平面図 断面図 折り返し 階高 踊場 吹抜け。',
+ ev:c=>rate(30,[[0,'T・R・W1・W2・H1・H2・下段手すりの有無と高さ・点字表示の有無と位置・階高は特記']])});
 def('kutsu_arai','wet','くつ洗い流し(屋外)',{keys:['kak'],desc:'屋外のくつ洗い流しの断面(建築工事標準詳細図8-22)。奥の壁150・高さ(900)・天端の面取り(20)、流し(600)にグレーチング(ノンスリップ型)枠付き、底はモルタルで排水へ。-2は仕切り100で共栓付き(200)を設ける。ブラシ掛けステンレスフック・水栓・露出配管(別途)、捨コンクリート50・砂利地業(100)、寒地は断熱材(25)と凍上抑制層(H)。',
  ev:c=>rate(30,[[0,'打放しの種別・寒地のH・地業と断熱材・グレーチング・指定仕上材は特記']])});
 def('sink_drip','wall','湯沸室 流し上部水切り',{keys:['skv','glg'],desc:'湯沸室の流し台の上部の水切りの断面(建築工事標準詳細図6-11-3・-4)。-3 ステンレス SUS304 t=1.5 の水切りを上下のボードの間に差し込み、仕上げ面から(55)出して先端(10)下げ・(40)立ち下げ、壁側は30立ち上げてナイロンプラグ留め。-4 棚を設ける場合:1.0FK t=12 をステンレス SUS304 t=(0.6)で包んだ棚(RC面から(185)・先端(40))を支持金物 PL-3.2×50@600(ステンレス丸皿木ねじ・ナイロンプラグ6φ、20・110・20)で受ける。水切り・棚の上のボード下端にシーリング材。流し台の裏の壁は仕上げなし。給湯室 キッチン 流し台 水切り 棚。',
  ev:c=>rate(30,[[0,'流し台・吊戸棚・水切棚の形状・寸法・配置、指定仕上材の種類は特記']])});
+def('kitchen_hood','wall','湯沸室 器具配置・フード・吊戸棚',{keys:['khv','khw','khh','khc','khd','khl'],desc:'湯沸室の器具配置(展開・平面 1/20)・フード・吊戸棚(建築工事標準詳細図6-11-1・-2・-5)。器具配置:左の壁からこんろ台(600)・ステンレス製流し台(1,800、長さ可変)・奥行(550)、フード(600)は排気筒に直結、吊戸棚(1,200)・高さ(500)・下端 FL+(1,600)は流し台の右端にそろえ、水切棚(250)・手元灯(別途)、吊戸棚のフード側は不燃板(1.0FK t=6 EP)、流し上部水切り(小口ふた付き)・側面ステンレス SUS304 t=0.6。フード 1/10:ステンレス SUS430 t=1.0、奥行600、壁側は上下の L-30×30×3 をあと施工アンカー@600 で留め、前面板は天井まで立ち上げて上端の L-30×30×3 をつりボルトで吊り、FB-3.0×30@300 で補強。下端は高さ50の縁と油受け20(前面側50)・油抜きコック、上部はダクト接続口(高さ100、W×L 又は横引き W×H)。フード 断面 1/20:こんろ台(640)・こんろの上面からフードの下端まで800以上1,000以下。吊戸棚 断面 1/20:奥行(350)・下端 FL+(1,600)・水切棚(250)・流し台(800)・天井高(2,250以上)、天井との間は板 t=20(EP-G又はSOP)+40×45、壁の中に棚受け木 35×50。給湯室 キッチン レンジフード 換気フード 排気 吊り戸棚 水切り棚 こんろ コンロ。',
+ ev:c=>rate(30,[[0,'フード・吊戸棚・水切棚・こんろ台の形状・寸法・配置、ダクト接続用開口の W・L(W・H)、油抜きの有無は特記']])});
 def('datsui_box','wall','脱衣室 脱衣箱 たな取付け部',{keys:[],desc:'脱衣室の脱衣箱のたな取付け部取合いの断面(建築工事標準詳細図6-32)。メラミン樹脂板 t=1.2 張りの天板(24)・奥行(400)、背板 メラミン化粧合板 t=5.0 を受け材 20×150 に接着、あと施工アンカー M10@600+ワッシャー+ふくろナット ステンレスSUS304 M10。箱は400×400の1段又は2段(上端 FL+1,300/1,600)。脱衣棚 浴室 更衣室。',
  ev:c=>rate(25,[[0,'脱衣箱の幅 W は特記']])});
 def('fixture_layout','wall','洗面所・便所 衛生器具配置',{keys:['fxk','fxv','fxu','fxn','fxp','fxe','fxh'],desc:'洗面所・便所の衛生器具配置(建築工事標準詳細図6-21、1/20)。-1 洗面器:平面・立面(ライニング (200)・高さ(1,000)、又は洗面カウンター付き)・断面、器具の心は端部の壁から(400以上)・心々(700〜800)、あふれ縁 FL+(750〜800)、鏡の上端はあふれ縁から(1,000以上)、照明器具・鏡は別途。-2 小便器:平面・立面(床置型・壁掛型 低リップ型、ライニング高さ(1,200))。洗面器 小便器 洗面カウンター ライニング甲板 鏡 照明器具',
@@ -18967,7 +19539,7 @@ def('smoke_wall','ceiling','防煙垂れ壁(固定式・ガラス)',{keys:['sh',
  ev:c=>rate(40,[c.use==='office'&&[12,'事務所・庁舎の防煙区画'],c.use==='shop'&&[12,'店舗・物販の防煙区画'],c.use==='house'&&[-20,'住宅では一般的でない']])});
 def('wa_kamoi','floor_trans','和室 出入口 鴨居部(LGS小壁)',{keys:['stud','pbn','bt','ct','cn'],defs:{pbn:1},desc:'和室出入口の鴨居部断面(建築工事標準詳細図6-41-4)。鴨居90×40を壁面より8出し、溝2本、ランナー+パッキング、天井見切縁(10)。',
  ev:c=>rate(45,[[0,'和室の出入口(ふすま)上部']])});
-def('wa_wall','wall','和室 壁回り(見切縁・畳寄せ・幅木・板畳・T形取合い・床板張り・LGS壁の床取合い・木造壁 真壁)',{keys:['wwv','wbw','wpst','stud','pbn','bt'],defs:{pbn:1},desc:'和室の壁回り(建築工事標準詳細図6-43・6-44)。A部=内法高さの見切縁20×40(壁面より8出し・見付け35)、RC壁はPL-1.2×25×80@900+コンクリート釘、LGS壁はPL-0.8×30×80@600/@450。ポリスチレンフォーム床下地材の床取合いは畳寄せ25×55+受け材40×60、幅木25×105(畳面から40)。板畳(6-43-2)は板を壁から8離し、畳寄せ36×55+受け材36×45(板幅150未満)・根太30×40/30×60-@360(150以上900未満)。T形取合い平面(6-43-3)はLGS間仕切をボード面に突き付け、入隅はジョイントテープ+ジョイントコンパウンド。LGS壁の床取合い(6-44-3)は和室側に畳寄せ25×105/2又は幅木25×105+受け材40×60、隣室側(フローリング)は見切36×45+受け材40×60又は幅木25×105/2(壁面より10出し)+受け材90/2×90。床板張り・幅木(6-44-2)は幅木25×105/2(壁面より8出し・床から40)+受け材90/2×90。ポリスチレンフォーム床下地材の板畳(6-44-2)は壁際に受け材40×60+見切36×55、畳の際に畳寄せ36×55+転ばし大引90×90/2(アンカーボルト)、板幅150以上は根太30×40-@360。木造壁(6-43-1)は真壁の断面(頭つなぎ90×90/2+あと施工アンカーM10-@1,800程度・廻り縁 天井面から30下がり柱面から10出し・内法材45×55+見切縁25×40・畳寄せ25×105/2+見切36×45 又は 幅木27×105/36×105)とT形取合い平面(柱90×90のちりじゃくり・間柱45×40-@300)。RC壁のT形取合い平面(6-43-2)は木造の間仕切を見切30×40(壁面から30出し)で納める。',
+def('wa_wall','wall','和室 壁回り(見切縁・畳寄せ・幅木・板畳・T形取合い・床板張り・LGS壁の床取合い・木造壁 真壁)',{keys:['wwv','wbw','wpst','stud','pbn','bt'],defs:{pbn:1},desc:'和室の壁回り(建築工事標準詳細図6-43・6-44)。A部=内法高さの見切縁20×40(壁面より8出し・見付け35)、RC壁はPL-1.2×25×80@900+コンクリート釘、LGS壁はPL-0.8×30×80@600/@450。ポリスチレンフォーム床下地材の床取合いは畳寄せ25×55+受け材40×60、幅木25×105(畳面から40)。板畳(6-43-2)は板を壁から8離し、畳寄せ36×55+受け材36×45(板幅150未満)・根太30×40/30×60-@360(150以上900未満)。T形取合い平面(6-43-3)はLGS間仕切をボード面に突き付け、入隅はジョイントテープ+ジョイントコンパウンド。LGS壁の床取合い(6-44-3)は和室側に畳寄せ25×105/2又は幅木25×105+受け材40×60、隣室側(フローリング)は見切36×45+受け材40×60又は幅木25×105/2(壁面より10出し)+受け材90/2×90。床板張り・幅木(6-44-2)は幅木25×105/2(壁面より8出し・床から40)+受け材90/2×90。ポリスチレンフォーム床下地材の板畳(6-44-2)は壁際に受け材40×60+見切36×55、畳の際に畳寄せ36×55+転ばし大引90×90/2(アンカーボルト)、板幅150以上は根太30×40-@360。木造壁(6-43-1)は真壁の断面(頭つなぎ90×90/2+あと施工アンカーM10-@1,800程度・廻り縁 天井面から30下がり柱面から10出し・内法材45×55+見切縁25×40・畳寄せ25×105/2+見切36×45 又は 幅木27×105/36×105)とT形取合い平面(柱90×90のちりじゃくり・間柱45×40-@300)。RC壁のT形取合い平面(6-43-2・6-44-2)は木造の間仕切を見切30×40(壁面から30出し)で納める。6-44-1 はポリスチレンフォーム床下地材の床で、壁の下に土台90×90/2+アンカーボルト、隣室のフローリング面は畳面より18低い。',
  ev:c=>rate(40,[[0,'和室の壁の見切縁と、畳と壁の取合い']])});
 def('oshiire','floor_trans','和室 押入れ(敷居・中段・鴨居・天袋の上部)',{keys:['osv'],desc:'和室の押入れの断面(建築工事標準詳細図6-46)。敷居・鴨居90×40(仕上り85×35・溝21・中ひばた9)、ふすま見込み(19.5)、中段・天袋は前框45×90+根太40×45-@360+普通合板1類t=9、床は根太掛け90/2×90、支柱40×60(幅2,000以上・3枚戸4枚戸)。天袋の上部・天袋のない場合は天井から30下げて鴨居、見切縁は鴨居より10出し、吊木45×40-@300・吊木受け90×90/2で天井取合い。',
  ev:c=>rate(40,[[0,'和室の押入れ']])});
@@ -19403,6 +19975,11 @@ function parsePrompt(raw){
     if(/^(?:(?:鋼製(?:軽量)?(?:建具)?|軽量(?:鋼製)?(?:建具)?|スチール(?:ドア)?|鋼板|建具|フラッシュ(?:戸|ドア|扉)?|戸|扉|ドア|外部用?|外部に面する|屋外|屋内|室内|内部用?|横断面|縦断面|断面|姿図|骨組み?|立面|正面|上部|下部|錠の?高さ|力骨|冂形|中骨|表面板|心材|芯材|ペーパーコア|水酸化アルミ(?:無機シートコア)?|無機シートコア|発泡材?|グラスウール|ロックウール|GW|RW|防音|かぶせ(?:溶接)?|溶接し?|接着剤?|圧着|充填|上がまち|下がまち|上框|下框|かまち|框|補強板|縦小口包み板?|組立て?|構成|LSD|(?:幅|W)\s*=?\s*\d[\d,]{2,4}|(?:高さ|H)\s*=?\s*\d[\d,]{2,4}|(?:見込み?|厚さ|t)\s*=?\s*\d{2}|標仕(?:R7)?|(?:標仕(?:R7)?)?\s*(?:表\s*)?16\.[45](?:\.\d)?)\s*)+$/i.test(sg)&&/力骨|冂形|鋼製|スチール|鋼板|16\.[45]/.test(t))return;   /* 鋼製フラッシュ戸 */
     if(/^(?:C[-－]C|A部(?:詳細)?|立面|正面図?|平面|上部|下部|断面|1\/20|(?:吹出口の?)?長さ\s*=?\s*L?\d[\d,]*|割り?付け?\s*=?\s*\d[\d,]*|奥行き?\s*=?\s*\d{3})$/i.test(sg)&&/ファンコイル|FCU/i.test(t))return;   /* FCUカバーの図・寸法 */
     if(/^(?:内面|外面|(?:内面|外面)?姿図|立面|押しボタン|自動扉押しボタン|(?:(?:有効幅|H|高さ)\s*=?\s*\d[\d,]{2,4}\s*)+)$/i.test(sg)&&/引き?戸|引戸|6-27/.test(t))return;   /* 便所 引き戸の姿図(6-27) */
+    if(/^(?:平面図?|断面図?|全体|階高|折り?返し|1\/50|手すり子|手摺子|手すり腰壁|腰壁|踊場|吹抜け?|(?:(?:踏面|蹴上げ?|T|R|H1|W1|W2|階高|踊場)\s*[=≧]?\s*\d[\d,]{2,4}\s*)+)$/i.test(sg)&&/階段|7-11/.test(t))return;   /* 階段 平面・断面(7-11) */
+    if(/^(?:最上階|(?:(?:踏面|蹴上げ?|T|R|H1)\s*=?\s*\d[\d,]{2,4}\s*)+)$/i.test(sg)&&/腰壁|7-13/.test(t))return;   /* 階段(手すり腰壁)の断面・最上階部分(7-13) */
+    if(/^(?:立面|立図|姿図|正面図?|平面|断面|1\/20|(?:側板間(?:寸法)?|側板の?間隔|L)\s*=?\s*\(?@?\d[\d,]*\)?|(?:長さ|幅)\s*=?\s*\d[\d,]*)$/i.test(sg)&&/カウンター|8-11/.test(t))return;   /* 木製カウンターの図・寸法(8-11) */
+    if(/^(?:断面|1\/10|1\/20|上部|横引き?|(?:(?:W|下端|離れ|高さ|天井高さ?)\s*=?\s*\d[\d,]{2,4}\s*)+)$/i.test(sg)&&/フード|吊り?戸棚|水切棚/.test(t))return;   /* 湯沸室 フード・吊戸棚(6-11-2・-5) */
+    if(/^(?:器具配置|器具|配置|展開図?|平面図?|流し台|こんろ台|(?:流し台?の?(?:長さ)?|長さ|L|天井高さ?)\s*=?\s*\d,?\d{3})$/i.test(sg)&&/湯沸室|給湯室|6-11|器具配置|流し台|こんろ台/.test(t))return;   /* 湯沸室器具配置(6-11-1) */
     if(knownRe().test(sg))return;
     unk.push(sg);
   });
@@ -19516,7 +20093,7 @@ function parsePrompt(raw){
   else if(/庁舎名|箱文字|切り?文字|誘導サイン|8-41/.test(t)||/サイン/.test(t)&&!/室名札|ルームサイン|案内板|案内用図記号|ピクト|天吊|8-4[234]/.test(t))cat='signw';
   else if(/室名札|室名板|ルームサイン|8-43/.test(t))cat='rplate';
   else if(/衛生器具配置|6-21|洗面器|洗面カウンター|小便器/.test(t)&&!/汚垂|おだれ|6-29|6-28|手すり|手摺/.test(t)&&!(/小便器/.test(t)&&/断面|ライニング下地|軽量鉄骨|LGS/.test(t)&&!/洗面/.test(t)))cat='fixture';
-  else if(/流し.{0,4}水切|水切.{0,4}流し|湯沸室|給湯室|6-11/.test(t))cat='sinkd';
+  else if(/流し.{0,4}水切|水切.{0,4}流し|湯沸室|給湯室|6-11|フード|吊り?戸棚|水切棚|(?:流し台|こんろ台).{0,6}(?:配置|展開|平面)/.test(t))cat='sinkd';
   else if(/脱衣箱|脱衣棚|6-32/.test(t))cat='datsui';
   else if((/6-2[56](?!\d)|大型ベッド|多機能トイレ|多目的トイレ|バリアフリートイレ|座位変換/.test(t)||/(?:車椅子|車いす)使用者用便房/.test(t)&&!/簡易型/.test(t)||/車椅子|車いす/.test(t)&&/オストメイト/.test(t)&&!/簡易型/.test(t))&&!(/6-27|縦枠|断面|上部|下部|上枠|レール|上吊り|振れ止め/.test(t)||/引き?戸|引戸/.test(t)&&!/6-2[56]|大型ベッド|オストメイト|多機能|多目的|バリアフリー|座位変換|平面/.test(t)))cat='wcf';   /* 引き戸の詳細(6-27)は slide_door */
   else if(/オストメイト|おむつ交換|乳幼児連れ|着替え台|6-24/.test(t)&&!/6-2[35-9]|簡易型/.test(t))cat='wcmul';
@@ -19529,6 +20106,7 @@ function parsePrompt(raw){
   else if(/カウンター|8-11/.test(t))cat='counter';
   else if(/ファンコイル|FCU|8-13/i.test(t))cat='fcu';
   else if(/くつ洗い|靴洗い|くつあらい|8-22/.test(t))cat='karai';
+  else if((/7-11(?![\d])/.test(t)||/階段/.test(t)&&/平面|階高|折り?返し|1\/50|W[12]\s*[=≧]|踊場\s*\d/.test(t))&&!/石[張貼]|滑り?止め|ノンスリップ|目地棒|7-1[23]|天端|最上階|改修|側端部|A部/.test(t))cat='stair711';
   else if(/手すり子|手摺子|側端部|7-12-[28]|7-12-?A/.test(t)&&!/屋上|屋根|パラペット/.test(t))cat='srail';
   else if(/7-13/.test(t)||/(?:手すり|手摺)(?:腰)?壁/.test(t)||/腰壁/.test(t)&&/天端|階段|笠木/.test(t))cat='kcap';
   else if(/地下二重壁|二重壁/.test(t))cat='chika';
@@ -21183,6 +21761,23 @@ function parsePrompt(raw){
     title='木製ファンコイルユニットカバー'+(P.fcv?' '+FCV[P.fcv]:'');
     if(P.fcv) items.push(['図',FCV[P.fcv]+'(割付け('+(P.fcl??1800)+')・奥行('+(P.fcd??600)+')'+(P.fco?'・吹出口の長さ L='+P.fco:'')+')']);
     items.push(['部位','木製ファンコイルユニットカバー(8-13)'],['甲板','堅木集成材 t=(30)、吹出口 W='+(P.fcw??120)+'(別途)・吹出口受 アルミL(15×15)'],['前面','ケンドン式 天然木練付フラッシュパネル(甲板から(15)控え、FLから(60)で吸気口)'],['寸法','FL〜甲板上端('+(P.fch??990)+')・フリーアクセスフロア('+(P.fcf??100)+')']);
+  }else if(cat==='sinkd'&&/フード|吊り?戸棚|水切棚|6-11-[125]|器具配置|展開|平面/.test(t)){
+    variant='kitchen_hood'; const kv3=/器具配置|展開|6-11-1|(?:^|[^断])平面/.test(t)&&!/6-11-[25]/.test(t);
+    P.khv=kv3?(/平面/.test(t)?4:3):/吊り?戸棚|水切棚|6-11-5/.test(t)?2:/断面|1\/20|こんろ|コンロ/.test(t)?1:0; P.khd=/横引き?/.test(t)?1:0;
+    const lm=t.match(/(?:流し台?の?(?:長さ)?|長さ|L)\s*=?\s*(\d,?\d{3})/); if(lm&&kv3)P.khl=Math.max(1200,Math.min(2400,+lm[1].replace(/,/g,'')));
+    const wm=t.match(/(?:^|[^A-Za-z])W\s*=\s*(\d{3})/i); if(wm)P.khw=Math.max(150,Math.min(400,+wm[1]));
+    const hm=t.match(/(?:下端|離れ|高さ)\s*=?\s*(\d{3,4})/); if(hm&&P.khv===1)P.khh=Math.max(800,Math.min(1000,+hm[1]));
+    const cm=t.match(/天井高さ?\s*=?\s*(\d[\d,]{3,4})/); if(cm)P.khc=Math.max(2250,Math.min(3000,+cm[1].replace(/,/g,'')));
+    const KHV=['-2 フード 1/10','-2 フード 断面 1/20','-5 吊戸棚 断面 1/20','-1 器具配置 展開 1/20','-1 器具配置 平面 1/20'];
+    title=P.khv===4?'湯沸室器具配置 平面':P.khv===3?'湯沸室器具配置 展開':P.khv===2?'吊戸棚 断面':P.khv===1?'フード 断面':'フード';
+    items.push(['部位','湯沸室 '+KHV[P.khv]+'(6-11)']);
+    if(P.khv>=3){ const lk=P.khl||1800; items.push(['配置','こんろ台(600)・ステンレス製流し台('+String(lk).replace(/\B(?=(\d{3})+(?!\d))/g,',')+')・奥行(550)'+(P.khv===4?'・上部水切り 小口ふた付き・トラップ':'')]);
+      if(P.khv===3) items.push(['上部','フード(600)・排気筒に直結、吊戸棚('+(lk<1200?lk:'1,200')+')×(500)・下端 FL+(1,600)・水切棚(250)・手元灯(別途)、不燃板(1.0FK t=6 EP)'],['寸法','流し台(800)・こんろ台(640)・天井高('+(P.khc?String(P.khc).replace(/\B(?=(\d{3})+(?!\d))/g,','):'2,250以上')+')']);
+      items.push(['壁','側面ステンレス SUS304 t=0.6・流し上部水切り(6-11-3)、流し台・こんろ台の裏は仕上げなし'],['特記','流し台・こんろ台・吊戸棚・水切棚の形状・寸法・配置']); }
+    else if(P.khv===2) items.push(['吊戸棚','既製品 奥行(350)・下端 FL+(1,600)・天井との間は板 t=20(EP-G又はSOP)+40×45、棚受け木 35×50'],['寸法','水切棚(250)・流し台(800)・天井高('+(P.khc?String(P.khc).replace(/\B(?=(\d{3})+(?!\d))/g,','):'2,250以上')+')']);
+    else items.push(['フード','ステンレス SUS430 t=1.0・奥行600・前面板は天井まで'+(P.khv?'':'・L-30×30×3・FB-3.0×30@300・油受け50/20')],['ダクト',(P.khd?'横引き W×H':'上部 W×L')+'(接続用開口 W='+(P.khw||200)+' は特記)']);
+    if(P.khv===1) items.push(['こんろ','こんろ台(640)・こんろの上面〜フード下端 '+(P.khh||'800以上1,000以下')]);
+    if(P.khv<3) items.push(['特記','フード・吊戸棚・水切棚・こんろ台の形状・寸法・配置、油抜きの有無']);
   }else if(cat==='sinkd'){
     variant='sink_drip'; P.skv=/棚|6-11-4/.test(t)?1:0;
     title=P.skv?'流し上部水切り(棚を設ける場合)':'流し上部水切り';
@@ -21326,8 +21921,12 @@ function parsePrompt(raw){
     variant='counter'; P.cnk=/コーナー|壁付|8-11-2|LGS|軽量/.test(t)?1:0;
     const hm=t.match(/(?:高さ|上端|H)\s*=?\s*(\d{3,4})/i); if(hm)P.cnh=Math.max(600,Math.min(1200,+hm[1]));
     const wm=t.match(/(?:W2|奥行き?)\s*=?\s*(\d{3})/i); if(wm)P.cnw=Math.max(300,Math.min(700,+wm[1]));
+    P.cnv=/立面|立図|姿図|正面/.test(t)?1:P.cnk&&/平面/.test(t)?2:0;
+    const lm=t.match(/(?:側板間(?:寸法)?|側板の?間隔|L)\s*=?\s*\(?@?(\d,?\d{3})/); if(lm)P.cnl=Math.max(1200,Math.min(2000,+lm[1].replace(',','')));
+    const cm=t.match(/(?:長さ|幅)\s*=?\s*(\d,?\d{3}|\d{3})(?!\d)/); if(cm)P.cnc=Math.max(900,Math.min(2400,+cm[1].replace(',','')));
     const H=P.cnh||(P.cnk?700:1000);
-    title=P.cnk?'コーナーカウンター':'木製受付カウンター';
+    title=(P.cnk?'コーナーカウンター':'木製受付カウンター')+(P.cnv?(P.cnk?(P.cnv===2?' 平面':' 立図'):' 立面'):'');
+    if(P.cnv) items.push(['図',P.cnk?(P.cnv===2?'-2 平面 1/20(支持金物(600)・奥行(450)・R20、長さ'+(P.cnc??1200)+')':'-2 立図 1/20(支持金物・補強金物・スタッドは破線、長さ'+(P.cnc??1200)+')'):'-1 立面 1/20(事務室側|待合側、側板間寸法 L='+(P.cnl??1500)+'・ローカウンター下は開放・目透し)']);
     if(P.cnk) items.push(['部位','木製カウンター -2 コーナーカウンター(8-11)'],['カウンター',`堅木集成材 t=(40)・奥行(450)・FL+(${H})、壁との取合いはパテ処理`],['支持','支持金物 FB-60×6×600 曲げ加工(皿ビス止め 各面3ヶ所)・補強金物 C-60×30×10×2.3'],['壁','軽量鉄骨壁 '+(P.stud??65)+'形(指定仕上材)']);
     else items.push(['部位','木製カウンター -1 木製受付カウンター(8-11)'],['ハイカウンター',`堅木集成材(450)×(30)・FL+(${H})・カウンター支持金物 FB-6×60×400@(500〜600)`],['ローカウンター',`メラミンポストフォーム(30)・FL+(${H-300})・奥行W2=${P.cnw??400}・支持金物 FB-6×60×500`],['間仕切','柱・土台(90×60)・胴縁20×45@250・普通合板t=12+t=5.5又はケイ酸カルシウム板t=6、側板 t=35 フラッシュ']);
   }else if(cat==='srail'){
@@ -21337,11 +21936,28 @@ function parsePrompt(raw){
     items.push(['部位','階段 手すり子付き手すり 断面・A部(7-12)'],['笠木','集成材(45φ CL)・FB-4.5×38(EP-G又はSOP ビス@200)'],['支柱・手すり子','支柱34φ×2.3・手すり子13φ丸棒・27.2φ×2.3(EP-G又はSOP)・座金ステンレスSUS304 t=2.0']);
     if(P.srn) items.push(['内側の手すり','集成材(35φ CL)・ブラケット21.7φ×2.3@900程度・'+(P.srn===2?'750〜850+600〜650':'750〜850')]);
     items.push(['側端部','立上り PL-6(EP-G又はSOP)・床から(50)・シーリング材'],['特記','H・手すりの径・樹種・塗装']);
+  }else if(cat==='stair711'){
+    variant='stair_plan'; P.ydk=/腰壁|7-11-2/.test(t)?1:0; P.ydv=/断面/.test(t)?1:0;
+    const g=re=>{const a=t.match(re);return a?+a[1].replace(',',''):0;};
+    const tT=g(/(?:踏面|T)\s*=?\s*(\d{3})/),tR=g(/(?:蹴上げ?|R)\s*=?\s*(\d{3})/),tF=g(/階高\s*=?\s*(\d,?\d{3})/),tW=g(/W1\s*[=≧]?\s*(\d,?\d{3})/i),tL=g(/(?:W2|踊場)\s*[=≧]?\s*(\d,?\d{3})/i),tH=g(/H1\s*=?\s*(\d,?\d{3})/i);
+    if(tT)P.ydT=tT; if(tR)P.ydR=tR; if(tF)P.ydF=tF; if(tW)P.ydW=tW; if(tL)P.ydL=tL; if(tH)P.ydH=tH;
+    title=`階段 ${P.ydv?'断面':'平面'}(${P.ydk?'手すり腰壁':'手すり子'})`;
+    items.push(['部位','階段 '+(P.ydk?'-2 手すり腰壁の場合':'-1 手すり子のある場合')+' '+(P.ydv?'断面':'平面')+' 1/50(7-11)'],
+      ['段',`踏面 T=${P.ydT??280}・蹴上げ R≒${P.ydR??175}(階高 ${P.ydF??3500} を等分)`],
+      ['幅',`W1=${P.ydW??1400}(1,400以上、手すりの内側)・上下の手すりの間100以上・踊場 W2=${P.ydL??1400}(手すりの端部から壁まで)`],
+      ['手すり','750〜850・下段(600〜650)は段鼻から、段鼻から450以上延長・端部に点字表示、上の階の床の端は1,200以上'],
+      ['床','注意喚起用床材 段鼻から(300)離して幅(300)']);
   }else if(cat==='kcap'){
     variant='koshi_cap'; P.kct=/金属|ステンレス|SUS|金物/i.test(t)?1:/打放し|打ち放し|面取り/.test(t)?2:0;
     const wm=t.match(/(?:厚さ?|壁厚|t)\s*=?\s*(\d{3})/i); if(wm)P.kcw=Math.max(100,Math.min(200,+wm[1]));
-    title=`手すり腰壁の天端(${['木製','金属製','コンクリート打放し'][P.kct]})`;
-    items.push(['部位','階段 手すり腰壁の天端(7-13)'],['天端',['集成材(120×60 CL)+モルタル詰(20)','SUS304 t=1.5 HL 笠木(25)・通し材 亜鉛めっき鋼板t=2.3・あと施工アンカーM10@600・シーリング材','コンクリート打放し 面取り15'][P.kct]],['腰壁','RC '+(P.kcw??120)]);
+    P.kcv=/最上階/.test(t)?2:/断面|段鼻|踏面|蹴上げ?|下段手すり|ブラケット|注意喚起|点字/.test(t)&&!/天端の?断面/.test(t)?1:0;
+    if(P.kcv===1){ const tm=t.match(/(?:踏面|T)\s*=?\s*(\d{3})/); if(tm)P.kcT=+tm[1]; const rm=t.match(/(?:蹴上げ?|R)\s*=?\s*(\d{3})/); if(rm)P.kcR=+rm[1]; const hm=t.match(/H1\s*=?\s*(\d,?\d{3})/); if(hm)P.kch=+hm[1].replace(',',''); }
+    if(P.kcv){ title=`階段(手すり腰壁) ${P.kcv===2?'最上階部分':'断面'}(天端 ${['木製','金属製','コンクリート打放し'][P.kct]})`;
+      items.push(['部位','階段(手すり腰壁のある場合) '+(P.kcv===2?'最上階部分':'断面')+' 1/10(7-13)'],
+        P.kcv===2?['腰壁','RC '+(P.kcw??120)+'・天端は床から(1,200以上)、手すりの端部は壁際で曲げ下ろし H2(特記)']:['段',`踏面 T=${P.kcT??300}・蹴上げ R=${P.kcR??160}・蹴込み(20)・階段滑り止め・注意喚起用床材(段鼻から(300))`],
+        ['手すり','集成材(35φ CL) 750〜850・下段(600〜650)は段鼻から、段鼻から450以上延長、ブラケット FB-12×25@900程度'],['天端',['集成材(120×60 CL)+モルタル詰(20)','SUS304 t=1.5 HL 笠木(25)・シーリング材','コンクリート打放し 面取り15'][P.kct]]); }
+    else{ title=`手すり腰壁の天端(${['木製','金属製','コンクリート打放し'][P.kct]})`;
+    items.push(['部位','階段 手すり腰壁の天端(7-13)'],['天端',['集成材(120×60 CL)+モルタル詰(20)','SUS304 t=1.5 HL 笠木(25)・通し材 亜鉛めっき鋼板t=2.3・あと施工アンカーM10@600・シーリング材','コンクリート打放し 面取り15'][P.kct]],['腰壁','RC '+(P.kcw??120)]); }
   }else if(cat==='karai'){
     variant='kutsu_arai'; P.kak=/共栓|仕切|8-22-2/.test(t)?1:0;
     title=`くつ洗い流し(${P.kak?'-2 共栓付き':'-1'})`;
@@ -21373,7 +21989,7 @@ function parsePrompt(raw){
     variant='smoke_wall'; const hm=t.match(/(?:H|高さ)\s*=?\s*(\d{3,4})/i); if(hm)P.sh=+hm[1];
     items.push(['部位','防煙垂れ壁(固定式)'],['垂れ壁',`網入りガラスt6.8 H=${P.sh}`]);
   }else if(cat==='wawall'){
-    variant='wa_wall'; const tj=/[TＴ]形|T字/.test(t),lg=/LGS|軽量鉄骨|軽鉄|スタッド/.test(t),wd=!lg&&/木造|木軸|真壁|6-43-1/.test(t),
+    variant='wa_wall'; const tj=/[TＴ]形|T字/.test(t),lg=/LGS|軽量鉄骨|軽鉄|スタッド/.test(t),wd=!lg&&/木造|木軸|真壁|6-4[34]-1/.test(t),
       fp=!wd&&!tj&&!lg&&/床板[張貼]|フローリング/.test(t)&&/幅木|巾木/.test(t)&&!/板幅|板畳|縁甲板/.test(t),bd=!wd&&!tj&&!fp&&/板幅|板畳|縁甲板|フローリング/.test(t)&&!(lg&&!/板幅|板畳|縁甲板/.test(t));
     const fl=!wd&&!tj&&!bd&&/畳寄せ?|幅木|巾木|床|ポリスチレン|スタイロ|空練り/.test(t)&&!/内法|見切縁|A部/.test(t);
     if(bd){ const wm=t.match(/板幅\s*=?\s*(\d{2,3})(?!\d|\s*(?:未満|以上))/),w=wm?+wm[1]:0; P.wbw=w;
@@ -21381,15 +21997,17 @@ function parsePrompt(raw){
         const pm=t.match(/(?:ポリスチレン|スタイロ|床下地材)[^\d]{0,14}(?:t\s*=?\s*)?(30|40|50)/); P.wpst=pm?+pm[1]:40; }
       else P.wwv=(/150\s*未満/.test(t)||(w&&w<150))?5:/30\s*[×xX]\s*60|根太\s*60/.test(t)?7:(/150\s*以上|900\s*未満|根太/.test(t)||w>=150)?6:5; }
     else if(fp) P.wwv=10;
-    else if(wd) P.wwv=tj?15:/幅木|巾木/.test(t)?14:13;
-    else if(tj&&!lg&&/RC|コンクリート|鉄筋|6-43-2|30\s*[×xX]\s*40/.test(t)) P.wwv=16;
+    else if(wd){ const pz=/ポリスチレン|スタイロ|空練り|床下地材|6-44/.test(t)&&!/6-43/.test(t); P.wwv=tj?15:pz?(/幅木|巾木/.test(t)?18:17):/幅木|巾木/.test(t)?14:13;
+      if(pz){ const pm=t.match(/(?:ポリスチレン|スタイロ|床下地材)[^\d]{0,14}(?:t\s*=?\s*)?(30|40|50)/); P.wpst=pm?+pm[1]:40; } }
+    else if(tj&&!lg&&/RC|コンクリート|鉄筋|6-4[34]-2|30\s*[×xX]\s*40/.test(t)) P.wwv=16;
     else P.wwv=tj?4:fl?(/幅木|巾木/.test(t)?(lg?9:3):(lg?8:2)):(lg?1:0);
     if(fl){ const pm=t.match(/(?:ポリスチレン|スタイロ|床下地材)[^\d]{0,14}(?:t\s*=?\s*)?(30|40|50)/); P.wpst=pm?+pm[1]:40; }
     if((P.wwv===1||P.wwv===4||P.wwv===8||P.wwv===9)&&!R.w.pbn&&!R.w.wl)P.pbn=1;
     const bwT=P.wbw||(P.wwv===5||P.wwv===11?120:450);
-    title='和室 壁回り('+['見切縁 RC壁','見切縁 LGS壁','畳寄せ ポリスチレンフォーム床下地材','幅木 ポリスチレンフォーム床下地材','T形取合い 平面 LGS間仕切','板畳 板幅'+bwT,'板畳 板幅'+bwT+' 根太30×40','板畳 板幅'+bwT+' 根太30×60','床取合い LGS壁 畳寄せ','床取合い LGS壁 幅木','床板張り 幅木','板畳 板幅'+bwT+' ポリスチレンフォーム床下地材','板畳 板幅'+bwT+' ポリスチレンフォーム床下地材','木造壁 断面','木造壁 断面 幅木','T形取合い 平面 木造壁','T形取合い 平面 RC壁'][P.wwv]+')';
-    if(P.wwv>=13) items.push(['部位','和室 壁回り('+['6-43-1 木造壁 断面 一般の場合','6-43-1 木造壁 断面 幅木を設ける場合','6-43-1 T形取合い 平面','6-43-2 T形取合い 平面'][P.wwv-13]+')']);
-    if(P.wwv===13||P.wwv===14) items.push(['上部','頭つなぎ90×90/2・あと施工アンカーM10-@1,800程度'],['天井','廻り縁(天井面から30下がり・柱面から10出し)'],['内法','内法材45×55+見切縁25×40(見付け35・Hは特記)'],['床',P.wwv===14?'幅木 和室側27×105・隣室側36×105(床から40)':'畳寄せ25×105/2・隣室側 見切36×45']);
+    title='和室 壁回り('+['見切縁 RC壁','見切縁 LGS壁','畳寄せ ポリスチレンフォーム床下地材','幅木 ポリスチレンフォーム床下地材','T形取合い 平面 LGS間仕切','板畳 板幅'+bwT,'板畳 板幅'+bwT+' 根太30×40','板畳 板幅'+bwT+' 根太30×60','床取合い LGS壁 畳寄せ','床取合い LGS壁 幅木','床板張り 幅木','板畳 板幅'+bwT+' ポリスチレンフォーム床下地材','板畳 板幅'+bwT+' ポリスチレンフォーム床下地材','木造壁 断面','木造壁 断面 幅木','T形取合い 平面 木造壁','T形取合い 平面 RC壁','木造壁 断面 ポリスチレンフォーム床下地材','木造壁 断面 幅木 ポリスチレンフォーム床下地材'][P.wwv]+')';
+    if(P.wwv>=13) items.push(['部位','和室 壁回り('+['6-43-1 木造壁 断面 一般の場合','6-43-1 木造壁 断面 幅木を設ける場合','6-43-1 T形取合い 平面','6-43-2・6-44-2 T形取合い 平面','6-44-1 木造壁 断面 一般の場合(ポリスチレンフォーム床下地材)','6-44-1 木造壁 断面 幅木を設ける場合(ポリスチレンフォーム床下地材)'][P.wwv-13]+')']);
+    if(P.wwv===17||P.wwv===18) items.push(['上部・内法','6-43-1 と同じ(頭つなぎ90×90/2・廻り縁・内法材45×55+見切縁25×40)'],['床',(P.wwv===18?'幅木 和室側27×105・隣室側36×105(畳面から40)':'畳寄せ25×105/2・隣室側 見切36×45')+'・畳t55+ポリスチレンフォーム床下地材 t'+P.wpst+'+空練りモルタル'],['土台','90×90/2・アンカーボルト・隣室のフローリング面は畳面より18低い']);
+    else if(P.wwv===13||P.wwv===14) items.push(['上部','頭つなぎ90×90/2・あと施工アンカーM10-@1,800程度'],['天井','廻り縁(天井面から30下がり・柱面から10出し)'],['内法','内法材45×55+見切縁25×40(見付け35・Hは特記)'],['床',P.wwv===14?'幅木 和室側27×105・隣室側36×105(床から40)':'畳寄せ25×105/2・隣室側 見切36×45']);
     else if(P.wwv===15) items.push(['柱','90×90(化粧・ちりじゃくりにボードを差し込む)'],['下地','間柱45×40-@300']);
     else if(P.wwv===16) items.push(['間仕切','木造(真壁)・下地材45×40'],['見切','30×40(壁の仕上げ面から30出し)']);
     else items.push(['部位','和室 壁回り('+(P.wwv>=11?'6-44-2 床取合い '+(P.wwv===11?'板幅150未満':'板幅150以上900未満')+'(ポリスチレンフォーム床下地材)':P.wwv>=8?(P.wwv===10?'6-44-2 床板張り・幅木を設ける場合':'6-44-3 軽量鉄骨壁 床取合い '+(P.wwv===9?'幅木を設ける場合':'一般の場合')):P.wwv===4?'6-43-3 T形取合い 平面':P.wwv>=5?'6-43-2 床取合い '+(P.wwv===5?'板幅150未満':'板幅150以上900未満'):fl?'6-44-2 床取合い':'6-43・6-44 A部 '+(P.wwv===1?'-3 軽量鉄骨壁':'-2 RC壁'))+')']);
@@ -21571,7 +22189,7 @@ function condParams(c,v){
 
 /* ───────── シート構成 ───────── */
 /* 生成ロジックの版。作図ルールを変えたら上げる(古い版の詳細を検出して再生成を促す) */
-const GENVER=218;
+const GENVER=224;
 const staleDetails=()=>st.details.filter(r=>r.variant&&r.variant!=='legend'&&r.ver!==GENVER);
 function regenStale(){
   const list=staleDetails();if(!list.length)return;
@@ -22836,10 +23454,16 @@ const GLOSSARY=[
   ['車椅子使用者用簡易型便房','6-23。一般の便所の中に設ける車椅子で使える便房。縦入り・横入り (2,000以上)×(1,300以上)、横入りは (1,800以上)×(1,500以上)も可。扉の有効幅800以上'],
   ['可動手すり/固定手すり/背もたれ','簡易型便房の手すり(6-23)。固定手すりは壁から心まで(120)で、基点(便座上面先端)から(550)・(250)。可動手すりは固定手すりから(700〜750)。背もたれの有無は特記'],
   ['乳幼児用椅子/和風便器','乳幼児用椅子は既製品で奥の壁に付ける(6-22-3)。和風便器で手すりを設置する場合、便器先端はへだての心から(350)'],
+  ['湯沸室器具配置/器具配置','湯沸室の器具の標準的な配置(6-11-1、展開・平面 1/20)。左の壁からこんろ台(600)・ステンレス製流し台(1,800)・奥行(550)。フード(600)は排気筒に直結し、吊戸棚(1,200)×(500)は下端 FL+(1,600)で流し台の右端にそろえ、下に水切棚(250)と手元灯(別途)。吊戸棚のフード側の面は不燃板(1.0FK t=6 EP)'],
+  ['側面ステンレス/小口ふた','こんろの横の壁に張るステンレス SUS304 t=0.6(6-11-1)。流し上部水切り(6-11-3)は壁の全長に通し、端部は小口ふた付き'],
+  ['フード/レンジフード','湯沸室のこんろの上の排気フード(6-11-2)。ステンレス SUS430 t=1.0、奥行600、前面板は天井まで立ち上げてつりボルトで吊る。壁側は L-30×30×3 をあと施工アンカー@600 で留め、下端は高さ50の縁と油受け20(油抜きコック)。こんろの上面からフードの下端まで800以上1,000以下'],
+  ['吊戸棚/水切棚','流し台の上の既製品の吊戸棚(6-11-5)。奥行(350)・下端 FL+(1,600)、天井との間は前面に板 t=20(EP-G又はSOP)と下地40×45。壁の中に棚受け木35×50。ステンレス製水切棚は吊戸棚の下(250)'],
+  ['横引きダクト/こんろ/こんろ台','フードの背面からダクトを横に引く場合の接続口は W×H(上部接続は W×L、特記)。こんろは別途、こんろ台は既製品(上端(640))'],
   ['流し上部水切り','湯沸室の流し台の奥の壁に付けるステンレスの水切り(6-11-3)。上下のボードの間に差し込み、仕上げ面から55出して先端を下げ、流しの立上りの上にかぶせる。棚を設ける場合(6-11-4)は1.0FK t12をSUS304 t0.6で包んだ棚を支持金物 PL-3.2×50@600で受ける'],
   ['脱衣箱','脱衣室の壁付けの箱(6-32)。メラミン樹脂板張り 400×400 の1段又は2段(上端 FL+1,300/1,600)。背板を受け材20×150に接着し、あと施工アンカーM10@600とふくろナットで留める'],
-  ['木製カウンター','受付・窓口のカウンター(8-11)。-1 受付カウンターは木造間仕切の上にハイカウンター(堅木集成材 450×30、FL+1,000)、事務室側にローカウンター(メラミンポストフォーム、FL+700)。-2 コーナーカウンターは壁に集成材t40・奥行450を突き付け、FB-60×6 曲げ加工の支持金物で受ける'],['カウンター支持金物','カウンターを下から受ける平鋼の曲げ加工の金物(FB-6×60、@500〜600)。壁側は仕上げ板の厚さに納めるか、ボードの裏の補強金物(C-60×30×10×2.3)に留め、カウンターに皿ビス止め'],
-  ['手すり腰壁','階段の手すりを兼ねるRCの腰壁(120)。天端は木製(集成材120×60)・金属製(SUS304 t=1.5の笠木)・打放し(面取り15)から選ぶ(7-13)。高さは段鼻から(1,200以上)は最上階部分'],['通し材','笠木を連続して受ける下地の金物。亜鉛めっき鋼板t=2.3をあと施工アンカーM10@600で留め、笠木をステンレスビスで留める'],
+  ['木製カウンター','受付・窓口のカウンター(8-11)。-1 受付カウンターは木造間仕切の上にハイカウンター(堅木集成材 450×30、FL+1,000)、事務室側にローカウンター(メラミンポストフォーム、FL+700)。-2 コーナーカウンターは壁に集成材t40・奥行450を突き付け、FB-60×6 曲げ加工の支持金物で受ける'],['端部側板','受付カウンターの両端の側板。ハイカウンターと同材で、FLからハイカウンターの下まで(8-11 立面)'],['側板間寸法','受付カウンターのローカウンターを受ける側板の間隔 L(@1,200〜2,000、特記)。側板はメラミン化粧合板貼 t=35 フラッシュ・見付 堅木(35×10)'],['カウンター支持金物','カウンターを下から受ける平鋼の曲げ加工の金物(FB-6×60、@500〜600)。壁側は仕上げ板の厚さに納めるか、ボードの裏の補強金物(C-60×30×10×2.3)に留め、カウンターに皿ビス止め'],
+  ['手すり腰壁','階段の手すりを兼ねるRCの腰壁(120)。天端は木製(集成材120×60)・金属製(SUS304 t=1.5の笠木)・打放し(面取り15)から選ぶ(7-13)。最上階部分は床から(1,200以上)。手すり 750〜850・下段(600〜650)は段鼻から、天端の高さ H1 は特記。「階段 手すり腰壁 断面」「手すり腰壁 最上階部分」で作図'],['最上階部分','階段の最上階で、吹抜け側の手すり腰壁の天端を床から(1,200以上)とする部分(7-11・7-13)。手すりの端部は壁際で曲げ下ろす(H2 特記)'],['下段手すり','子ども・高齢者用に上段(750〜850)の下に設ける手すり。段鼻から(600〜650)(7-12・7-13)'],['通し材','笠木を連続して受ける下地の金物。亜鉛めっき鋼板t=2.3をあと施工アンカーM10@600で留め、笠木をステンレスビスで留める'],
+  ['階段 平面・断面','折返し階段の平面・断面 1/50(7-11)。-1 手すり子のある場合・-2 手すり腰壁の場合。階段の幅 W1 は手すりの内側で1,400以上、上下の階段の手すりの間は100以上、踊場 W2 は手すりの端部から壁まで1,400以上。手すり 750〜850・下段(600〜650)は段鼻から、端部は段鼻から450以上延ばして点字表示。注意喚起用床材は段鼻から(300)離して幅(300)。「階段 平面 手すり子」「階段 断面 手すり腰壁 階高3,500」で作図'],
   ['庁舎名サイン/箱文字/切文字','建物名などの壁付けの文字サイン(8-41-1)。箱文字はSUS304 t=(0.8)の箱をステンレスボルト(8φ)・座金t=(2.0)で壁から E 離して留め、切文字はSUS304 t=(3.0以上)をスペーサー t=(10)+ステンレスピン(2〜3φ)L=(30)接着で留める。W・H・A・C・D・E は特記'],
   ['誘導サイン/壁付型/独立支柱型','案内の矢印などを示すサイン(8-41-2・-3)。壁付型はSUS304 t=(1.5)の箱形の板(厚さ(30))を受け金物+スペーサー t=(5.0)+カールプラグで壁から(5)離して掛ける。独立支柱型はSUS304 □-28.6×28.6×1.5の支柱を基礎コンクリート(400)角に埋め込む'],
   ['室名札/平付け型/持出し型/横差し式','室名を示す札(8-43)。平付け型はアクリル板t=3.0の台(35)を木ねじで留め、アクリル板t=5.0の表示板を横から差し込む(縦差し式・正方形もある)。持出し型はSUS304 t=1.5 HLのチャンネル(10)×(20)を木ねじ2箇所で留めてアクリル板t=5.0を差し込み、先端を1/20程度上げる。ボード壁はボード用アンカー'],
@@ -23092,7 +23716,7 @@ const GLOSSARY=[
   ['再生クラッシャラン/切込砂利/切込砕石','地業に用いる砕石・砂利類'],['土間床版/土間コンクリート','構造スラブとしての床版/地盤に直接打つ非構造の床コンクリート'],
   ['外周地盤','建物外周の地盤面。外壁内側の断熱材は外周地盤から400程度下まで'],['断熱防水','防水層の下に断熱材を敷く屋根工法。スラブ下の打込み断熱は不要']]]
 ];
-const PROMPT_EX=['縦どいの形式 外どい 最上部 ルーフドレン','外どい 横走りドレン 呼びどい パラペット','内どい 最上部 エルボ 防露','外どい 中間部 フロアドレン 塩ビ VP100','内どい 中間部 ソケット 125A','外どい 下部 GL エルボ 雨水桝','内どい 下部 下階等のある場合 掃除口','内どい 下部 下階等のない場合 床上掃除口','5-31-8 内どい エルボ 80A','路床 路盤 切土','路床 盛土 凍上抑制層 路盤厚300','路床 路盤 盛土 置換え','路床安定処理 路盤 粒度調整砕石 T=250','路床 フィルター層100 透水性舗装 路盤100','路盤の施工 再生クラッシャラン 路盤厚400 コンクリート舗装','標仕22.3 路盤 水硬性粒度調整鉄鋼スラグ','カーテンウォール メタル 縦断面','カーテンウォール メタル 縦断面 鉄骨 構造ガスケット','カーテンウォール 方立 平断面','PCカーテンウォール 縦断面','PCカーテンウォール 縦断面 鉄骨 目地幅25','PCカーテンウォール 縦目地 平断面','オーバーヘッドドア 断面','オーバーヘッドドア ローヘッド形 断面 電動式','オーバーヘッドドア ハイリフト形 リフト1500 断面','オーバーヘッドドア バーチカル形 断面 H2400','オーバーヘッドドア 立面 W3600 H3000 チェーン式','オーバーヘッドドア ガイドレール 平断面 鉄骨下地','オーバーヘッドドア ガイドレール 平断面 木下地 アルミ','透水性アスファルト舗装 改修 歩道','歩道 透水性舗装 改修 継目','塗床 改修 機械的除去 弾性ウレタン','塗床 改修 目荒し エポキシ 薄膜流しのべ 油面','改修 塗床 ビニル床シート撤去後 薄膜型','塗床 改修 モルタル下地共 除去 樹脂モルタル工法 防滑','既存フローリング 塗替え 研磨','フローリング 現場塗装 複合 A種','フローリング 再塗装 ドラムサンダー ポリッシャー t=12','LGS壁 ダクト開口補強','LGS壁 ダクト開口補強 600×400 拡大','間仕切 ダクト貫通 補強 W800 開口高さ300 FL+2800','ダクト開口補強 改修 軸組','改修 LGS壁 軸組 開口部補強','天井 つりボルト あと施工アンカー 既存スラブ','天井 つりボルト 既存インサート','天井 ダクト下 アングル つりボルト','ダクト下 アングル受け ダクト幅1600 ふところ1200','つりボルト 後施工アンカー スラブ厚180','外断熱改修 一般部 断面','外断熱改修 湿式 既存仕上材撤去','外断熱改修 通気層25 断熱材t=75','外断熱改修 頂部 笠木','外断熱改修 パラペット 笠木 湿式','断熱材後張り工法 壁 断面','断熱材後張り工法 ボード直張り t=30','断熱材後張り せっこうボード パネル','塗替え 木部 SOP 屋外','塗替え コンクリート面 EP-G 天井','塗装改修 鉄部 SOP A種 RA種','塗替え 木部 UC 2液形','塗替え 木部 クリヤラッカー A種','塗替え 木部 WP','塗替え 亜鉛めっき鋼面 EP-G B種','ファンコイルユニットカバー 立面','ファンコイルユニットカバー 平面 C-C','FCUカバー 平面 上部 割付け2400 吹出口の長さ2000','FCUカバー 断面 1/20 奥行700','ファンコイルユニットカバー A部詳細','鉄骨ブレース 接合部 梁下','鉄骨ブレース 接合部 床上 金属系アンカー','鉄骨ブレース 柱際 平断面 接合部の幅250','鉄骨ブレース 立面 K形 スパン6000 高さ2800','鉄骨ブレース 立面 X形','枠付き鉄骨ブレース 立面 V形 H-300','柱補強 溶接金網巻き 平断面','柱補強 溶接閉鎖フープ巻き 縦断面','柱補強 鋼板巻き 平断面 隙間30 鋼板9','柱補強 鋼板巻き 縦断面','柱補強 帯板巻き付け 立面','連続繊維補強 柱 平断面 2層 R20','炭素繊維シート 柱 縦断面','耐震スリット 完全スリット 外壁 平断面','耐震スリット 部分スリット 残し厚30','耐震スリット 内壁 遮音材 幅25','耐震スリット 立面 スリットの位置','構造スリット 新設 壁厚180 充填材なし','耐震壁 増設 縦断面 流込み工法','増設壁 圧入工法 縦断面','増設壁 柱取合い 平断面','耐震壁 増設 金属系アンカー はしご筋','増設壁 t=250 接着系アンカー スパイラル筋','砂利敷き A種 断面','砂利敷き B種 建築物の周囲','芝張り 目地張り 断面','芝張り 目地張り 平面','芝張り べた張り 法面','植栽基盤 A種 高木 断面','植栽基盤 C種 低木','植栽基盤 芝 有効土層30cm','自動ドア開閉装置 片引き 検出領域 平面','自動ドア開閉装置 引分け DSLD-1 立面','自動ドア開閉装置 タッチスイッチ 立面','自動ドア開閉装置 SSLD-2 保護領域 平面','自動ドア開閉装置 車椅子使用者用便房 操作スイッチ 立面','畳敷き A種 へり部 断面','畳敷き B種 かまち部 手縫い','畳敷き C種 PS-C25 へり部','畳敷き D種 姿図 針足','衝撃緩和型畳 へり部 断面','屋上緑化システム 断面 土壌層300','屋上緑化システム 軽量骨材 透水排水管 人工軽量土','屋上緑化システム 耐根層 保護コンクリート下','屋上緑化軽量システム 露出防水','屋上緑化 端部 見切り材 排水孔','鋼製建具 枠 つなぎ補強板 姿図','鋼製建具 屋内 枠 アンカー配置 W1800 H2100','鋼製建具 枠 隅の組立 留め','鋼製軽量建具 枠 隅の組立 くつずりなし','鋼製フラッシュ戸 横断面','鋼製フラッシュ戸 屋内 縦断面','鋼製建具 戸 骨組 姿図 W1200 H2400','鋼製軽量建具 フラッシュ戸 横断面 ペーパーコア','鋼製軽量建具 戸 縦断面 力骨にかぶせ溶接 グラスウール','力骨 冂形 下がまち','可動間仕切 縦断面','可動間仕切 縦断面 スラブに固定','可動間仕切 平断面 スタッド方式','可動間仕切 平断面 パネル方式 T100','移動間仕切 縦断面 CH3000','移動間仕切 縦断面 躯体にあと施工アンカー','移動間仕切 平断面','樹脂製建具 形材 断面','樹脂製建具 取付け 鉄骨下地 縦枠','樹脂製建具 取付け 木下地 縦枠','樹脂製建具 取付け 木下地 下枠 E種','樹脂サッシ アンカー 配置 立面 W1690 H1370','アルミサッシ 取付け 鉄骨下地 縦枠','アルミサッシ 取付け 木下地 縦枠','アルミサッシ 取付け 木下地 下枠','アルミサッシ 取付け 縦枠','アルミサッシ 取付け 下枠','サッシアンカー 配置 立面 W1800 H1500','ステンレス製建具 縦枠','ステンレス製建具 上枠 角出し曲げ','ステンレス製建具 下枠','ステンレス 曲げ加工 角出し曲げ','鏡 取付け 断面 RC壁','鏡 取付け 断面 LGS','鏡 立面 W600 H900','黒板 断面','黒板 立面 W3600','ホワイトボード 断面 軽量鉄骨壁','横形ブラインド 断面','横形ブラインド 立面 W2400','縦形ブラインド 断面','ロールスクリーン 立面 W1500','シャッター 立面 避難用扉','防火シャッター 断面 電動','防火シャッター 平面 W4000','軽量シャッター 断面 手動','管理用シャッター 立面 W5500 H3500 露出','額縁 小穴入れ 平断面 木造壁','額縁 小穴入れ 平断面 コンクリート壁','ぜん板 下枠 小穴入れ 断面 木造壁','ぜん板 下枠 小穴入れ 断面 コンクリート壁 出30','額縁 隅 大留め相欠き 姿図','額縁 継手 隠し目違い継ぎ','ぜん板 継手 柱心','木製枠 取付け 木造壁','木製枠 取付け 軽量鉄骨壁','木製枠 取付け コンクリート壁','木製枠 取付け コンクリート壁 つけひばた','縦枠 上枠 仕口 えり輪入れ','縦枠 上枠 仕口 見付け大留め','縦枠 下枠 仕口 木造壁 角柄','水掛り 下枠 傾斜ほぞ','下枠 断面 戸当りじゃくり','下枠 断面 上端平たん','敷居 断面 引違い 戸溝じゃくり','下枠 水返し 水垂れ勾配','敷居 かもい 吊束 立面','間仕切軸組 立面','間仕切軸組 立面 窓','柱 仕口 土台 頭つなぎ','隅柱 仕口 扇ほぞ','柱 土台踏外し','柱 コンクリート 取合い 頭つなぎ','土台 継手','土台 継手 ひき割り','土台 隅 取合い','頭つなぎ T形 取合い','土台 十形 取合い ひき割り','まぐさ 仕口 傾ぎ大入れ','転ばし大引 床組 断面','転ばし大引 ひき割り 床組','束立て 床組 床高600','根太 仕口 渡りあご','根太 仕口 大入れ','床板張り 二重張り 断面','畳下床板 パーティクルボード','縁甲板張り 断面','ふすま Ⅰ型 姿図','ふすま Ⅱ型 横断面','ふすま 縦断面','ふすま 仕口 えり輪入れ','ふすま Ⅱ型 仕口 火打','紙張り障子 姿図','障子 横断面','障子 縦断面 下桟60','障子 仕口 ほぞ','断熱材打込み コーン跡 補修','断熱材打込み 開口部 モルタル詰め 現場発泡','現場発泡 壁 確認ピン','吹付け硬質ウレタン スラブ下 梁 確認ピン','確認ピン 配置 W3600 H2700','木製 かまち戸 横断面 鏡板','かまち戸 ガラス 横断面','かまち戸 縦断面 上部ガラス 下部鏡板','かまち戸 姿図 W800 H2000','かまち戸 仕口 下かまち ほぞ','木製 フラッシュ戸 横断面','フラッシュ戸 縦断面 中骨式','フラッシュ戸 ペーパーコア 縦断面','フラッシュ戸 骨組 姿図 W900 H2100','フラッシュ戸 単板積層材 ペーパーコア 骨組','木造 壁胴縁 縦断面','木造 壁胴縁 平断面 かい木','木造 天井下地 吊木 懐500','木造 天井下地 野縁方向 つりボルト','木造 壁胴縁 ラスボード せっこうプラスター','石 笠木 湿式 断面','石 笠木 縦断面 目地','石 面台 屋内','石 隔て板 平断面','石 隔て板 縦断面 かすがい H1200','まぐさ タイル L形 引金物','窓台 タイル 水切板','窓台 タイル 水切板なし','ひさし先端 タイル 改良圧着','床 石張り 敷モルタル 目地','床 石張り 壁際 取合い 石厚40','階段 石張り 踏み石 け上げ石 R170 T280','床タイル 張付けモルタル 目地','床タイル 敷モルタル 張付け面積小','ユニットタイル 床 保護コンクリート','粘土瓦葺 軒先 J形','桟瓦 軒先 働き長さ245 軒瓦の出60','粘土瓦 7寸丸伏せ棟','F形 冠瓦伏せ棟 勾配5/10','のし積み棟 のし瓦7段','長尺金属板葺 立て平葺 軒先','立平 棟 棟包み','横葺 軒先 勾配3/10','瓦棒葺 けらば','金属板葺 壁取合い 雨押え','長尺金属板 谷 谷板','横葺 けらば包み','折板葺 重ね形 タイトフレーム 断面','折板 けらば包み 山高150','ガラスブロック積み 縦断面 外部 190角 目地10','ガラスブロック 平断面 縦枠 伸縮調整目地 幅15','ガラスブロック 立面 割付け W=7,200 H=2,400','屋内 ガラスブロック 間仕切 145×145×95 縦断面','ガラス溝 単板ガラス t=6 シーリング','複層ガラス 5+A12+5 ガラス溝','グレイジングチャンネル 単板 t=5','樹脂製建具 ガラス溝 押縁 複層ガラス','間知石積み 谷積み 断面 H=1,500','コンクリート間知ブロック 布積み 正面','間知石 勾配1:0.4 透水層なし 断面','塗装改修 鉄部 SOP 塗替え RB種','塗替え RA種 コンクリート面 改修前 改修後','塗装改修 亜鉛めっき鋼面 鋼製建具 RB種 断面','塗替え せっこうボード面 EP RC種','耐候性塗料 DP 塗替え 鉄骨 RA種','コンクリートブロック 帳壁 厚さ150 縦断面','ブロック塀 高さ1,600 平面','補強コンクリートブロック造 耐力壁 D13 縦断面','柱脚 アンカーボルト 柱底均しモルタル A種','建方用アンカーボルト B種 鉄筋 柱底均しモルタル B種 M20','柱脚 ベースプレート 300角 平滑 平面','耐火被覆 吹付けロックウール 梁 H-400×200','耐火板張り 柱 □-300','ロックウール吹付け スラブ下 厚さ25','こまい壁塗り 両面 水ごね土物','こまい壁 柱際 平断面 大津みがき','こまい壁 片面 砂壁仕上げ','ドロマイトプラスター塗り 壁','しっくい塗り せっこうボード下地 なで切り仕上げ','しっくい 木ずり下地 天井','しっくい こまい土壁 外壁','スパンドレル 天井 断面','金属成形板張り 長さ方向 断面 伸縮調整継手','スパンドレル 継手部 拡大 高さ15','軒天井 スパンドレル 屋外 働き幅200','階段滑り止め 接着工法 断面','階段滑り止め 埋込み工法 モルタル仕上げ','ノンスリップ 埋込み 平面 階段の幅1,800','床目地棒 断面 厚さ6','床目地棒 平面 長さ3,000','20.2.7 階段滑り止め','ALC 床パネル 敷設筋構法 断面','ALC 床パネル 長辺 目地 断面','ALC 屋根パネル ボルト留め','ALC 床パネル 敷き並べ 平面','8.4.5 ALC 屋根パネル t=125','樹木の支柱 二脚鳥居形','八ッ掛け形 H=4,000','生垣 支柱','9-01-3 十字鳥居形','門 引き戸 W=1,200 立面','9-35 引き戸断面','門 引き戸 W=1,500 A部詳細','門 片開き戸 立面','門 片開き戸 戸当り部','9-33 まる落とし受け座','門 両開き戸 W=2,400 平面','門 引き戸 立面','門 引き戸 基礎断面','門 引き戸 かんぬき','門 両開き戸 立面','門柱 断面','まる落とし受け座','浸透桝','浸透トレンチ','浸透側溝','車止め','駐車場 標準平面','歩道 アスファルト舗装','透水性アスファルト舗装','コンクリート平板舗装','舗石舗装','構内舗装 アスファルト舗装','コンクリート舗装 大型車','コンクリート舗装 収縮目地','インターロッキングブロック舗装 車道','トラップマンホール','トラップマンホール 2室','トラップマンホール 開口補強配筋','トラップマンホール H=3000','雨水マンホール','雨水マンホール 900 1200','雨水マンホール 1200 H=2500','ガソリントラップ桝','ガソリントラップ桝 2槽','ガソリントラップ桝 3槽 H=500','雨水桝','雨水桝 内径400 A+B+D','雨水桝 内径500 A+B+C+D','集水桝 有孔ふた 内径400','集水桝 現場打ち 350','集水桝 現場打ち 450 H=500','集水桝 現場打ち 600 H=1,000','集水桝 プレキャスト 450','U形側溝 300A','U形側溝 プレキャスト 450','上ぶた式U形側溝 300A','上ぶた式U形側溝 500B','U形側溝 現場打ち 内法200','U形側溝 現場打ち 内法300','U形側溝 現場打ち 内法450 深さ660','自由勾配側溝 B=400 H=1,000','L形側溝桝','V形側溝桝','街きょ桝','街きょ桝 H=800','L形側溝 幅350','L形側溝 幅450','V形側溝','街きょ','街きょ W=600','縁石 舗装面 幅100','縁石 舗装面 幅150','縁石 整地面 幅120','縁石 整地面 幅150','縁石 敷地境界線 幅120','縁石 敷地境界線 幅150 タイプ2','雑割石 縁石','植樹桝用ブロック','擁壁 断面','擁壁 正面 平面','擁壁 目地 伸縮目地 収縮目地','ALC 外壁 縦壁ロッキング 断面','ALC 外壁 横壁アンカー 断面','ALC 外壁 縦壁ロッキング 出隅 平面','ALC 外壁 横壁アンカー 立面 割付','押出成形セメント板 縦張り 断面','押出成形セメント板 横張り 平面','ECP 間仕切 縦張り 溝形鋼 断面','8.5.3 押出成形セメント板 横張り 立面','既存天井 仕上材 撤去','既存天井 下地ごと 撤去','既存開口 ふさぐ 照明 移設','既存天井 開口 新設 照明 300','既存天井 点検口 450','既存天井 間仕切壁 撤去 65形','既存天井 天井内の壁 撤去','仕上塗材 改修 サンダー工法','複層塗材 改修 高圧水洗工法 断面','外装薄塗材E 塗替え 塗膜はく離剤工法 ローラー','可とう形改修塗材 ローラー 水洗い工法','マスチック塗材 改修','外壁用塗膜防水材 改修 ローラー','下地挙動緩衝材 ひび割れ','床シート 撤去','塗床 除去 コンクリート下地','フローリング 撤去 モルタル下地','床組 撤去 全面','間仕切壁 開口 撤去','間仕切壁 撤去 大規模 壁厚180','アルミ笠木 改修','アルミ笠木 改修 300形 モルタル塗り','アルミ笠木 ジョイント部','アルミ笠木 コーナー部 平面','笠木 シール形式 板材折曲げ 幅400','たてどい 受金物 100A','たてどい 受金物 埋込み 125A','たてどい 防露巻き 浴室','たてどい 受金物 配置 屋内 階高3600','たてどい 配置 表面処理鋼板 全長6000','タイル部分張替え','タイル部分張替え 接着剤','タイル張替え 改良圧着','タイル張替え 接着剤','タイル張替え 伸縮調整目地','タイル 目地ひび割れ 改修','伸縮調整目地 新設','伸縮調整目地 新設 タイル切断','モルタル塗替え','モルタル塗替え 木ごて むら直し 高圧水洗','外壁 ひび割れ 樹脂注入','外壁 ひび割れ 手動式 樹脂注入 タイル','Uカット シーリング','Uカット ポリマーセメントモルタル モルタル撤去','ひび割れ シール工法','外壁 欠損部 ポリマーセメントモルタル','アンカーピンニング 部分エポキシ','アンカーピンニング 全面エポキシ タイル','注入口付アンカーピン 全面スラリー','アンカーピン 配置 2000×1000','アンカーピン 配置 全面 指定部分','タイル固定工法','防水改修 P0AS','防水改修 P2AI','防水改修 M4S 機械的固定','防水改修 P0AS ルーフドレン回り','シーリング再充填 建具枠 15×10','拡幅シーリング再充填 20×10','シーリング ブリッジ工法','遮音壁 脚部','遮音壁 頭部 天井高が異なる','遮音壁 頭部 断熱材あり ランナ受金物','遮音壁 壁取合い','遮音壁 T形壁取合い','EP塗装 ボード面','EP A種 コンクリート面 見上げ','EP-G モルタル面','SOP 鉄鋼面','SOP 木部 屋外','EP-G 亜鉛めっき鋼面 鋼製建具','DP 鉄骨','DP コンクリート面 A種','NAD 押出成形セメント板面','クリヤラッカー A種 木部','ウレタン樹脂ワニス 木部 2液形','ピグメントステイン','木材保護塗料 A種','錆止め塗装 鉄骨','マスチック塗材 ALC','せっこうプラスター塗り コンクリート','せっこうプラスター塗り せっこうボード','複層塗材E 吹付け','複層塗材E ローラー ALC','防水形複層塗材E 吹付け 下地モルタル','外装薄塗材E ローラー','内装薄塗材E こて塗り ボード','外装厚塗材C 吹付け','吹付用軽量塗材 見上げ','シート防水 立上り 端部','シート防水 機械的固定 端部 S-M2','シート防水 屋内保護密着 端部','シート防水 ルーフドレン回り 増張り','シート防水 配管回り 増張り','シート防水 S-C1 排水器具回り 増張り','シート防水 S-C1 配管回り 増張り','シート防水 ALC 目地 絶縁用テープ','塗膜防水 打継ぎ 補強布','塗膜防水 出隅 Y-1','塗膜防水 入隅 Y-2','塗膜防水 ルーフドレン回り 補強布','塗膜防水 配管回り 補強布','防水 増張り 入隅','防水 増張り 入隅 乾式保護材','増張り 出隅','増張り 立上りの入隅 平面','増張り 立上りの出隅 平面','増張り 打継ぎ箇所','増張り 打継ぎ 砂付あなあき','増張り PCa接合部','増張り PCa接合部 B-1','増張り ルーフドレン回り','増張り ルーフドレン 部分粘着','増張り 配管回り','ボード 留付け間隔 壁','ボード 留付け間隔 天井','直張り 接着材の間隔','モルタル塗り 内壁','モルタル塗り 外壁 むら直し','モルタル塗り メタルラス 外壁','モルタル塗り 外壁 タイル下地','タイル接着剤張り下地 下地調整塗材','モルタル塗り 床 張物下地','防水下地 モルタル塗り','直均し 粗面','セルフレベリング材塗り','壁紙張り せっこうボード面','壁紙張り コンクリート面 A種','壁紙 素地ごしらえ モルタル面','壁紙張り けい酸カルシウム板 A種','ジョイントテープ テーパエッジ','ベベルエッジ 継目処理 t15','継目処理 切断面 ジョイントコンパウンド','ジョイントテープ 入隅','ジョイントコンパウンド 出隅','フローリング 根太張り工法 壁際','フローリング 直張り工法 複合 B種','フローリング 接着工法 コンクリート下地','フローリング 隠し釘 根太張り','合成樹脂塗床 弾性ウレタン 平滑','エポキシ塗床 薄膜流しのべ 防滑','エポキシ 樹脂モルタル工法 塗床 モルタル下地','ビニル床シート 熱溶接 継目','ビニル床シート 熱溶接 U字 t2.5','カーペット グリッパー工法 壁際','タフテッドカーペット グリッパー 直均し','タイルカーペット フリーアクセスフロア 割付け','ケイ酸質系塗布防水 C-SUI','ケイ酸質系塗布防水 C-SUP 打継ぎ部','保護コンクリート 伸縮目地 断面','伸縮目地の割付け 屋上 12,000×9,000','シート防水 S-F1','防水層の構成 S-M2 塩ビシート 機械的固定','合成高分子系ルーフィングシート防水 断熱 機械的固定 塩ビ','シート防水 S-C1 屋内保護密着','塗膜防水 X-1 通気緩衝シート','ウレタンゴム系塗膜防水 密着工法','塗膜防水 Y-2 保護モルタル','改質アスファルトシート防水 AS-T1','改質アスファルトシート防水 AS-J1 常温粘着','改質アスファルトシート防水 断熱 トーチ工法 断熱材50','防水層の構成 AS-T4 あなあきシート','防水層の構成 A-1','防水層の構成 AI-2 断熱材50','防水層の構成 B-1 砂付あなあきルーフィング','防水層の構成 D-2','防水層の構成 E-1 浴槽','シーリング目地 打継ぎ目地 ボンドブレーカー','シーリング目地 建具枠とコンクリート','シーリング目地 ALC 仕上げあり','シーリング目地 押出成形セメント板 バックアップ材 角形','シーリング目地 PCa 20×10','シーリング目地 石 乾式','シーリング目地 ガラス回り','天井下地 軸組 ふところ1800','天井下地 軸組 段違い300 ふところ2000','天井下地 軸組 下地張りあり 長さ7200 ふところ1200','LGS壁 軸組 開口部補強','軸組 開口部上枠と天井面が離れている 開口高さ2100','軸組 天井高が異なる スラブ下4200 65形','庁舎名サイン 箱文字 取付け詳細','切文字 サイン 取付け','誘導サイン 壁付型 断面','室名札 平付け型','室名札 持出し型','鋼製ユニット煙突 屋上取合い','煙突 頂部 天板','煙突 頂部 天板なし 防鳥網','和室 床取合い LGS壁 畳寄せ','和室 幅木 LGS壁 ポリスチレンフォーム','和室 床板張り 幅木 ポリスチレンフォーム','和室 T形取合い LGS間仕切','和室 木造壁 真壁 断面','和室 木造壁 幅木','和室 木造壁 T形取合い 平面','和室 T形取合い RC壁 見切30×40','和室 板畳 板幅120','和室 板畳 板幅450 根太30×40','和室 板畳 板幅600 根太30×60','和室 板畳 板幅120 ポリスチレンフォーム','和室 板畳 板幅450 ポリスチレンフォーム床下地材 t50','一般便房 L型手すり 立面','便所 I型手すり 平面','車椅子使用者用便房','車椅子使用者用便房 大型ベッド','車椅子使用者用便房 オストメイト 手動扉','多機能トイレ オストメイト 大型ベッド','オストメイト用設備を有する便房','オストメイト 便房 着替え台','乳幼児連れに配慮した便房 おむつ交換台','乳幼児連れ 便房 乳幼児用椅子','車椅子使用者用簡易型便房 縦入り','簡易型便房 横入り 引き戸','簡易型便房 横入り 幅1800 奥行1500','洗面器 衛生器具配置 平面','洗面器 ライニング 立面 鏡','洗面カウンター 立面','洗面カウンター 洗面器 断面','小便器 衛生器具配置 平面','小便器 床置型 壁掛型 立面','小便器 壁掛型 3台 平面','洗面器 3台 心々800 立面','便所 一般便房 縦入り 内開き','一般便房 外開き ロータンク','トイレブース 横入り 乳幼児用椅子','便所 和風便器 便房','一般便房 W1100 奥行1600 開口650','窓 姿図 引違い らんま FIX','アルミサッシ 姿図 FIX 片引き 3連窓','窓 姿図 すべり出し W600 H900','樹脂製建具 姿図 内倒し','窓 姿図 C-17 らんま 内倒し','窓 形状寸法 上げ下げ','ふすま 姿図 4枚引違い らんま','鋼製建具 姿図 片開き','建具 姿図 親子開き ガラリ','鋼製軽量建具 姿図 両開き ガラス','建具 形状寸法 B-8','木製建具 姿図 片開き W800 H2100','階段 手すり子付き 2段手すり','階段 手すり子 側端部立上り 内側なし H1200','階段 壁付き手すり ビニル製 RC壁','階段 壁付き手すり ビニル LGS壁 2段','湯沸室 流し上部水切り','流し上部水切り 棚を設ける場合','脱衣室 脱衣箱','タラップ ステンレス製','タラップ 歩み板 足金物','タラップ 安全ガード付','木製受付カウンター','受付カウンター W2=450 高さ1100','コーナーカウンター LGS壁','手すり腰壁 天端 木製','手すり腰壁 金属製 天端','階段 腰壁 天端 コンクリート打放し','ファンコイルユニットカバー','FCUカバー 吹出口W150 フリーアクセスフロア150','くつ洗い流し','くつ洗い流し 共栓付き','縦どい 掃除口 下階等のある場合','床上掃除口 下階等のない場合','5-32-2 掃除口 125A 防露なし','ルーフドレン 横型 断熱防水','横型ドレン コンクリート押え','和室 押入れ 敷居','押入れ 中段','押入れ 鴨居 天袋','押入れ 天袋 天井取合い','押入れ 鴨居 天袋のない場合','厨房 グリストラップ','グリストラップ L2=600 深さ500 アスファルト防水','石張り 外壁乾式 スライド方式 横断面','石張り 外壁乾式 ロッキング方式 横断面','コンクリート打放し 打継ぎ目地','打放し ひび割れ誘発目地 平面','打放し 化粧目地 断面','化粧目地 縦目地 平面','外壁 モルタル塗の目地','吸音材 ガラスクロス張り','二重窓 改修 樹脂製建具 断面','二重窓 改修 既存額縁見込で納まる 平面','4-55-1 ふかし枠 平面','便所 引き戸 手動 平面','便所 引き戸 自動扉 平面','便所 引き戸 手動 内面姿図','便所 引き戸 自動扉 外面姿図','車椅子使用者用便房 引き戸 断面','引き戸 自動扉 上部 断面','浴室 水せん回り','水栓回り 洗い場 W2=250','トラフ しま鋼板','トラフ ふた 仕上材 アルミ枠','トラフ グレーチング ステンレス枠','便所 汚垂石 花こう岩','汚垂石 大型タイル','浴室 コンクリート浴槽','コンクリート浴槽 二重防水','床 排水溝 グレーチング','厨房 排水溝 幅300 深さ120 アスファルト防水','内装タイル 接着剤張り モルタル下地','内装タイル 接着剤張り ボード下地 LGS','内装タイル 直張り 断熱材 現場発泡','浴室 壁タイル 密着張り','内装タイル 改良圧着張り','屋上点検口','屋上 マンホール 断熱なし 水上500','換気塔 屋上 がらり','換気塔 断熱なし がらり高さ300 シーリング幅20','外壁取付け用ガラリ 断面','地下二重壁 点検口','ガラリ 縦枠 平面','換気ガラリ チャンバー 断熱なし H400','ジョイナー工法 化粧けい酸カルシウム板 断面','ジョイナー工法 出隅','ジョイナー工法 入隅 平面','ジョイナー工法 一般ジョイント','管類取出し口 屋上 設備配管','屋上基礎 クーリングタワー 頭部張出し','屋上基礎 アルミ水切 打増し','太陽光発電基礎 露出防水','テレビアンテナ基礎 保護防水 断熱','樹脂製建具 窓 下枠','樹脂製建具 窓 上枠','樹脂製サッシ 縦枠 平面','内部用 簡易気密型 鋼製建具 縦枠 直張り','内部用 簡易気密型 鋼製建具 上枠 直張り 旗丁番','内部用 簡易気密型 鋼製建具 下枠','内部用 気密型 鋼製軽量建具 オートドアボトム','内部用 簡易気密型 鋼製軽量建具 縦枠 LGS壁','ルーフドレン 塩ビ管 保護防水','中継ドレン 上部縦どい 塩ビ管','塔屋 建具取合い 乾式保護材 RCあご','塔屋 出入口 コンクリート押え 断熱','カーテン受け板 持出し','カーテン受け板 欠込み','外部用 鋼製建具 両開き 召合せ','塔屋取合い 保護防水 断熱 コンクリート押え 水切','塔屋取合い 保護防水 乾式保護材 RCあご','屋上パラペット 露出防水 改質アスファルト 断熱 アルミ笠木','塔屋取合い 露出防水 断熱 RCあご','塔屋取合い 露出防水 シート防水 アルミ水切','外部用 鋼製建具 下枠 内付け','外部用 鋼製建具 下枠 簡易気密 枠見込み119','石張り壁 外壁乾式 スライド方式','石張り壁 外壁湿式 横筋流し 石厚50','石張り壁 外壁湿式','石張り壁 内壁空積 横筋流し','屋上パラペット 保護防水 断熱 RCあご 塗膜防水','屋上パラペット 保護防水 乾式保護材 笠木下まで','地下二重壁 断面','地下二重壁 平面 柱際','屋上パラペット 保護防水 断熱 コンクリート押え','屋上パラペット 保護防水 乾式保護材','外部用 鋼製建具 縦枠 内部直張り 内付け','外部用 鋼製建具 上枠 内部直張り 旗丁番','外部用 鋼製建具 縦枠 内付け','外部用 鋼製建具 上枠 枠見込み120','外部用 鋼製建具 縦枠 内部直張り','外壁タイル 密着張り 打継ぎ目地','ひび割れ誘発目地 改良圧着張り 平面','カーテンボックス 木製 埋込み','木製建具 縦枠 RC壁 つけひばた','化粧合板壁 RC 木レンガ','腰壁 化粧合板 H900','竪羽目板張り 腰壁','カーテン受け板 木製','外部用 鋼製建具 下枠','窓 額縁 アルミ 断熱','鋼製建具 縦枠 ALCパネル','木製建具 縦枠 ALCパネル','木製建具 縦枠 RC壁 直張り','木製建具 上枠 直張り 両面枠','防火戸 90度開き','コーナーガード 目透し','浴室 天井 水下 水切りとい','屋上 手すり 1100','二重窓 下枠 断熱','便所 ライニング のみ込み200','階段 壁付き手すり LGS壁 2段','防火シャッター ガイドレール','シャッター ガイドレール 立面 底板','和室 鴨居 LGS壁','和室 出入口 敷居 床高180','和室 出入口 敷居 ポリスチレンフォーム床下地材','和室 壁回り 見切縁 RC壁','和室 見切縁 LGS壁 PB12.5 2枚','和室 畳寄せ ポリスチレンフォーム床下地材','和室 幅木 ポリスチレンフォーム t30','和室 敷居 ポリスチレンフォーム t50','ルーフドレン 露出防水 断熱','くつふきマット 泥だまり','くつふきマット 排水付き','8-21-2 くつふきマット 床排水金具','外部用 鋼製建具 上枠 RC壁','土間床版 断熱材打込み t50','屋根スラブ 断熱材打込み 寒地','照明器具開口 600 天井懐450','屋内防水 アスファルト防水','ALC間仕切 t100','カーテンボックス 横形ブラインド','木製建具 縦枠 LGS壁','くつずり 便所','窓回り 断熱 アルミぜん板','屋上パラペット コンクリート笠木 立上り400','防煙垂れ壁 H500','上がりがまち H180','鋼製建具 縦枠 LGS壁 PB12.5 2枚','鋼製軽量建具 上枠 RC壁 直張り','天井の下がり壁 H400 突付け目地','RC壁 直張り工法 PB12.5 目透し','壁床の取り合い 床 直均し ビニル床シート ビニル巾木','和室 床 畳 木製巾木 壁PB12.5','壁床の取り合い、床 RC下地石貼り、巾木 石貼り、壁t12.5ボード2枚貼り','二重床フローリング、木製巾木H60、壁ボード12.5 1枚 クロス','OAフロア タイルカーペット ソフト巾木 遮音壁','RC壁にタイル床 タイル巾木H100','壁 下貼りPB12.5 上貼り強化PB15 スタッド65形','壁と天井の取り合い 廻り縁 天井懐500','天井点検口 450角'];
+const PROMPT_EX=['湯沸室 器具配置 展開','湯沸室 器具配置 平面 流し台1500','給湯室 展開図 天井高2400 流し台2100','湯沸室 フード 1/10','湯沸室 フード 断面 こんろ','フード 横引きダクト 断面','湯沸室 吊戸棚 断面 天井高2400','縦どいの形式 外どい 最上部 ルーフドレン','外どい 横走りドレン 呼びどい パラペット','内どい 最上部 エルボ 防露','外どい 中間部 フロアドレン 塩ビ VP100','内どい 中間部 ソケット 125A','外どい 下部 GL エルボ 雨水桝','内どい 下部 下階等のある場合 掃除口','内どい 下部 下階等のない場合 床上掃除口','5-31-8 内どい エルボ 80A','路床 路盤 切土','路床 盛土 凍上抑制層 路盤厚300','路床 路盤 盛土 置換え','路床安定処理 路盤 粒度調整砕石 T=250','路床 フィルター層100 透水性舗装 路盤100','路盤の施工 再生クラッシャラン 路盤厚400 コンクリート舗装','標仕22.3 路盤 水硬性粒度調整鉄鋼スラグ','カーテンウォール メタル 縦断面','カーテンウォール メタル 縦断面 鉄骨 構造ガスケット','カーテンウォール 方立 平断面','PCカーテンウォール 縦断面','PCカーテンウォール 縦断面 鉄骨 目地幅25','PCカーテンウォール 縦目地 平断面','オーバーヘッドドア 断面','オーバーヘッドドア ローヘッド形 断面 電動式','オーバーヘッドドア ハイリフト形 リフト1500 断面','オーバーヘッドドア バーチカル形 断面 H2400','オーバーヘッドドア 立面 W3600 H3000 チェーン式','オーバーヘッドドア ガイドレール 平断面 鉄骨下地','オーバーヘッドドア ガイドレール 平断面 木下地 アルミ','透水性アスファルト舗装 改修 歩道','歩道 透水性舗装 改修 継目','塗床 改修 機械的除去 弾性ウレタン','塗床 改修 目荒し エポキシ 薄膜流しのべ 油面','改修 塗床 ビニル床シート撤去後 薄膜型','塗床 改修 モルタル下地共 除去 樹脂モルタル工法 防滑','既存フローリング 塗替え 研磨','フローリング 現場塗装 複合 A種','フローリング 再塗装 ドラムサンダー ポリッシャー t=12','LGS壁 ダクト開口補強','LGS壁 ダクト開口補強 600×400 拡大','間仕切 ダクト貫通 補強 W800 開口高さ300 FL+2800','ダクト開口補強 改修 軸組','改修 LGS壁 軸組 開口部補強','天井 つりボルト あと施工アンカー 既存スラブ','天井 つりボルト 既存インサート','天井 ダクト下 アングル つりボルト','ダクト下 アングル受け ダクト幅1600 ふところ1200','つりボルト 後施工アンカー スラブ厚180','外断熱改修 一般部 断面','外断熱改修 湿式 既存仕上材撤去','外断熱改修 通気層25 断熱材t=75','外断熱改修 頂部 笠木','外断熱改修 パラペット 笠木 湿式','断熱材後張り工法 壁 断面','断熱材後張り工法 ボード直張り t=30','断熱材後張り せっこうボード パネル','塗替え 木部 SOP 屋外','塗替え コンクリート面 EP-G 天井','塗装改修 鉄部 SOP A種 RA種','塗替え 木部 UC 2液形','塗替え 木部 クリヤラッカー A種','塗替え 木部 WP','塗替え 亜鉛めっき鋼面 EP-G B種','ファンコイルユニットカバー 立面','ファンコイルユニットカバー 平面 C-C','FCUカバー 平面 上部 割付け2400 吹出口の長さ2000','FCUカバー 断面 1/20 奥行700','ファンコイルユニットカバー A部詳細','鉄骨ブレース 接合部 梁下','鉄骨ブレース 接合部 床上 金属系アンカー','鉄骨ブレース 柱際 平断面 接合部の幅250','鉄骨ブレース 立面 K形 スパン6000 高さ2800','鉄骨ブレース 立面 X形','枠付き鉄骨ブレース 立面 V形 H-300','柱補強 溶接金網巻き 平断面','柱補強 溶接閉鎖フープ巻き 縦断面','柱補強 鋼板巻き 平断面 隙間30 鋼板9','柱補強 鋼板巻き 縦断面','柱補強 帯板巻き付け 立面','連続繊維補強 柱 平断面 2層 R20','炭素繊維シート 柱 縦断面','耐震スリット 完全スリット 外壁 平断面','耐震スリット 部分スリット 残し厚30','耐震スリット 内壁 遮音材 幅25','耐震スリット 立面 スリットの位置','構造スリット 新設 壁厚180 充填材なし','耐震壁 増設 縦断面 流込み工法','増設壁 圧入工法 縦断面','増設壁 柱取合い 平断面','耐震壁 増設 金属系アンカー はしご筋','増設壁 t=250 接着系アンカー スパイラル筋','砂利敷き A種 断面','砂利敷き B種 建築物の周囲','芝張り 目地張り 断面','芝張り 目地張り 平面','芝張り べた張り 法面','植栽基盤 A種 高木 断面','植栽基盤 C種 低木','植栽基盤 芝 有効土層30cm','自動ドア開閉装置 片引き 検出領域 平面','自動ドア開閉装置 引分け DSLD-1 立面','自動ドア開閉装置 タッチスイッチ 立面','自動ドア開閉装置 SSLD-2 保護領域 平面','自動ドア開閉装置 車椅子使用者用便房 操作スイッチ 立面','畳敷き A種 へり部 断面','畳敷き B種 かまち部 手縫い','畳敷き C種 PS-C25 へり部','畳敷き D種 姿図 針足','衝撃緩和型畳 へり部 断面','屋上緑化システム 断面 土壌層300','屋上緑化システム 軽量骨材 透水排水管 人工軽量土','屋上緑化システム 耐根層 保護コンクリート下','屋上緑化軽量システム 露出防水','屋上緑化 端部 見切り材 排水孔','鋼製建具 枠 つなぎ補強板 姿図','鋼製建具 屋内 枠 アンカー配置 W1800 H2100','鋼製建具 枠 隅の組立 留め','鋼製軽量建具 枠 隅の組立 くつずりなし','鋼製フラッシュ戸 横断面','鋼製フラッシュ戸 屋内 縦断面','鋼製建具 戸 骨組 姿図 W1200 H2400','鋼製軽量建具 フラッシュ戸 横断面 ペーパーコア','鋼製軽量建具 戸 縦断面 力骨にかぶせ溶接 グラスウール','力骨 冂形 下がまち','可動間仕切 縦断面','可動間仕切 縦断面 スラブに固定','可動間仕切 平断面 スタッド方式','可動間仕切 平断面 パネル方式 T100','移動間仕切 縦断面 CH3000','移動間仕切 縦断面 躯体にあと施工アンカー','移動間仕切 平断面','樹脂製建具 形材 断面','樹脂製建具 取付け 鉄骨下地 縦枠','樹脂製建具 取付け 木下地 縦枠','樹脂製建具 取付け 木下地 下枠 E種','樹脂サッシ アンカー 配置 立面 W1690 H1370','アルミサッシ 取付け 鉄骨下地 縦枠','アルミサッシ 取付け 木下地 縦枠','アルミサッシ 取付け 木下地 下枠','アルミサッシ 取付け 縦枠','アルミサッシ 取付け 下枠','サッシアンカー 配置 立面 W1800 H1500','ステンレス製建具 縦枠','ステンレス製建具 上枠 角出し曲げ','ステンレス製建具 下枠','ステンレス 曲げ加工 角出し曲げ','鏡 取付け 断面 RC壁','鏡 取付け 断面 LGS','鏡 立面 W600 H900','黒板 断面','黒板 立面 W3600','ホワイトボード 断面 軽量鉄骨壁','横形ブラインド 断面','横形ブラインド 立面 W2400','縦形ブラインド 断面','ロールスクリーン 立面 W1500','シャッター 立面 避難用扉','防火シャッター 断面 電動','防火シャッター 平面 W4000','軽量シャッター 断面 手動','管理用シャッター 立面 W5500 H3500 露出','額縁 小穴入れ 平断面 木造壁','額縁 小穴入れ 平断面 コンクリート壁','ぜん板 下枠 小穴入れ 断面 木造壁','ぜん板 下枠 小穴入れ 断面 コンクリート壁 出30','額縁 隅 大留め相欠き 姿図','額縁 継手 隠し目違い継ぎ','ぜん板 継手 柱心','木製枠 取付け 木造壁','木製枠 取付け 軽量鉄骨壁','木製枠 取付け コンクリート壁','木製枠 取付け コンクリート壁 つけひばた','縦枠 上枠 仕口 えり輪入れ','縦枠 上枠 仕口 見付け大留め','縦枠 下枠 仕口 木造壁 角柄','水掛り 下枠 傾斜ほぞ','下枠 断面 戸当りじゃくり','下枠 断面 上端平たん','敷居 断面 引違い 戸溝じゃくり','下枠 水返し 水垂れ勾配','敷居 かもい 吊束 立面','間仕切軸組 立面','間仕切軸組 立面 窓','柱 仕口 土台 頭つなぎ','隅柱 仕口 扇ほぞ','柱 土台踏外し','柱 コンクリート 取合い 頭つなぎ','土台 継手','土台 継手 ひき割り','土台 隅 取合い','頭つなぎ T形 取合い','土台 十形 取合い ひき割り','まぐさ 仕口 傾ぎ大入れ','転ばし大引 床組 断面','転ばし大引 ひき割り 床組','束立て 床組 床高600','根太 仕口 渡りあご','根太 仕口 大入れ','床板張り 二重張り 断面','畳下床板 パーティクルボード','縁甲板張り 断面','ふすま Ⅰ型 姿図','ふすま Ⅱ型 横断面','ふすま 縦断面','ふすま 仕口 えり輪入れ','ふすま Ⅱ型 仕口 火打','紙張り障子 姿図','障子 横断面','障子 縦断面 下桟60','障子 仕口 ほぞ','断熱材打込み コーン跡 補修','断熱材打込み 開口部 モルタル詰め 現場発泡','現場発泡 壁 確認ピン','吹付け硬質ウレタン スラブ下 梁 確認ピン','確認ピン 配置 W3600 H2700','木製 かまち戸 横断面 鏡板','かまち戸 ガラス 横断面','かまち戸 縦断面 上部ガラス 下部鏡板','かまち戸 姿図 W800 H2000','かまち戸 仕口 下かまち ほぞ','木製 フラッシュ戸 横断面','フラッシュ戸 縦断面 中骨式','フラッシュ戸 ペーパーコア 縦断面','フラッシュ戸 骨組 姿図 W900 H2100','フラッシュ戸 単板積層材 ペーパーコア 骨組','木造 壁胴縁 縦断面','木造 壁胴縁 平断面 かい木','木造 天井下地 吊木 懐500','木造 天井下地 野縁方向 つりボルト','木造 壁胴縁 ラスボード せっこうプラスター','石 笠木 湿式 断面','石 笠木 縦断面 目地','石 面台 屋内','石 隔て板 平断面','石 隔て板 縦断面 かすがい H1200','まぐさ タイル L形 引金物','窓台 タイル 水切板','窓台 タイル 水切板なし','ひさし先端 タイル 改良圧着','床 石張り 敷モルタル 目地','床 石張り 壁際 取合い 石厚40','階段 石張り 踏み石 け上げ石 R170 T280','床タイル 張付けモルタル 目地','床タイル 敷モルタル 張付け面積小','ユニットタイル 床 保護コンクリート','粘土瓦葺 軒先 J形','桟瓦 軒先 働き長さ245 軒瓦の出60','粘土瓦 7寸丸伏せ棟','F形 冠瓦伏せ棟 勾配5/10','のし積み棟 のし瓦7段','長尺金属板葺 立て平葺 軒先','立平 棟 棟包み','横葺 軒先 勾配3/10','瓦棒葺 けらば','金属板葺 壁取合い 雨押え','長尺金属板 谷 谷板','横葺 けらば包み','折板葺 重ね形 タイトフレーム 断面','折板 けらば包み 山高150','ガラスブロック積み 縦断面 外部 190角 目地10','ガラスブロック 平断面 縦枠 伸縮調整目地 幅15','ガラスブロック 立面 割付け W=7,200 H=2,400','屋内 ガラスブロック 間仕切 145×145×95 縦断面','ガラス溝 単板ガラス t=6 シーリング','複層ガラス 5+A12+5 ガラス溝','グレイジングチャンネル 単板 t=5','樹脂製建具 ガラス溝 押縁 複層ガラス','間知石積み 谷積み 断面 H=1,500','コンクリート間知ブロック 布積み 正面','間知石 勾配1:0.4 透水層なし 断面','塗装改修 鉄部 SOP 塗替え RB種','塗替え RA種 コンクリート面 改修前 改修後','塗装改修 亜鉛めっき鋼面 鋼製建具 RB種 断面','塗替え せっこうボード面 EP RC種','耐候性塗料 DP 塗替え 鉄骨 RA種','コンクリートブロック 帳壁 厚さ150 縦断面','ブロック塀 高さ1,600 平面','補強コンクリートブロック造 耐力壁 D13 縦断面','柱脚 アンカーボルト 柱底均しモルタル A種','建方用アンカーボルト B種 鉄筋 柱底均しモルタル B種 M20','柱脚 ベースプレート 300角 平滑 平面','耐火被覆 吹付けロックウール 梁 H-400×200','耐火板張り 柱 □-300','ロックウール吹付け スラブ下 厚さ25','こまい壁塗り 両面 水ごね土物','こまい壁 柱際 平断面 大津みがき','こまい壁 片面 砂壁仕上げ','ドロマイトプラスター塗り 壁','しっくい塗り せっこうボード下地 なで切り仕上げ','しっくい 木ずり下地 天井','しっくい こまい土壁 外壁','スパンドレル 天井 断面','金属成形板張り 長さ方向 断面 伸縮調整継手','スパンドレル 継手部 拡大 高さ15','軒天井 スパンドレル 屋外 働き幅200','階段滑り止め 接着工法 断面','階段滑り止め 埋込み工法 モルタル仕上げ','ノンスリップ 埋込み 平面 階段の幅1,800','床目地棒 断面 厚さ6','床目地棒 平面 長さ3,000','20.2.7 階段滑り止め','ALC 床パネル 敷設筋構法 断面','ALC 床パネル 長辺 目地 断面','ALC 屋根パネル ボルト留め','ALC 床パネル 敷き並べ 平面','8.4.5 ALC 屋根パネル t=125','樹木の支柱 二脚鳥居形','八ッ掛け形 H=4,000','生垣 支柱','9-01-3 十字鳥居形','門 引き戸 W=1,200 立面','9-35 引き戸断面','門 引き戸 W=1,500 A部詳細','門 片開き戸 立面','門 片開き戸 戸当り部','9-33 まる落とし受け座','門 両開き戸 W=2,400 平面','門 引き戸 立面','門 引き戸 基礎断面','門 引き戸 かんぬき','門 両開き戸 立面','門柱 断面','まる落とし受け座','浸透桝','浸透トレンチ','浸透側溝','車止め','駐車場 標準平面','歩道 アスファルト舗装','透水性アスファルト舗装','コンクリート平板舗装','舗石舗装','構内舗装 アスファルト舗装','コンクリート舗装 大型車','コンクリート舗装 収縮目地','インターロッキングブロック舗装 車道','トラップマンホール','トラップマンホール 2室','トラップマンホール 開口補強配筋','トラップマンホール H=3000','雨水マンホール','雨水マンホール 900 1200','雨水マンホール 1200 H=2500','ガソリントラップ桝','ガソリントラップ桝 2槽','ガソリントラップ桝 3槽 H=500','雨水桝','雨水桝 内径400 A+B+D','雨水桝 内径500 A+B+C+D','集水桝 有孔ふた 内径400','集水桝 現場打ち 350','集水桝 現場打ち 450 H=500','集水桝 現場打ち 600 H=1,000','集水桝 プレキャスト 450','U形側溝 300A','U形側溝 プレキャスト 450','上ぶた式U形側溝 300A','上ぶた式U形側溝 500B','U形側溝 現場打ち 内法200','U形側溝 現場打ち 内法300','U形側溝 現場打ち 内法450 深さ660','自由勾配側溝 B=400 H=1,000','L形側溝桝','V形側溝桝','街きょ桝','街きょ桝 H=800','L形側溝 幅350','L形側溝 幅450','V形側溝','街きょ','街きょ W=600','縁石 舗装面 幅100','縁石 舗装面 幅150','縁石 整地面 幅120','縁石 整地面 幅150','縁石 敷地境界線 幅120','縁石 敷地境界線 幅150 タイプ2','雑割石 縁石','植樹桝用ブロック','擁壁 断面','擁壁 正面 平面','擁壁 目地 伸縮目地 収縮目地','ALC 外壁 縦壁ロッキング 断面','ALC 外壁 横壁アンカー 断面','ALC 外壁 縦壁ロッキング 出隅 平面','ALC 外壁 横壁アンカー 立面 割付','押出成形セメント板 縦張り 断面','押出成形セメント板 横張り 平面','ECP 間仕切 縦張り 溝形鋼 断面','8.5.3 押出成形セメント板 横張り 立面','既存天井 仕上材 撤去','既存天井 下地ごと 撤去','既存開口 ふさぐ 照明 移設','既存天井 開口 新設 照明 300','既存天井 点検口 450','既存天井 間仕切壁 撤去 65形','既存天井 天井内の壁 撤去','仕上塗材 改修 サンダー工法','複層塗材 改修 高圧水洗工法 断面','外装薄塗材E 塗替え 塗膜はく離剤工法 ローラー','可とう形改修塗材 ローラー 水洗い工法','マスチック塗材 改修','外壁用塗膜防水材 改修 ローラー','下地挙動緩衝材 ひび割れ','床シート 撤去','塗床 除去 コンクリート下地','フローリング 撤去 モルタル下地','床組 撤去 全面','間仕切壁 開口 撤去','間仕切壁 撤去 大規模 壁厚180','アルミ笠木 改修','アルミ笠木 改修 300形 モルタル塗り','アルミ笠木 ジョイント部','アルミ笠木 コーナー部 平面','笠木 シール形式 板材折曲げ 幅400','たてどい 受金物 100A','たてどい 受金物 埋込み 125A','たてどい 防露巻き 浴室','たてどい 受金物 配置 屋内 階高3600','たてどい 配置 表面処理鋼板 全長6000','タイル部分張替え','タイル部分張替え 接着剤','タイル張替え 改良圧着','タイル張替え 接着剤','タイル張替え 伸縮調整目地','タイル 目地ひび割れ 改修','伸縮調整目地 新設','伸縮調整目地 新設 タイル切断','モルタル塗替え','モルタル塗替え 木ごて むら直し 高圧水洗','外壁 ひび割れ 樹脂注入','外壁 ひび割れ 手動式 樹脂注入 タイル','Uカット シーリング','Uカット ポリマーセメントモルタル モルタル撤去','ひび割れ シール工法','外壁 欠損部 ポリマーセメントモルタル','アンカーピンニング 部分エポキシ','アンカーピンニング 全面エポキシ タイル','注入口付アンカーピン 全面スラリー','アンカーピン 配置 2000×1000','アンカーピン 配置 全面 指定部分','タイル固定工法','防水改修 P0AS','防水改修 P2AI','防水改修 M4S 機械的固定','防水改修 P0AS ルーフドレン回り','シーリング再充填 建具枠 15×10','拡幅シーリング再充填 20×10','シーリング ブリッジ工法','遮音壁 脚部','遮音壁 頭部 天井高が異なる','遮音壁 頭部 断熱材あり ランナ受金物','遮音壁 壁取合い','遮音壁 T形壁取合い','EP塗装 ボード面','EP A種 コンクリート面 見上げ','EP-G モルタル面','SOP 鉄鋼面','SOP 木部 屋外','EP-G 亜鉛めっき鋼面 鋼製建具','DP 鉄骨','DP コンクリート面 A種','NAD 押出成形セメント板面','クリヤラッカー A種 木部','ウレタン樹脂ワニス 木部 2液形','ピグメントステイン','木材保護塗料 A種','錆止め塗装 鉄骨','マスチック塗材 ALC','せっこうプラスター塗り コンクリート','せっこうプラスター塗り せっこうボード','複層塗材E 吹付け','複層塗材E ローラー ALC','防水形複層塗材E 吹付け 下地モルタル','外装薄塗材E ローラー','内装薄塗材E こて塗り ボード','外装厚塗材C 吹付け','吹付用軽量塗材 見上げ','シート防水 立上り 端部','シート防水 機械的固定 端部 S-M2','シート防水 屋内保護密着 端部','シート防水 ルーフドレン回り 増張り','シート防水 配管回り 増張り','シート防水 S-C1 排水器具回り 増張り','シート防水 S-C1 配管回り 増張り','シート防水 ALC 目地 絶縁用テープ','塗膜防水 打継ぎ 補強布','塗膜防水 出隅 Y-1','塗膜防水 入隅 Y-2','塗膜防水 ルーフドレン回り 補強布','塗膜防水 配管回り 補強布','防水 増張り 入隅','防水 増張り 入隅 乾式保護材','増張り 出隅','増張り 立上りの入隅 平面','増張り 立上りの出隅 平面','増張り 打継ぎ箇所','増張り 打継ぎ 砂付あなあき','増張り PCa接合部','増張り PCa接合部 B-1','増張り ルーフドレン回り','増張り ルーフドレン 部分粘着','増張り 配管回り','ボード 留付け間隔 壁','ボード 留付け間隔 天井','直張り 接着材の間隔','モルタル塗り 内壁','モルタル塗り 外壁 むら直し','モルタル塗り メタルラス 外壁','モルタル塗り 外壁 タイル下地','タイル接着剤張り下地 下地調整塗材','モルタル塗り 床 張物下地','防水下地 モルタル塗り','直均し 粗面','セルフレベリング材塗り','壁紙張り せっこうボード面','壁紙張り コンクリート面 A種','壁紙 素地ごしらえ モルタル面','壁紙張り けい酸カルシウム板 A種','ジョイントテープ テーパエッジ','ベベルエッジ 継目処理 t15','継目処理 切断面 ジョイントコンパウンド','ジョイントテープ 入隅','ジョイントコンパウンド 出隅','フローリング 根太張り工法 壁際','フローリング 直張り工法 複合 B種','フローリング 接着工法 コンクリート下地','フローリング 隠し釘 根太張り','合成樹脂塗床 弾性ウレタン 平滑','エポキシ塗床 薄膜流しのべ 防滑','エポキシ 樹脂モルタル工法 塗床 モルタル下地','ビニル床シート 熱溶接 継目','ビニル床シート 熱溶接 U字 t2.5','カーペット グリッパー工法 壁際','タフテッドカーペット グリッパー 直均し','タイルカーペット フリーアクセスフロア 割付け','ケイ酸質系塗布防水 C-SUI','ケイ酸質系塗布防水 C-SUP 打継ぎ部','保護コンクリート 伸縮目地 断面','伸縮目地の割付け 屋上 12,000×9,000','シート防水 S-F1','防水層の構成 S-M2 塩ビシート 機械的固定','合成高分子系ルーフィングシート防水 断熱 機械的固定 塩ビ','シート防水 S-C1 屋内保護密着','塗膜防水 X-1 通気緩衝シート','ウレタンゴム系塗膜防水 密着工法','塗膜防水 Y-2 保護モルタル','改質アスファルトシート防水 AS-T1','改質アスファルトシート防水 AS-J1 常温粘着','改質アスファルトシート防水 断熱 トーチ工法 断熱材50','防水層の構成 AS-T4 あなあきシート','防水層の構成 A-1','防水層の構成 AI-2 断熱材50','防水層の構成 B-1 砂付あなあきルーフィング','防水層の構成 D-2','防水層の構成 E-1 浴槽','シーリング目地 打継ぎ目地 ボンドブレーカー','シーリング目地 建具枠とコンクリート','シーリング目地 ALC 仕上げあり','シーリング目地 押出成形セメント板 バックアップ材 角形','シーリング目地 PCa 20×10','シーリング目地 石 乾式','シーリング目地 ガラス回り','天井下地 軸組 ふところ1800','天井下地 軸組 段違い300 ふところ2000','天井下地 軸組 下地張りあり 長さ7200 ふところ1200','LGS壁 軸組 開口部補強','軸組 開口部上枠と天井面が離れている 開口高さ2100','軸組 天井高が異なる スラブ下4200 65形','庁舎名サイン 箱文字 取付け詳細','切文字 サイン 取付け','誘導サイン 壁付型 断面','室名札 平付け型','室名札 持出し型','鋼製ユニット煙突 屋上取合い','煙突 頂部 天板','煙突 頂部 天板なし 防鳥網','和室 床取合い LGS壁 畳寄せ','和室 幅木 LGS壁 ポリスチレンフォーム','和室 床板張り 幅木 ポリスチレンフォーム','和室 T形取合い LGS間仕切','和室 木造壁 真壁 断面','和室 木造壁 幅木','和室 木造壁 T形取合い 平面','和室 T形取合い RC壁 見切30×40','和室 木造壁 ポリスチレンフォーム床下地材','和室 真壁 幅木 ポリスチレンフォーム t50','和室 板畳 板幅120','和室 板畳 板幅450 根太30×40','和室 板畳 板幅600 根太30×60','和室 板畳 板幅120 ポリスチレンフォーム','和室 板畳 板幅450 ポリスチレンフォーム床下地材 t50','一般便房 L型手すり 立面','便所 I型手すり 平面','車椅子使用者用便房','車椅子使用者用便房 大型ベッド','車椅子使用者用便房 オストメイト 手動扉','多機能トイレ オストメイト 大型ベッド','オストメイト用設備を有する便房','オストメイト 便房 着替え台','乳幼児連れに配慮した便房 おむつ交換台','乳幼児連れ 便房 乳幼児用椅子','車椅子使用者用簡易型便房 縦入り','簡易型便房 横入り 引き戸','簡易型便房 横入り 幅1800 奥行1500','洗面器 衛生器具配置 平面','洗面器 ライニング 立面 鏡','洗面カウンター 立面','洗面カウンター 洗面器 断面','小便器 衛生器具配置 平面','小便器 床置型 壁掛型 立面','小便器 壁掛型 3台 平面','洗面器 3台 心々800 立面','便所 一般便房 縦入り 内開き','一般便房 外開き ロータンク','トイレブース 横入り 乳幼児用椅子','便所 和風便器 便房','一般便房 W1100 奥行1600 開口650','窓 姿図 引違い らんま FIX','アルミサッシ 姿図 FIX 片引き 3連窓','窓 姿図 すべり出し W600 H900','樹脂製建具 姿図 内倒し','窓 姿図 C-17 らんま 内倒し','窓 形状寸法 上げ下げ','ふすま 姿図 4枚引違い らんま','鋼製建具 姿図 片開き','建具 姿図 親子開き ガラリ','鋼製軽量建具 姿図 両開き ガラス','建具 形状寸法 B-8','木製建具 姿図 片開き W800 H2100','階段 手すり子付き 2段手すり','階段 手すり子 側端部立上り 内側なし H1200','階段 壁付き手すり ビニル製 RC壁','階段 壁付き手すり ビニル LGS壁 2段','湯沸室 流し上部水切り','流し上部水切り 棚を設ける場合','脱衣室 脱衣箱','タラップ ステンレス製','タラップ 歩み板 足金物','タラップ 安全ガード付','木製受付カウンター','受付カウンター W2=450 高さ1100','コーナーカウンター LGS壁','木製受付カウンター 立面 L=1500','コーナーカウンター 立図','コーナーカウンター 平面 長さ1,200','手すり腰壁 天端 木製','手すり腰壁 金属製 天端','階段 手すり腰壁 断面 段鼻 木製','階段 平面 手すり子 1/50','階段 断面 手すり腰壁 階高3,500 踏面280','階段 断面 手すり子 W1=1,600 踊場1,500','7-11 階段 平面 手すり腰壁','手すり腰壁 最上階部分 金属製','階段 腰壁 天端 コンクリート打放し','ファンコイルユニットカバー','FCUカバー 吹出口W150 フリーアクセスフロア150','くつ洗い流し','くつ洗い流し 共栓付き','縦どい 掃除口 下階等のある場合','床上掃除口 下階等のない場合','5-32-2 掃除口 125A 防露なし','ルーフドレン 横型 断熱防水','横型ドレン コンクリート押え','和室 押入れ 敷居','押入れ 中段','押入れ 鴨居 天袋','押入れ 天袋 天井取合い','押入れ 鴨居 天袋のない場合','厨房 グリストラップ','グリストラップ L2=600 深さ500 アスファルト防水','石張り 外壁乾式 スライド方式 横断面','石張り 外壁乾式 ロッキング方式 横断面','コンクリート打放し 打継ぎ目地','打放し ひび割れ誘発目地 平面','打放し 化粧目地 断面','化粧目地 縦目地 平面','外壁 モルタル塗の目地','吸音材 ガラスクロス張り','二重窓 改修 樹脂製建具 断面','二重窓 改修 既存額縁見込で納まる 平面','4-55-1 ふかし枠 平面','便所 引き戸 手動 平面','便所 引き戸 自動扉 平面','便所 引き戸 手動 内面姿図','便所 引き戸 自動扉 外面姿図','車椅子使用者用便房 引き戸 断面','引き戸 自動扉 上部 断面','浴室 水せん回り','水栓回り 洗い場 W2=250','トラフ しま鋼板','トラフ ふた 仕上材 アルミ枠','トラフ グレーチング ステンレス枠','便所 汚垂石 花こう岩','汚垂石 大型タイル','浴室 コンクリート浴槽','コンクリート浴槽 二重防水','床 排水溝 グレーチング','厨房 排水溝 幅300 深さ120 アスファルト防水','内装タイル 接着剤張り モルタル下地','内装タイル 接着剤張り ボード下地 LGS','内装タイル 直張り 断熱材 現場発泡','浴室 壁タイル 密着張り','内装タイル 改良圧着張り','屋上点検口','屋上 マンホール 断熱なし 水上500','換気塔 屋上 がらり','換気塔 断熱なし がらり高さ300 シーリング幅20','外壁取付け用ガラリ 断面','地下二重壁 点検口','ガラリ 縦枠 平面','換気ガラリ チャンバー 断熱なし H400','ジョイナー工法 化粧けい酸カルシウム板 断面','ジョイナー工法 出隅','ジョイナー工法 入隅 平面','ジョイナー工法 一般ジョイント','管類取出し口 屋上 設備配管','屋上基礎 クーリングタワー 頭部張出し','屋上基礎 アルミ水切 打増し','太陽光発電基礎 露出防水','テレビアンテナ基礎 保護防水 断熱','樹脂製建具 窓 下枠','樹脂製建具 窓 上枠','樹脂製サッシ 縦枠 平面','内部用 簡易気密型 鋼製建具 縦枠 直張り','内部用 簡易気密型 鋼製建具 上枠 直張り 旗丁番','内部用 簡易気密型 鋼製建具 下枠','内部用 気密型 鋼製軽量建具 オートドアボトム','内部用 簡易気密型 鋼製軽量建具 縦枠 LGS壁','ルーフドレン 塩ビ管 保護防水','中継ドレン 上部縦どい 塩ビ管','塔屋 建具取合い 乾式保護材 RCあご','塔屋 出入口 コンクリート押え 断熱','カーテン受け板 持出し','カーテン受け板 欠込み','外部用 鋼製建具 両開き 召合せ','塔屋取合い 保護防水 断熱 コンクリート押え 水切','塔屋取合い 保護防水 乾式保護材 RCあご','屋上パラペット 露出防水 改質アスファルト 断熱 アルミ笠木','塔屋取合い 露出防水 断熱 RCあご','塔屋取合い 露出防水 シート防水 アルミ水切','外部用 鋼製建具 下枠 内付け','外部用 鋼製建具 下枠 簡易気密 枠見込み119','石張り壁 外壁乾式 スライド方式','石張り壁 外壁湿式 横筋流し 石厚50','石張り壁 外壁湿式','石張り壁 内壁空積 横筋流し','屋上パラペット 保護防水 断熱 RCあご 塗膜防水','屋上パラペット 保護防水 乾式保護材 笠木下まで','地下二重壁 断面','地下二重壁 平面 柱際','屋上パラペット 保護防水 断熱 コンクリート押え','屋上パラペット 保護防水 乾式保護材','外部用 鋼製建具 縦枠 内部直張り 内付け','外部用 鋼製建具 上枠 内部直張り 旗丁番','外部用 鋼製建具 縦枠 内付け','外部用 鋼製建具 上枠 枠見込み120','外部用 鋼製建具 縦枠 内部直張り','外壁タイル 密着張り 打継ぎ目地','ひび割れ誘発目地 改良圧着張り 平面','カーテンボックス 木製 埋込み','木製建具 縦枠 RC壁 つけひばた','化粧合板壁 RC 木レンガ','腰壁 化粧合板 H900','竪羽目板張り 腰壁','カーテン受け板 木製','外部用 鋼製建具 下枠','窓 額縁 アルミ 断熱','鋼製建具 縦枠 ALCパネル','木製建具 縦枠 ALCパネル','木製建具 縦枠 RC壁 直張り','木製建具 上枠 直張り 両面枠','防火戸 90度開き','コーナーガード 目透し','浴室 天井 水下 水切りとい','屋上 手すり 1100','二重窓 下枠 断熱','便所 ライニング のみ込み200','階段 壁付き手すり LGS壁 2段','防火シャッター ガイドレール','シャッター ガイドレール 立面 底板','和室 鴨居 LGS壁','和室 出入口 敷居 床高180','和室 出入口 敷居 ポリスチレンフォーム床下地材','和室 壁回り 見切縁 RC壁','和室 見切縁 LGS壁 PB12.5 2枚','和室 畳寄せ ポリスチレンフォーム床下地材','和室 幅木 ポリスチレンフォーム t30','和室 敷居 ポリスチレンフォーム t50','ルーフドレン 露出防水 断熱','くつふきマット 泥だまり','くつふきマット 排水付き','8-21-2 くつふきマット 床排水金具','外部用 鋼製建具 上枠 RC壁','土間床版 断熱材打込み t50','屋根スラブ 断熱材打込み 寒地','照明器具開口 600 天井懐450','屋内防水 アスファルト防水','ALC間仕切 t100','カーテンボックス 横形ブラインド','木製建具 縦枠 LGS壁','くつずり 便所','窓回り 断熱 アルミぜん板','屋上パラペット コンクリート笠木 立上り400','防煙垂れ壁 H500','上がりがまち H180','鋼製建具 縦枠 LGS壁 PB12.5 2枚','鋼製軽量建具 上枠 RC壁 直張り','天井の下がり壁 H400 突付け目地','RC壁 直張り工法 PB12.5 目透し','壁床の取り合い 床 直均し ビニル床シート ビニル巾木','和室 床 畳 木製巾木 壁PB12.5','壁床の取り合い、床 RC下地石貼り、巾木 石貼り、壁t12.5ボード2枚貼り','二重床フローリング、木製巾木H60、壁ボード12.5 1枚 クロス','OAフロア タイルカーペット ソフト巾木 遮音壁','RC壁にタイル床 タイル巾木H100','壁 下貼りPB12.5 上貼り強化PB15 スタッド65形','壁と天井の取り合い 廻り縁 天井懐500','天井点検口 450角'];
 /* ───────── 音声入力(Web Speech API) ───────── */
 let SRec=window.SpeechRecognition||window.webkitSpeechRecognition;
 let srec=null,srecOn=false,srecBase='';
